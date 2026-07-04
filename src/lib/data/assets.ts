@@ -5,8 +5,9 @@ import { assetKeyFigure, type Asset, type AssetTxn, type AssetType, type KeyFigu
 const TYPE_ORDER: AssetType[] = ['property', 'vehicle', 'investment', 'other']
 const ASSET_COLS = 'id, type, name, owner_member_code, status, opening_balance_cents, metadata'
 const TXN_COLS = 'id, date, description, amount_cents, direction, txn_type, settled, seq, notes'
-// Literal (not concatenated) so Supabase preserves the select's row type.
-const TXN_COLS_WITH_ASSET = 'asset_id, id, date, description, amount_cents, direction, txn_type, settled, seq, notes'
+// Template literal (not `+` concatenation) keeps this in sync with TXN_COLS while
+// preserving the literal type Supabase needs to infer the select's row shape.
+const TXN_COLS_WITH_ASSET = `asset_id, ${TXN_COLS}` as const
 
 function mapAsset(r: Record<string, unknown>): Asset {
   return {
