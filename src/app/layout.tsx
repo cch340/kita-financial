@@ -18,16 +18,10 @@ const notoSC = Noto_Sans_SC({
 export const metadata: Metadata = {
   title: "Kita",
   description: "Kita family finance tracker",
-  // iOS "Add to Home Screen" ignores the web-manifest icons and uses the
-  // apple-touch-icon; without it iOS shows a screenshot of the page. Must be an
-  // opaque 180×180 (iOS applies its own rounded-corner mask).
-  icons: {
-    icon: [
-      { url: "/icons/kita-icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/kita-icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-  },
+  // Icons come from the app/ file conventions: `icon.svg` (browser tab, crisp at
+  // any size) and `apple-icon.png` (iOS Add-to-Home-Screen — iOS ignores the web
+  // manifest and needs an opaque 180×180 apple-touch-icon). Android install icons
+  // come from the web manifest (app/manifest.ts → /icons/*).
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Kita" },
 };
 
