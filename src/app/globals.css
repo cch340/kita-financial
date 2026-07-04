@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  --paper: oklch(0.972 0.013 74);
+  --paper-2: oklch(0.982 0.011 78);
+  --surface: oklch(0.995 0.006 78);
+  --subtle: oklch(0.97 0.01 74);
+  --hairline: oklch(0.90 0.012 66);
+  --ink: oklch(0.30 0.02 50);
+  --ink-head: oklch(0.32 0.03 45);
+  --muted: oklch(0.55 0.02 58);
+  --faint: oklch(0.62 0.02 60);
+  --primary: oklch(0.63 0.14 40);
+  --primary-btn: oklch(0.61 0.15 39);
+  --peach: oklch(0.90 0.055 62);
+  --positive-text: oklch(0.50 0.09 155);
+  --positive-bg: oklch(0.94 0.04 155);
+  --pending-text: oklch(0.64 0.11 65);
+  --pending-bg: oklch(0.95 0.05 78);
+  --info-text: oklch(0.58 0.09 238);
+  --info-bg: oklch(0.93 0.03 235);
+  --danger: oklch(0.57 0.16 25);
+  --member-ch: oklch(0.70 0.11 42);
+  --member-jc: oklch(0.58 0.09 238);
+  --hero-grad: linear-gradient(150deg, oklch(0.71 0.115 52), oklch(0.58 0.15 38));
+}
+:root[data-theme="dark"] {
+  --paper: oklch(0.225 0.018 55);
+  --paper-2: oklch(0.225 0.018 55);
+  --surface: oklch(0.28 0.018 52);
+  --ink: oklch(0.95 0.012 78);
+  --ink-head: oklch(0.95 0.012 78);
+  --muted: oklch(0.68 0.02 60);
+  --hairline: oklch(0.34 0.02 55);
+}
+
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Public Sans','Noto Sans SC',system-ui,sans-serif;
+  font-variant-numeric: tabular-nums;
+}
