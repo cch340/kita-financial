@@ -9,7 +9,7 @@ import type { SettingsData } from '@/lib/data/settings-shared'
 import { urlBase64ToUint8Array, serializeSubscription } from '@/lib/push/push-shared'
 import {
   updateLanguage, updateReminderSetting, inviteMember, signOutAction,
-  subscribeToPush, unsubscribeFromPush,
+  subscribeToPush, unsubscribeFromPush, sendTestPush,
 } from './actions'
 
 export function SettingsView({ data }: { data: SettingsData }) {
@@ -27,6 +27,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
   const [supported, setSupported] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
   const [standalone, setStandalone] = useState(false)
+  const [testMsg, setTestMsg] = useState<{ ok: boolean; key: string } | null>(null)
 
   useEffect(() => {
     setSupported('serviceWorker' in navigator && 'PushManager' in window)
@@ -52,6 +53,12 @@ export function SettingsView({ data }: { data: SettingsData }) {
         setPushOn(false)
       }
     } catch { setPushOn(false) }
+  }
+
+  async function onTest() {
+    setTestMsg(null)
+    const res = await sendTestPush()
+    setTestMsg(res.ok ? { ok: true, key: 'push.testSent' } : { ok: false, key: `error.${res.error}` })
   }
 
   function onLanguage(lang: 'en' | 'zh') {
@@ -150,10 +157,27 @@ export function SettingsView({ data }: { data: SettingsData }) {
             onChange={onPush}
             disabled={!supported}
           />
+          {pushOn && (
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <button onClick={onTest}
+                className="rounded-lg border border-[var(--hairline)] px-3 py-2 text-xs font-bold text-[var(--ink)]">
+                {t('push.test')}
+              </button>
+              {testMsg && (
+                <span className={`text-xs font-semibold ${testMsg.ok ? 'text-[var(--positive-text)]' : 'text-[var(--danger)]'}`}>
+                  {t(testMsg.key)}
+                </span>
+              )}
+            </div>
+          )}
         </Section>
 
-        {/* Install card — only when not already installed */}
-        {!standalone && (
+        {/* Installed confirmation, or the install card when not yet installed */}
+        {standalone ? (
+          <p className="mt-4 text-center text-xs font-semibold text-[var(--positive-text)]">
+            ✓ {t('settings.installed')}
+          </p>
+        ) : (
           <section className="mt-5">
             <div className="rounded-2xl bg-[var(--hero-grad,var(--primary))] p-4 text-white"
               style={{ background: 'linear-gradient(135deg, var(--primary), oklch(0.58 0.14 35))' }}>
