@@ -1,0 +1,13 @@
+# temp / local data
+tmp/
+scratchpad/
+.DS_Store
+
+# env
+.env
+.env*.local
+
+# node / next (added ahead of scaffold)
+node_modules/
+.next/
+out/
