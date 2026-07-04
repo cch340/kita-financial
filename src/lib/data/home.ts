@@ -88,7 +88,9 @@ export async function getHomeSummary(): Promise<HomeSummary> {
       .from('joint_fund_contributions')
       .select('amount_cents')
       .eq('household_id', householdId)
-      .eq('status', 'paid'),
+      .eq('status', 'paid')
+      .gte('period', monthRange(year, 1).startISO)
+      .lt('period', monthRange(year + 1, 1).startISO),
     supabase.from('budget_categories').select('total_cents').eq('household_id', householdId),
     supabase
       .from('monthly_commitments')
@@ -111,7 +113,7 @@ export async function getHomeSummary(): Promise<HomeSummary> {
 
   const thisMonthContribs = rowsOf<ContribRow>(thisMonthContribRes, 'joint_fund_contributions (this month)')
   const configRows = rowsOf<ConfigRow>(configRes, 'joint_fund_config')
-  const paidContribs = rowsOf<PaidRow>(paidContribRes, 'joint_fund_contributions (paid, all-time)')
+  const paidContribs = rowsOf<PaidRow>(paidContribRes, 'joint_fund_contributions (paid, this year)')
   const budgetRows = rowsOf<BudgetRow>(budgetRes, 'budget_categories')
   const commitmentRows = rowsOf<CommitmentRow>(commitmentsRes, 'monthly_commitments')
   const investmentAssets = rowsOf<AssetRow>(investmentAssetsRes, 'assets (investment)')

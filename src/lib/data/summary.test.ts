@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { monthRange, monthKey, sumCents, groupByDay, formatMonthYear } from './summary'
+import { monthRange, monthKey, sumCents, groupByDay, formatMonthYear, monthShort } from './summary'
 import type { ExpenseRow } from './types'
 
 describe('formatMonthYear', () => {
@@ -12,6 +12,15 @@ describe('formatMonthYear', () => {
 
 const row = (id: string, date: string, amount_cents: number): ExpenseRow =>
   ({ id, date, vendor: null, details: null, category: null, amount_cents, paid_by: null })
+
+describe('monthShort', () => {
+  it('formats en and zh short month labels', () => {
+    expect(monthShort(7, 'en')).toBe('Jul')
+    expect(monthShort(7, 'zh')).toBe('7月')
+    expect(monthShort(1, 'en')).toBe('Jan')
+    expect(monthShort(12, 'zh')).toBe('12月')
+  })
+})
 
 describe('monthRange', () => {
   it('returns [first-of-month, first-of-next-month)', () => {
