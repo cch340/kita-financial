@@ -4,7 +4,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useT, useLocale } from '@/i18n/LocaleProvider'
 import { CATEGORIES, categoryLabel } from '@/lib/categories'
-import { groupByDay } from '@/lib/data/summary'
+import { groupByDay, formatMonthYear } from '@/lib/data/summary'
 import type { ExpenseRow } from '@/lib/data/types'
 import { IconTile } from '@/components/ui/IconTile'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -16,17 +16,17 @@ type Props = {
   totalCents: number
   year: number
   month: number
-  monthLabel: string
   todayISO: string
 }
 
 const REVEAL_WIDTH = 152 // px — two 76px action buttons behind each row
 
-export function ExpensesView({ rows, totalCents, year, month, monthLabel, todayISO }: Props) {
+export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props) {
   const t = useT()
   const locale = useLocale()
   const router = useRouter()
   const [selected, setSelected] = useState<string | null>(null) // null = "All"
+  const monthLabel = formatMonthYear(year, month, locale)
 
   const presentCategoryKeys = useMemo(() => {
     const present = new Set(rows.map((r) => r.category ?? 'uncategorized'))
@@ -59,7 +59,7 @@ export function ExpensesView({ rows, totalCents, year, month, monthLabel, todayI
       <div className="flex items-center justify-center gap-4">
         <button
           type="button"
-          aria-label="Previous month"
+          aria-label={t('expenses.prevMonth')}
           onClick={() => goMonth(-1)}
           className="grid h-11 w-11 place-items-center rounded-full text-xl text-[var(--muted)]"
         >
@@ -68,7 +68,7 @@ export function ExpensesView({ rows, totalCents, year, month, monthLabel, todayI
         <span className="min-w-[150px] text-center text-sm font-bold text-[var(--ink-head)]">{monthLabel}</span>
         <button
           type="button"
-          aria-label="Next month"
+          aria-label={t('expenses.nextMonth')}
           onClick={() => goMonth(1)}
           className="grid h-11 w-11 place-items-center rounded-full text-xl text-[var(--muted)]"
         >
@@ -160,7 +160,8 @@ function ExpenseRowCard({
   const cat = CATEGORIES.find((c) => c.key === row.category)
   const iconName = cat?.icon ?? 'Tag'
   const tint = cat?.tint ?? 'var(--subtle)'
-  const title = row.vendor || row.details || t('expenses.title')
+  // Fall back to the category label (not the page title) when a row has no vendor/note.
+  const title = row.vendor || row.details || categoryLabel(row.category, locale)
   const subParts = [categoryLabel(row.category, locale), row.paid_by].filter((p): p is string => Boolean(p))
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {

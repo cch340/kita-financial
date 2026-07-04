@@ -1,11 +1,6 @@
 import { listExpenses, getMonthTotalCents } from '@/lib/data/expenses'
 import { ExpensesView } from './ExpensesView'
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
-
 export default async function ExpensesPage({
   searchParams,
 }: {
@@ -13,15 +8,17 @@ export default async function ExpensesPage({
 }) {
   const { y, m } = await searchParams
   const now = new Date()
-  const year = y ? Number(y) : now.getFullYear()
-  const month = m ? Number(m) : now.getMonth() + 1
+  const parsedYear = Number(y)
+  const parsedMonth = Number(m)
+  // Fall back to the current month for missing or non-numeric params.
+  const year = Number.isInteger(parsedYear) ? parsedYear : now.getFullYear()
+  const month = Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth : now.getMonth() + 1
 
   const [rows, totalCents] = await Promise.all([
     listExpenses({ year, month }),
     getMonthTotalCents(year, month),
   ])
 
-  const monthLabel = `${MONTH_NAMES[month - 1]} ${year}`
   const todayISO = now.toISOString().slice(0, 10)
 
   return (
@@ -30,7 +27,6 @@ export default async function ExpensesPage({
       totalCents={totalCents}
       year={year}
       month={month}
-      monthLabel={monthLabel}
       todayISO={todayISO}
     />
   )

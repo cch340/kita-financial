@@ -16,6 +16,14 @@ export const sumCents = (rows: { amount_cents: number }[]) =>
   rows.reduce((acc, r) => acc + r.amount_cents, 0)
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December']
+
+/** Localized "July 2026" (en) / "2026年7月" (zh) month-year label. */
+export function formatMonthYear(year: number, month1to12: number, locale: 'en' | 'zh'): string {
+  if (locale === 'zh') return `${year}年${month1to12}月`
+  return `${MONTHS_LONG[month1to12 - 1]} ${year}`
+}
+
 function shortLabel(dateISO: string) {
   const [, m, d] = dateISO.split('-').map(Number)
   return `${MONTHS[m - 1]} ${d}`

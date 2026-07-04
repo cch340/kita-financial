@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { monthRange, monthKey, sumCents, groupByDay } from './summary'
+import { monthRange, monthKey, sumCents, groupByDay, formatMonthYear } from './summary'
 import type { ExpenseRow } from './types'
+
+describe('formatMonthYear', () => {
+  it('formats en and zh', () => {
+    expect(formatMonthYear(2026, 7, 'en')).toBe('July 2026')
+    expect(formatMonthYear(2026, 7, 'zh')).toBe('2026年7月')
+    expect(formatMonthYear(2026, 12, 'en')).toBe('December 2026')
+  })
+})
 
 const row = (id: string, date: string, amount_cents: number): ExpenseRow =>
   ({ id, date, vendor: null, details: null, category: null, amount_cents, paid_by: null })
