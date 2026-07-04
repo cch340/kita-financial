@@ -24,6 +24,12 @@ export function formatMonthYear(year: number, month1to12: number, locale: 'en' |
   return `${MONTHS_LONG[month1to12 - 1]} ${year}`
 }
 
+/** Localized short month label, no year: "Jul" (en) / "7月" (zh). */
+export function monthShort(month1to12: number, locale: 'en' | 'zh'): string {
+  if (locale === 'zh') return `${month1to12}月`
+  return MONTHS[month1to12 - 1]
+}
+
 function shortLabel(dateISO: string) {
   const [, m, d] = dateISO.split('-').map(Number)
   return `${MONTHS[m - 1]} ${d}`
