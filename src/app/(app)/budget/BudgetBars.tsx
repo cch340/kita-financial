@@ -1,9 +1,11 @@
 import { MoneyText } from '@/components/ui/MoneyText'
 
 /**
- * Horizontal rounded bar split into a peach (JC) segment and a blue (CH) segment,
- * each sized as its share of the category total. Guards against divide-by-zero
- * when totalCents is 0 (no budget set for the category yet).
+ * Horizontal rounded bar split into a JC segment and a CH segment, each sized as
+ * its share of the category total. Member colors follow the app-wide convention
+ * (CH = peach `--member-ch`, JC = blue `--member-jc`) so the split matches the
+ * avatars and payer toggle elsewhere. Guards against divide-by-zero when
+ * totalCents is 0 (no budget set for the category yet).
  */
 export function SplitBar({
   jcCents,
@@ -20,14 +22,16 @@ export function SplitBar({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-[var(--subtle)]">
-        <div className="h-full" style={{ width: `${jcPct}%`, background: 'var(--peach)' }} />
-        <div className="h-full" style={{ width: `${chPct}%`, background: 'var(--member-jc)' }} />
+        <div className="h-full" style={{ width: `${jcPct}%`, background: 'var(--member-jc)' }} />
+        <div className="h-full" style={{ width: `${chPct}%`, background: 'var(--member-ch)' }} />
       </div>
       <div className="flex items-center gap-3 text-xs font-semibold text-[var(--muted)]">
-        <span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full" style={{ background: 'var(--member-jc)' }} />
           JC <MoneyText cents={jcCents} />
         </span>
-        <span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full" style={{ background: 'var(--member-ch)' }} />
           CH <MoneyText cents={chCents} />
         </span>
       </div>
