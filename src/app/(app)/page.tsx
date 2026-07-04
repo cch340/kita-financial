@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { SlidersHorizontal } from 'lucide-react'
 import { getMembership } from '@/lib/data/household'
 import { getHomeSummary } from '@/lib/data/home'
+import { getPersonalBalances } from '@/lib/data/personal'
 import { t } from '@/i18n'
 import { Card, HeroCard } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -12,7 +13,12 @@ import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
 
 export default async function HomePage() {
-  const [membership, summary] = await Promise.all([getMembership(), getHomeSummary()])
+  const now = new Date()
+  const [membership, summary, personalBalances] = await Promise.all([
+    getMembership(),
+    getHomeSummary(),
+    getPersonalBalances(now.getFullYear(), now.getMonth() + 1),
+  ])
   const locale = membership?.language ?? 'en'
   const memberCode = membership?.memberCode ?? 'CH'
   const displayName = membership?.displayName ?? ''
@@ -91,16 +97,20 @@ export default async function HomePage() {
         </div>
       </Card>
 
-      <Card className="flex items-center gap-3">
-        <div className="flex -space-x-3">
-          <MemberAvatar member="CH" size={36} />
-          <MemberAvatar member="JC" size={36} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-[var(--ink-head)]">{t(locale, 'home.personalLedgers')}</p>
-          <p className="truncate text-xs text-[var(--muted)]">{t(locale, 'home.personalLedgers.subtitle')}</p>
-        </div>
-      </Card>
+      <Link href="/personal">
+        <Card className="flex items-center gap-3">
+          <div className="flex -space-x-3">
+            <MemberAvatar member="CH" size={36} />
+            <MemberAvatar member="JC" size={36} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-[var(--ink-head)]">{t(locale, 'home.personalLedgers')}</p>
+            <p className="truncate text-xs font-semibold text-[var(--muted)]">
+              CH <MoneyText cents={personalBalances.CH} /> · JC <MoneyText cents={personalBalances.JC} />
+            </p>
+          </div>
+        </Card>
+      </Link>
 
       <Card>
         <div className="flex items-center justify-between">

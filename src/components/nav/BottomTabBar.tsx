@@ -18,7 +18,7 @@ export function BottomTabBar() {
          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <ul className="mx-auto flex h-[60px] max-w-[430px] items-stretch justify-around">
         {TABS.map(({ href, key, Icon }) => {
-          const active = href === '/' ? path === '/' : path.startsWith(href)
+          const active = href === '/' ? path === '/' || path.startsWith('/personal') : path.startsWith(href)
           return (
             <li key={href} className="flex-1">
               <Link href={href} className="flex h-full flex-col items-center justify-center gap-1"
