@@ -12,6 +12,9 @@ import {
   Zap,
   Droplet,
   ShieldCheck,
+  Building,
+  PiggyBank,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -29,6 +32,9 @@ export const ICONS: Record<string, LucideIcon> = {
   Zap,
   Droplet,
   ShieldCheck,
+  Building,
+  PiggyBank,
+  ChevronRight,
 }
 
 export function IconTile({ name, tint }: { name: string; tint: string }) {
