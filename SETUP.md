@@ -140,3 +140,26 @@ the UUIDs in Step 4 (profiles) and Step 5 (seed) — they must be the same two U
 - **Phase 4:** Assets module screens + Personal ledgers (also seeds `ledger_entries`).
 - **Phase 5:** Settings (language toggle, invite your wife, notification toggles) + PWA install + push reminders.
 - **Phase 6:** Deploy to Vercel; install on both phones.
+
+## Phase 5 — Push & install
+
+1. **Generate VAPID keys** (for web push):
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+   Put the output into `.env.local`:
+   ```
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY=<public key>
+   VAPID_PRIVATE_KEY=<private key>
+   ```
+2. **Set a cron secret.** Pick any random string and add it to `.env.local` (and later to your Vercel project's environment variables):
+   ```
+   CRON_SECRET=<a long random string>
+   ```
+3. **Local push testing needs HTTPS.** Browsers only allow push subscriptions on secure origins, so run the dev server with:
+   ```bash
+   next dev --experimental-https
+   ```
+   and open the `https://localhost:3000` URL it prints (accept the self-signed cert warning).
+4. **iOS requires Add-to-Home-Screen first.** Push notifications on iPhone only work once the app has been installed via Safari's Share → "Add to Home Screen" — testing push in a regular Safari tab won't work there.
+5. **The daily reminder trigger is wired in Phase 6.** The cron endpoint (`GET /api/reminders/run`) is protected by `CRON_SECRET` — it expects `Authorization: Bearer $CRON_SECRET` and returns 401 otherwise. In Phase 6, set up a Vercel Cron job pointed at this route, suggested schedule `0 1 * * *` (daily, 01:00 UTC).
