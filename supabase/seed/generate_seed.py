@@ -75,13 +75,20 @@ for r in range(2, 10):
                f"values ('{HH}',{s(name)},{c(amt)},{s(mb.cell(r, 9).value)});")
 
 # Expenses — 'Expenses' sheet (Date,Vendor,Location,Details,Amount)
+# expenses.date is NOT NULL; the sheet leaves some rows undated (they belong to
+# the same period as the dated row above). Forward-fill the last seen date so no
+# row is dropped and each stays in the correct month.
 ex = wb['Expenses']
+last_date = None
 for r in range(2, ex.max_row + 1):
     amt = ex.cell(r, 5).value
     if amt is None:
         continue
+    dt = ex.cell(r, 1).value
+    if isinstance(dt, (datetime.datetime, datetime.date)):
+        last_date = dt
     out.append(f"insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) "
-               f"values ('{HH}',{d(ex.cell(r, 1).value)},{s(ex.cell(r, 2).value)},{s(ex.cell(r, 3).value)},"
+               f"values ('{HH}',{d(last_date)},{s(ex.cell(r, 2).value)},{s(ex.cell(r, 3).value)},"
                f"{s(ex.cell(r, 4).value)},{c(amt)},NULL);")
 
 # Assets: TreeO (property), Myvi/Alza (vehicle), AIA-CH/AIA-JC (investment)

@@ -44,11 +44,11 @@ insert into expenses(household_id,date,vendor,location,details,amount_cents,paid
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-03','Retail','-','Grocery, meal',13015,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-08','Retail','-','Leo shampoo and sauce for Salmon',5073,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-08','Retail','-','diaper, milk, candy',4200,NULL);
-insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa',NULL,'Retail','-','Grocery',15500,NULL);
-insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa',NULL,'Retail','-','Leo Shirt, toys',24000,NULL);
-insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa',NULL,'Retail','-','Grocery, meal',19395,NULL);
+insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-08','Retail','-','Grocery',15500,NULL);
+insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-08','Retail','-','Leo Shirt, toys',24000,NULL);
+insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-08','Retail','-','Grocery, meal',19395,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-14','Retail','-','Huggies',5400,NULL);
-insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa',NULL,'Retail','-','Taobao, milk powder, Leo辅食',125265,NULL);
+insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-14','Retail','-','Taobao, milk powder, Leo辅食',125265,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-21','Retail','-','Grocery, meals',7400,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-01-30','Retail','-','Grocery, meals',22900,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-02-01','Retail','-','Laksa',2400,NULL);
@@ -119,8 +119,8 @@ insert into expenses(household_id,date,vendor,location,details,amount_cents,paid
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-06-09','Aeon','Queensbay',NULL,3380,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-06-16','Aeon','Queensbay',NULL,4510,NULL);
 insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-06-17','Lotus','Seberang Jaya','Jalan Jalan Japan Leo toys',4600,NULL);
-insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa',NULL,'Retail',NULL,'Meat',5200,NULL);
-insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa',NULL,NULL,NULL,NULL,1158309,NULL);
+insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-06-17','Retail',NULL,'Meat',5200,NULL);
+insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) values ('00000000-0000-0000-0000-0000000000aa','2026-06-17',NULL,NULL,NULL,1158309,NULL);
 insert into assets(id,household_id,type,name,owner_member_code,opening_balance_cents) values ('00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000aa','property','TreeO',NULL,4601381);
 insert into assets(id,household_id,type,name,owner_member_code,opening_balance_cents) values ('00000000-0000-0000-0000-0000000000b2','00000000-0000-0000-0000-0000000000aa','vehicle','Myvi PQC 9059',NULL,NULL);
 insert into assets(id,household_id,type,name,owner_member_code,opening_balance_cents) values ('00000000-0000-0000-0000-0000000000b3','00000000-0000-0000-0000-0000000000aa','vehicle','Alza PNM 9059',NULL,NULL);
