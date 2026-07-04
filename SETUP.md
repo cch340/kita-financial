@@ -76,6 +76,24 @@ Expected: **expenses 81, assets 5, contribs 24**.
 > Note: 19 expenses in your sheet had no date; each inherited the date of the row
 > above it (same period). You can edit any of these in the app later.
 
+### Phase 4 data (already-seeded households)
+If your household already applied the seed above (Phase 1) before Phase 4 was
+built, `supabase/seed/seed.sql` won't re-run cleanly (it re-inserts rows that
+already exist). Instead, apply the incremental file once:
+
+```bash
+cd /Users/chongchoonhong/Documents/workspace/financial-tracker-webapp
+cat supabase/seed/seed-phase4.sql
+```
+Copy its contents into a new **SQL Editor** query and **Run**. It only adds
+vehicle payment history (Myvi/Alza `asset_transactions`) and personal ledger
+entries (CH/JC `ledger_entries`) — no `:CH_UID`/`:JC_UID` substitution needed,
+since `ledger_entries` keys on `household_id` + `owner_member_code`, not a
+user id.
+
+Fresh installs don't need this step — `seed.sql` already includes everything
+(Step 5 above covers it in one pass).
+
 ## Step 6 — Point the app at your project
 1. In the repo, copy the example env file:
    ```bash
