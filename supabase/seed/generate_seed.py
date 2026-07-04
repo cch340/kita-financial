@@ -6,11 +6,14 @@ schema. Money is stored as integer cents. Auth user references are left as
 :CH_UID / :JC_UID placeholders, substituted at apply time once the Supabase
 auth users exist.
 """
-import openpyxl, datetime
+import openpyxl, datetime, re
 
 HH = '00000000-0000-0000-0000-0000000000aa'  # fixed household id
 wb = openpyxl.load_workbook('tmp/Financial Report 2026.xlsx', data_only=True)
 out = []
+# phase4 = incremental additions (vehicle transactions + ledger_entries) for
+# households that already applied the Phase 1 seed. Also folded into `out`.
+phase4 = []
 
 
 def c(v):  # to cents; non-numeric -> 0
@@ -30,6 +33,30 @@ def d(v):  # date literal or NULL
     if isinstance(v, (datetime.datetime, datetime.date)):
         return "'" + v.strftime('%Y-%m-%d') + "'"
     return 'NULL'
+
+
+def is_num(v):  # numeric payment/amount cell, excluding bool and text like 'CLOSED'
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+_DATE_RE = re.compile(r'^\s*(\d{1,2})/(\d{1,2})/(\d{4})')
+
+
+def parse_flex_date(v):
+    """Parse a datetime cell OR a 'dd/mm/yyyy[...]' string (allowing trailing
+    text such as '23/4/2024 (battery)'). Returns (iso_date_str_or_None, extra_text)."""
+    if isinstance(v, (datetime.datetime, datetime.date)):
+        return v.strftime('%Y-%m-%d'), ''
+    if isinstance(v, str):
+        m = _DATE_RE.match(v)
+        if m:
+            day, month, year = (int(x) for x in m.groups())
+            try:
+                iso = datetime.date(year, month, day).strftime('%Y-%m-%d')
+            except ValueError:
+                return None, ''
+            return iso, v[m.end():].strip()
+    return None, ''
 
 
 out.append(f"insert into households(id,name) values ('{HH}','Chong Family');")
@@ -139,5 +166,76 @@ for r in range(3, 13):
             continue
         out.append(f"insert into asset_transactions(asset_id,household_id,date,description,amount_cents,direction,txn_type,settled,seq) "
                    f"values ('{aid}','{HH}',{d(aia.cell(r, dcol).value)},'AIA payment',{c(amt)},'out','scheduled_payment',true,{seq});")
+
+# Vehicle transactions — 'Car' sheet. Two blocks (merged title rows):
+#   Myvi PQC 9059 = cols A1:H1  -> Bank/Loan (A-B), Road Tax + Insurance (D-E), Maintenance (G-H)
+#   Alza PNM 9059 = cols J1:Q1  -> Loan Payback (J-K), Road Tax + Insurance (M-N), Maintenance (P-Q)
+# Data rows start at row 4 (rows 1-3 are title/sub-header/column-header rows).
+car = wb['Car']
+
+
+def vehicle_txns(asset_id, blocks):
+    for txn_type, label, dcol, acol in blocks:
+        for r in range(4, 20):
+            amt = car.cell(r, acol).value
+            if not is_num(amt):
+                continue  # skip 'CLOSED', blanks, headers
+            raw_date = car.cell(r, dcol).value
+            iso, extra = parse_flex_date(raw_date)
+            if iso is None:
+                continue  # asset_transactions.date is NOT NULL -> skip unparseable rows
+            desc = f"{label} {extra}".strip()
+            stmt = (f"insert into asset_transactions(asset_id,household_id,date,description,amount_cents,direction,txn_type,settled) "
+                    f"values ('{asset_id}','{HH}','{iso}',{s(desc)},{c(amt)},'out','{txn_type}',true);")
+            out.append(stmt)
+            phase4.append(stmt)
+
+
+vehicle_txns(A_MYVI, [
+    ('loan', 'Bank/Loan', 1, 2),
+    ('road_tax_insurance', 'Road Tax + Insurance', 4, 5),
+    ('maintenance', 'Maintenance', 7, 8),
+])
+vehicle_txns(A_ALZA, [
+    ('loan_payback', 'Loan Payback', 10, 11),
+    ('road_tax_insurance', 'Road Tax + Insurance', 13, 14),
+    ('maintenance', 'Maintenance', 16, 17),
+])
+
+# Ledger entries — CH/JC 'Personal' sheets. Each monthly block starts with a
+# date in col 1; income = col2 desc (not 'Total') + col3 numeric amount
+# (remark col4); expense = col6 desc (not 'Total'/'Balance') + col7 numeric
+# amount (remark col8). No :CH_UID/:JC_UID placeholders — keyed on member_code.
+def personal_ledger(sheet, member_code):
+    current_period = None
+    for r in range(1, sheet.max_row + 1):
+        dt = sheet.cell(r, 1).value
+        if isinstance(dt, (datetime.datetime, datetime.date)):
+            current_period = dt
+        if current_period is None:
+            continue
+
+        idesc = sheet.cell(r, 2).value
+        iamt = sheet.cell(r, 3).value
+        if idesc and str(idesc).strip() != 'Total' and is_num(iamt):
+            stmt = (f"insert into ledger_entries(household_id,owner_member_code,period,entry_type,description,amount_cents,remark) "
+                    f"values ('{HH}','{member_code}',{d(current_period)},'income',{s(idesc)},{c(iamt)},{s(sheet.cell(r, 4).value)});")
+            out.append(stmt)
+            phase4.append(stmt)
+
+        edesc = sheet.cell(r, 6).value
+        eamt = sheet.cell(r, 7).value
+        if edesc and str(edesc).strip() not in ('Total', 'Balance') and is_num(eamt):
+            stmt = (f"insert into ledger_entries(household_id,owner_member_code,period,entry_type,description,amount_cents,remark) "
+                    f"values ('{HH}','{member_code}',{d(current_period)},'expense',{s(edesc)},{c(eamt)},{s(sheet.cell(r, 8).value)});")
+            out.append(stmt)
+            phase4.append(stmt)
+
+
+personal_ledger(wb['CH (Personal)'], 'CH')
+personal_ledger(wb['JC (Personal)'], 'JC')
+
+with open('supabase/seed/seed-phase4.sql', 'w') as f:
+    f.write('\n'.join(phase4) + '\n')
 
 print('\n'.join(out))

@@ -76,6 +76,24 @@ Expected: **expenses 81, assets 5, contribs 24**.
 > Note: 19 expenses in your sheet had no date; each inherited the date of the row
 > above it (same period). You can edit any of these in the app later.
 
+### Phase 4 data (already-seeded households)
+If your household already applied the seed above (Phase 1) before Phase 4 was
+built, `supabase/seed/seed.sql` won't re-run cleanly (it re-inserts rows that
+already exist). Instead, apply the incremental file once:
+
+```bash
+cd /Users/chongchoonhong/Documents/workspace/financial-tracker-webapp
+cat supabase/seed/seed-phase4.sql
+```
+Copy its contents into a new **SQL Editor** query and **Run**. It only adds
+vehicle payment history (Myvi/Alza `asset_transactions`) and personal ledger
+entries (CH/JC `ledger_entries`) — no `:CH_UID`/`:JC_UID` substitution needed,
+since `ledger_entries` keys on `household_id` + `owner_member_code`, not a
+user id.
+
+Fresh installs don't need this step — `seed.sql` already includes everything
+(Step 5 above covers it in one pass).
+
 ## Step 6 — Point the app at your project
 1. In the repo, copy the example env file:
    ```bash
@@ -122,3 +140,26 @@ the UUIDs in Step 4 (profiles) and Step 5 (seed) — they must be the same two U
 - **Phase 4:** Assets module screens + Personal ledgers (also seeds `ledger_entries`).
 - **Phase 5:** Settings (language toggle, invite your wife, notification toggles) + PWA install + push reminders.
 - **Phase 6:** Deploy to Vercel; install on both phones.
+
+## Phase 5 — Push & install
+
+1. **Generate VAPID keys** (for web push):
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+   Put the output into `.env.local`:
+   ```
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY=<public key>
+   VAPID_PRIVATE_KEY=<private key>
+   ```
+2. **Set a cron secret.** Pick any random string and add it to `.env.local` (and later to your Vercel project's environment variables):
+   ```
+   CRON_SECRET=<a long random string>
+   ```
+3. **Local push testing needs HTTPS.** Browsers only allow push subscriptions on secure origins, so run the dev server with:
+   ```bash
+   next dev --experimental-https
+   ```
+   and open the `https://localhost:3000` URL it prints (accept the self-signed cert warning).
+4. **iOS requires Add-to-Home-Screen first.** Push notifications on iPhone only work once the app has been installed via Safari's Share → "Add to Home Screen" — testing push in a regular Safari tab won't work there.
+5. **The daily reminder trigger is wired in Phase 6.** The cron endpoint (`GET /api/reminders/run`) is protected by `CRON_SECRET` — it expects `Authorization: Bearer $CRON_SECRET` and returns 401 otherwise. In Phase 6, set up a Vercel Cron job pointed at this route, suggested schedule `0 1 * * *` (daily, 01:00 UTC).
