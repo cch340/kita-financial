@@ -11,7 +11,8 @@ const TYPES: AssetType[] = ['property', 'vehicle', 'investment', 'other']
 const MEMBERS = ['CH', 'JC'] as const
 
 function toCents(v: string): number {
-  return Math.round(parseFloat(v || '0') * 100)
+  const n = parseFloat(v || '0')
+  return Number.isFinite(n) ? Math.round(n * 100) : 0 // guard NaN from non-numeric input
 }
 
 export function AddAssetForm() {
