@@ -15,8 +15,8 @@ export async function listExpenses(opts?: { year?: number; month?: number }): Pr
     q = q.gte('date', startISO).lt('date', endISO)
   }
   const { data, error } = await q
-  if (error || !data) return []
-  return data as ExpenseRow[]
+  if (error) { console.error('listExpenses failed:', error.message); return [] }
+  return (data ?? []) as ExpenseRow[]
 }
 
 export async function getMonthTotalCents(year: number, month: number): Promise<number> {
@@ -45,9 +45,11 @@ export async function addExpense(input: {
   return { ok: true }
 }
 
-export async function deleteExpense(id: string): Promise<void> {
+export async function deleteExpense(id: string): Promise<{ ok: boolean; error?: string }> {
   const m = await getMembership()
-  if (!m) return
+  if (!m) return { ok: false, error: 'Not authenticated' }
   const supabase = await createClient()
-  await supabase.from('expenses').delete().eq('id', id).eq('household_id', m.householdId)
+  const { error } = await supabase.from('expenses').delete().eq('id', id).eq('household_id', m.householdId)
+  if (error) { console.error('deleteExpense failed:', error.message); return { ok: false, error: error.message } }
+  return { ok: true }
 }
