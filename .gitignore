@@ -24,3 +24,4 @@ yarn-error.log*
 .pnpm-debug.log*
 next-env.d.ts
 *.tsbuildinfo
+supabase/seed/seed.applied.sql
