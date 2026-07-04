@@ -1,7 +1,8 @@
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import type { Membership } from './types'
 
-export async function getMembership(): Promise<Membership | null> {
+export const getMembership = cache(async (): Promise<Membership | null> => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -18,4 +19,4 @@ export async function getMembership(): Promise<Membership | null> {
     language: (profile?.language ?? 'en') as Membership['language'],
     displayName: profile?.display_name ?? data.member_code,
   }
-}
+})
