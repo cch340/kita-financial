@@ -26,6 +26,7 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
   const locale = useLocale()
   const router = useRouter()
   const [selected, setSelected] = useState<string | null>(null) // null = "All"
+  const [deleteFailed, setDeleteFailed] = useState(false)
   const monthLabel = formatMonthYear(year, month, locale)
 
   const presentCategoryKeys = useMemo(() => {
@@ -54,6 +55,15 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
   return (
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('expenses.title')}</h1>
+
+      {deleteFailed && (
+        <p
+          role="alert"
+          className="rounded-xl bg-[var(--pending-bg)] px-4 py-2 text-sm font-semibold text-[var(--danger)]"
+        >
+          {t('error.delete_failed')}
+        </p>
+      )}
 
       {/* month stepper */}
       <div className="flex items-center justify-center gap-4">
@@ -131,7 +141,7 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
               </div>
               <div className="flex flex-col gap-2">
                 {g.rows.map((r) => (
-                  <ExpenseRowCard key={r.id} row={r} locale={locale} t={t} />
+                  <ExpenseRowCard key={r.id} row={r} locale={locale} t={t} onDeleteError={() => setDeleteFailed(true)} />
                 ))}
               </div>
             </div>
@@ -148,10 +158,12 @@ function ExpenseRowCard({
   row,
   locale,
   t,
+  onDeleteError,
 }: {
   row: ExpenseRow
   locale: 'en' | 'zh'
   t: (key: string) => string
+  onDeleteError: () => void
 }) {
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
@@ -197,8 +209,9 @@ function ExpenseRowCard({
         </button>
         <button
           type="button"
-          onClick={() => {
-            void deleteExpenseAction(row.id)
+          onClick={async () => {
+            const res = await deleteExpenseAction(row.id)
+            if (!res.ok) onDeleteError()
           }}
           className="flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
           style={{ background: 'var(--danger)' }}

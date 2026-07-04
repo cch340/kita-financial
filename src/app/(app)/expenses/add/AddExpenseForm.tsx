@@ -39,7 +39,7 @@ export function AddExpenseForm({ error }: { error?: string }) {
         <div className="flex items-center justify-between py-2">
           <Link
             href="/expenses"
-            aria-label="Back"
+            aria-label={t('common.back')}
             className="grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
           >
             ‹
@@ -47,7 +47,7 @@ export function AddExpenseForm({ error }: { error?: string }) {
           <h1 className="text-base font-bold text-[var(--ink-head)]">{t('add.title')}</h1>
           <Link
             href="/expenses"
-            aria-label="Close"
+            aria-label={t('common.close')}
             className="grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
           >
             ×
@@ -134,7 +134,9 @@ export function AddExpenseForm({ error }: { error?: string }) {
             </span>
           </div>
 
-          {error && <p className="text-sm font-semibold text-[var(--danger)]">{error}</p>}
+          {error && (
+            <p className="text-sm font-semibold text-[var(--danger)]">{t(`error.${error}`)}</p>
+          )}
 
           {/* spacer pushes the keypad + save button to the bottom */}
           <div className="flex-1" />

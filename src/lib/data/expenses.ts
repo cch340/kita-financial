@@ -28,8 +28,8 @@ export async function addExpense(input: {
   amountCents: number; category: string | null; paidBy: 'CH' | 'JC' | null; note: string | null; dateISO: string
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const m = await getMembership()
-  if (!m) return { ok: false, error: 'Not authenticated' }
-  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) return { ok: false, error: 'Enter an amount' }
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) return { ok: false, error: 'invalid_amount' }
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { error } = await supabase.from('expenses').insert({
@@ -41,7 +41,7 @@ export async function addExpense(input: {
     paid_by: input.paidBy,
     created_by: user?.id ?? null,
   })
-  if (error) return { ok: false, error: error.message }
+  if (error) { console.error('addExpense failed:', error.message); return { ok: false, error: 'save_failed' } }
   return { ok: true }
 }
 

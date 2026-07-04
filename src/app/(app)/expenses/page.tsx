@@ -11,7 +11,7 @@ export default async function ExpensesPage({
   const parsedYear = Number(y)
   const parsedMonth = Number(m)
   // Fall back to the current month for missing or non-numeric params.
-  const year = Number.isInteger(parsedYear) ? parsedYear : now.getFullYear()
+  const year = Number.isInteger(parsedYear) && parsedYear >= 2000 && parsedYear <= 2100 ? parsedYear : now.getFullYear()
   const month = Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth : now.getMonth() + 1
 
   const [rows, totalCents] = await Promise.all([
