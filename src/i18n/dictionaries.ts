@@ -28,6 +28,10 @@ export const dictionaries: Record<Locale, Record<string, string>> = {
     'add.save': 'Save Expense',
     'common.today': 'Today',
     'common.yesterday': 'Yesterday',
+    'status.paid': 'Paid',
+    'status.pending': 'Pending',
+    'status.upcoming': 'Upcoming',
+    'status.closed': 'Closed',
     'test.only_en': 'English only',
   },
   zh: {
@@ -58,5 +62,9 @@ export const dictionaries: Record<Locale, Record<string, string>> = {
     'add.save': '保存',
     'common.today': '今天',
     'common.yesterday': '昨天',
+    'status.paid': '已付',
+    'status.pending': '待付',
+    'status.upcoming': '即将',
+    'status.closed': '已结清',
   },
 }
