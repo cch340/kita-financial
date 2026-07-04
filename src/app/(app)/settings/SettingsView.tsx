@@ -1,12 +1,16 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { useT, useLocale } from '@/i18n/LocaleProvider'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import type { SettingsData } from '@/lib/data/settings-shared'
-import { updateLanguage, updateReminderSetting, inviteMember, signOutAction } from './actions'
+import { urlBase64ToUint8Array, serializeSubscription } from '@/lib/push/push-shared'
+import {
+  updateLanguage, updateReminderSetting, inviteMember, signOutAction,
+  subscribeToPush, unsubscribeFromPush,
+} from './actions'
 
 export function SettingsView({ data }: { data: SettingsData }) {
   const t = useT()
@@ -18,6 +22,37 @@ export function SettingsView({ data }: { data: SettingsData }) {
   const [yearly, setYearly] = useState(data.reminders.yearly)
   const [email, setEmail] = useState('')
   const [inviteMsg, setInviteMsg] = useState<{ ok: boolean; key: string } | null>(null)
+
+  const [pushOn, setPushOn] = useState(data.pushSubscribed)
+  const [supported, setSupported] = useState(false)
+  const [isIOS, setIsIOS] = useState(false)
+  const [standalone, setStandalone] = useState(false)
+
+  useEffect(() => {
+    setSupported('serviceWorker' in navigator && 'PushManager' in window)
+    setIsIOS(/ipad|iphone|ipod/i.test(navigator.userAgent))
+    setStandalone(window.matchMedia('(display-mode: standalone)').matches
+      || (navigator as unknown as { standalone?: boolean }).standalone === true)
+  }, [])
+
+  async function onPush(next: boolean) {
+    if (!supported) return
+    try {
+      const reg = await navigator.serviceWorker.ready
+      if (next) {
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!) as BufferSource,
+        })
+        const res = await subscribeToPush(serializeSubscription(sub))
+        setPushOn(res.ok)
+      } else {
+        const sub = await reg.pushManager.getSubscription()
+        if (sub) { await unsubscribeFromPush(sub.endpoint); await sub.unsubscribe() }
+        setPushOn(false)
+      }
+    } catch { setPushOn(false) }
+  }
 
   function onLanguage(lang: 'en' | 'zh') {
     if (lang === locale) return
@@ -108,8 +143,30 @@ export function SettingsView({ data }: { data: SettingsData }) {
         <Section title={t('settings.notifications')}>
           <SwitchRow label={t('settings.notif.monthly')} desc={t('settings.notif.monthlyDesc')} checked={monthly} onChange={onMonthly} />
           <SwitchRow label={t('settings.notif.yearly')} desc={t('settings.notif.yearlyDesc')} checked={yearly} onChange={onYearly} />
-          {/* push row is added in Task 4 */}
+          <SwitchRow
+            label={t('settings.notif.push')}
+            desc={supported ? t('settings.notif.pushDesc') : t('push.notSupported')}
+            checked={pushOn}
+            onChange={onPush}
+            disabled={!supported}
+          />
         </Section>
+
+        {/* Install card — only when not already installed */}
+        {!standalone && (
+          <section className="mt-5">
+            <div className="rounded-2xl bg-[var(--hero-grad,var(--primary))] p-4 text-white"
+              style={{ background: 'linear-gradient(135deg, var(--primary), oklch(0.58 0.14 35))' }}>
+              <p className="text-sm font-extrabold">{t('settings.install.title')}</p>
+              <p className="mt-1 text-xs font-semibold opacity-90">{t('settings.install.desc')}</p>
+              {isIOS
+                ? <p className="mt-3 text-xs font-semibold opacity-90">{t('settings.install.iosHint')}</p>
+                : <button disabled className="mt-3 rounded-lg bg-white/20 px-4 py-2 text-sm font-bold">
+                    {t('settings.install.button')}
+                  </button>}
+            </div>
+          </section>
+        )}
 
         <div className="flex-1" />
 

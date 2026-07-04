@@ -5,6 +5,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMembership } from '@/lib/data/household'
 import { isValidEmail } from '@/lib/data/settings-shared'
+import type { SerializedSubscription } from '@/lib/push/push-shared'
+import { sendPushToUser } from '@/lib/push/web-push'
+import { t } from '@/i18n'
 
 export async function updateLanguage(lang: 'en' | 'zh'): Promise<{ ok: boolean; error?: string }> {
   if (lang !== 'en' && lang !== 'zh') return { ok: false, error: 'save_failed' }
@@ -67,4 +70,40 @@ export async function signOutAction(): Promise<void> {
   const supabase = await createClient()
   await supabase.auth.signOut()
   redirect('/login')
+}
+
+export async function subscribeToPush(sub: SerializedSubscription): Promise<{ ok: boolean; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'not_authenticated' }
+  const { error } = await supabase.from('push_subscriptions').upsert(
+    { user_id: user.id, endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+    { onConflict: 'endpoint' },
+  )
+  if (error) { console.error('subscribeToPush:', error.message); return { ok: false, error: 'push_failed' } }
+  revalidatePath('/settings')
+  return { ok: true }
+}
+
+export async function unsubscribeFromPush(endpoint: string): Promise<{ ok: boolean; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'not_authenticated' }
+  const { error } = await supabase.from('push_subscriptions').delete().eq('user_id', user.id).eq('endpoint', endpoint)
+  if (error) { console.error('unsubscribeFromPush:', error.message); return { ok: false, error: 'push_failed' } }
+  revalidatePath('/settings')
+  return { ok: true }
+}
+
+export async function sendTestPush(): Promise<{ ok: boolean; error?: string }> {
+  const m = await getMembership()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || !m) return { ok: false, error: 'not_authenticated' }
+  const n = await sendPushToUser(user.id, {
+    title: t(m.language, 'push.demoTitle'),
+    body: t(m.language, 'push.monthly.body'),
+    url: '/',
+  })
+  return n > 0 ? { ok: true } : { ok: false, error: 'push_failed' }
 }
