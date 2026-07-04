@@ -7,6 +7,7 @@ import { formatMonthYear } from '@/lib/data/summary'
 import type { LedgerEntry } from '@/lib/data/personal-shared'
 import { Card, HeroCard } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
+import { parseMoneyInput } from '@/lib/money'
 import { addLedgerEntry } from './actions'
 
 type Member = 'CH' | 'JC'
@@ -27,11 +28,6 @@ type Props = {
 }
 
 const MEMBERS: Member[] = ['CH', 'JC']
-
-function toCents(v: string): number {
-  const n = parseFloat(v || '0')
-  return Number.isFinite(n) ? Math.round(n * 100) : 0 // guard NaN from non-numeric input
-}
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -194,7 +190,7 @@ function AddEntry({ member, periodISO }: { member: Member; periodISO: string }) 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const cents = toCents(amount)
+  const cents = parseMoneyInput(amount)
   const canSubmit = cents > 0 && description.trim().length > 0 && !submitting
 
   async function handleSubmit(e: React.FormEvent) {

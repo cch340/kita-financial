@@ -5,15 +5,11 @@ import { useRouter } from 'next/navigation'
 import { useT } from '@/i18n/LocaleProvider'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import type { AssetType } from '@/lib/data/assets-shared'
+import { parseMoneyInput } from '@/lib/money'
 import { createAsset } from './actions'
 
 const TYPES: AssetType[] = ['property', 'vehicle', 'investment', 'other']
 const MEMBERS = ['CH', 'JC'] as const
-
-function toCents(v: string): number {
-  const n = parseFloat(v || '0')
-  return Number.isFinite(n) ? Math.round(n * 100) : 0 // guard NaN from non-numeric input
-}
 
 export function AddAssetForm() {
   const t = useT()
@@ -54,16 +50,16 @@ export function AddAssetForm() {
         type,
         name: name.trim(),
         ownerMemberCode: null,
-        openingBalanceCents: toCents(startingBalance),
-        metadata: { monthlyCommitmentCents: toCents(monthlyCommitment), address },
+        openingBalanceCents: parseMoneyInput(startingBalance),
+        metadata: { monthlyCommitmentCents: parseMoneyInput(monthlyCommitment), address },
       }
     } else if (type === 'vehicle') {
       input = {
         type,
         name: name.trim(),
         ownerMemberCode: null,
-        openingBalanceCents: toCents(loanAmount),
-        metadata: { installmentCents: toCents(installment), plate },
+        openingBalanceCents: parseMoneyInput(loanAmount),
+        metadata: { installmentCents: parseMoneyInput(installment), plate },
       }
     } else if (type === 'investment') {
       input = {
@@ -71,14 +67,14 @@ export function AddAssetForm() {
         name: name.trim(),
         ownerMemberCode: holder,
         openingBalanceCents: null,
-        metadata: { yearlyPremiumCents: toCents(yearlyPremium), years: Number(years) || 0, holder },
+        metadata: { yearlyPremiumCents: parseMoneyInput(yearlyPremium), years: Number(years) || 0, holder },
       }
     } else {
       input = {
         type,
         name: name.trim(),
         ownerMemberCode: null,
-        openingBalanceCents: toCents(startingBalance),
+        openingBalanceCents: parseMoneyInput(startingBalance),
         metadata: { notes },
       }
     }

@@ -3,11 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useT } from '@/i18n/LocaleProvider'
 import { addAssetTransaction } from '@/app/(app)/assets/actions'
-
-function toCents(v: string): number {
-  const n = parseFloat(v || '0')
-  return Number.isFinite(n) ? Math.round(n * 100) : 0 // guard NaN from non-numeric input
-}
+import { parseMoneyInput } from '@/lib/money'
 
 export function AddTxn({
   assetId,
@@ -29,7 +25,7 @@ export function AddTxn({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(false)
 
-  const cents = toCents(amount)
+  const cents = parseMoneyInput(amount)
   const canSubmit = cents > 0 && !submitting
 
   async function handleSubmit(e: React.FormEvent) {

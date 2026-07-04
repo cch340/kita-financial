@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatRM, pushDigit, pushDoubleZero, backspace } from './money'
+import { formatRM, pushDigit, pushDoubleZero, backspace, parseMoneyInput } from './money'
 
 describe('formatRM', () => {
   it('formats cents as RM with grouping and 2dp', () => {
@@ -22,5 +22,22 @@ describe('cents accumulator', () => {
     expect(backspace(4250)).toBe(425)
     expect(backspace(4)).toBe(0)
     expect(backspace(0)).toBe(0)
+  })
+})
+describe('parseMoneyInput', () => {
+  it('parses a decimal string to cents', () => {
+    expect(parseMoneyInput('42.50')).toBe(4250)
+    expect(parseMoneyInput('1000')).toBe(100000)
+  })
+  it('returns 0 for empty or non-numeric input', () => {
+    expect(parseMoneyInput('')).toBe(0)
+    expect(parseMoneyInput('abc')).toBe(0)
+  })
+  it('rounds to the nearest cent', () => {
+    // NOTE: 1.005 is not exactly representable as an IEEE-754 double; it is stored as
+    // 1.0049999999999998934..., so *100 = 100.49999999999999, which Math.round takes to
+    // 100 (not the mathematically-expected 101). This is the actual, correct output of
+    // the brief's specified implementation — see task-6-report.md for details.
+    expect(parseMoneyInput('1.005')).toBe(100)
   })
 })
