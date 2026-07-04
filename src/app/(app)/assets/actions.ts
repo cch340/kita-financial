@@ -12,8 +12,12 @@ export async function addAssetTransaction(input: {
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) return { ok: false, error: 'invalid_amount' }
   const supabase = await createClient()
   // verify asset belongs to this household
-  const { data: asset } = await supabase.from('assets').select('id').eq('household_id', m.householdId).eq('id', input.assetId).single()
-  if (!asset) return { ok: false, error: 'not_found' }
+  const { data: asset, error: lookupErr } = await supabase.from('assets').select('id').eq('household_id', m.householdId).eq('id', input.assetId).single()
+  if (!asset) {
+    // PGRST116 = no rows (asset missing or another household's); log anything else.
+    if (lookupErr && lookupErr.code !== 'PGRST116') console.error('addAssetTransaction lookup:', lookupErr.message)
+    return { ok: false, error: 'not_found' }
+  }
   const { error } = await supabase.from('asset_transactions').insert({
     asset_id: input.assetId, household_id: m.householdId, date: input.date,
     description: input.description, amount_cents: input.amountCents, direction: input.direction,
