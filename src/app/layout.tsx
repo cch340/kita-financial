@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Public_Sans, Noto_Sans_SC } from "next/font/google";
+import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import "./globals.css";
 
 const publicSans = Public_Sans({
@@ -17,6 +18,7 @@ const notoSC = Noto_Sans_SC({
 export const metadata: Metadata = {
   title: "Kita",
   description: "Kita family finance tracker",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Kita" },
 };
 
 // viewport-fit=cover is required for env(safe-area-inset-*) to resolve to real
@@ -38,7 +40,10 @@ export default function RootLayout({
       data-theme="light"
       className={`${publicSans.variable} ${notoSC.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ServiceWorkerRegistrar />
+        {children}
+      </body>
     </html>
   );
 }
