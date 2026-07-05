@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { validateExpenseInput, parseExpenseForm, type ExpenseInput } from './expenses-shared'
 
 const base: ExpenseInput = {
-  dateISO: '2026-07-05', vendor: null, location: null, category: 'food',
+  dateISO: '2026-07-05', categoryId: 'cat-1', vendorId: null, locationId: null,
   paidBy: 'CH', amountCents: 4250, note: null,
 }
 
@@ -29,26 +29,26 @@ describe('parseExpenseForm', () => {
   it('reads fields, trims strings, and empties to null', () => {
     const fd = new FormData()
     fd.set('dateISO', '2026-07-05')
-    fd.set('vendor', '  Aeon  ')
-    fd.set('location', '')
-    fd.set('category', 'groceries')
+    fd.set('categoryId', '  cat-1  ')
+    fd.set('vendorId', '')
+    fd.set('locationId', 'loc-1')
     fd.set('paidBy', 'JC')
     fd.set('amountCents', '4250')
     fd.set('note', '  weekly  ')
     expect(parseExpenseForm(fd)).toEqual({
-      dateISO: '2026-07-05', vendor: 'Aeon', location: null, category: 'groceries',
+      dateISO: '2026-07-05', categoryId: 'cat-1', vendorId: null, locationId: 'loc-1',
       paidBy: 'JC', amountCents: 4250, note: 'weekly',
     })
   })
-  it('coerces an unknown payer to null and category empty to null', () => {
+  it('coerces an unknown payer to null and categoryId empty to null', () => {
     const fd = new FormData()
     fd.set('dateISO', '2026-07-05')
     fd.set('paidBy', 'XX')
-    fd.set('category', '')
+    fd.set('categoryId', '')
     fd.set('amountCents', '100')
     const out = parseExpenseForm(fd)
     expect(out.paidBy).toBeNull()
-    expect(out.category).toBeNull()
+    expect(out.categoryId).toBeNull()
     expect(out.amountCents).toBe(100)
   })
 })

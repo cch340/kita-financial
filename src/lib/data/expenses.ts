@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getMembership } from './household'
 import { monthRange } from './summary'
-import type { ExpenseRow } from './types'
+import type { ExpenseRow, Member } from './types'
 import { validateExpenseInput, type ExpenseInput } from './expenses-shared'
 import { validateTriageInput, type TriageInput } from './triage-shared'
 
@@ -9,20 +9,39 @@ import { validateTriageInput, type TriageInput } from './triage-shared'
 export { validateExpenseInput, validateTriageInput }
 export type { ExpenseInput, TriageInput }
 
-const COLS = 'id, date, vendor, location, details, category, amount_cents, paid_by'
+// FK ids for editing/filtering + joined names for display.
+export const EXPENSE_SELECT =
+  'id, date, details, amount_cents, paid_by, category_id, vendor_id, location_id, ' +
+  'category:expense_categories(name), vendor:vendors(name), location:locations(name)'
+
+type RawExpense = {
+  id: string; date: string; details: string | null; amount_cents: number; paid_by: Member | null
+  category_id: string | null; vendor_id: string | null; location_id: string | null
+  category: { name: string } | null; vendor: { name: string } | null; location: { name: string } | null
+}
+
+export function mapExpenseRow(r: RawExpense): ExpenseRow {
+  return {
+    id: r.id, date: r.date, details: r.details, amount_cents: r.amount_cents, paid_by: r.paid_by,
+    category_id: r.category_id, vendor_id: r.vendor_id, location_id: r.location_id,
+    category_name: r.category?.name ?? null,
+    vendor_name: r.vendor?.name ?? null,
+    location_name: r.location?.name ?? null,
+  }
+}
 
 export async function listExpenses(opts?: { year?: number; month?: number }): Promise<ExpenseRow[]> {
   const m = await getMembership()
   if (!m) return []
   const supabase = await createClient()
-  let q = supabase.from('expenses').select(COLS).eq('household_id', m.householdId).order('date', { ascending: false })
+  let q = supabase.from('expenses').select(EXPENSE_SELECT).eq('household_id', m.householdId).order('date', { ascending: false })
   if (opts?.year && opts?.month) {
     const { startISO, endISO } = monthRange(opts.year, opts.month)
     q = q.gte('date', startISO).lt('date', endISO)
   }
   const { data, error } = await q
   if (error) { console.error('listExpenses failed:', error.message); return [] }
-  return (data ?? []) as ExpenseRow[]
+  return (data ?? []).map((r) => mapExpenseRow(r as unknown as RawExpense))
 }
 
 export async function getMonthTotalCents(year: number, month: number): Promise<number> {
@@ -35,12 +54,12 @@ export async function getExpense(id: string): Promise<ExpenseRow | null> {
   if (!m) return null
   const supabase = await createClient()
   const { data, error } = await supabase
-    .from('expenses').select(COLS).eq('id', id).eq('household_id', m.householdId).single()
+    .from('expenses').select(EXPENSE_SELECT).eq('id', id).eq('household_id', m.householdId).single()
   if (error || !data) {
     if (error && error.code !== 'PGRST116') console.error('getExpense failed:', error.message)
     return null
   }
-  return data as ExpenseRow
+  return mapExpenseRow(data as unknown as RawExpense)
 }
 
 export async function addExpense(input: ExpenseInput): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -53,10 +72,10 @@ export async function addExpense(input: ExpenseInput): Promise<{ ok: true } | { 
   const { error } = await supabase.from('expenses').insert({
     household_id: m.householdId,
     date: input.dateISO,
-    vendor: input.vendor,
-    location: input.location,
     details: input.note,
-    category: input.category,
+    category_id: input.categoryId,
+    vendor_id: input.vendorId,
+    location_id: input.locationId,
     amount_cents: input.amountCents,
     paid_by: input.paidBy,
     created_by: user?.id ?? null,
@@ -73,10 +92,10 @@ export async function updateExpense(id: string, input: ExpenseInput): Promise<{ 
   const supabase = await createClient()
   const { error } = await supabase.from('expenses').update({
     date: input.dateISO,
-    vendor: input.vendor,
-    location: input.location,
     details: input.note,
-    category: input.category,
+    category_id: input.categoryId,
+    vendor_id: input.vendorId,
+    location_id: input.locationId,
     amount_cents: input.amountCents,
     paid_by: input.paidBy,
   }).eq('id', id).eq('household_id', m.householdId)
@@ -99,12 +118,12 @@ export async function listExpensesNeedingTriage(): Promise<ExpenseRow[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('expenses')
-    .select(COLS)
+    .select(EXPENSE_SELECT)
     .eq('household_id', m.householdId)
-    .or('category.is.null,paid_by.is.null')
+    .or('category_id.is.null,paid_by.is.null')
     .order('date', { ascending: true })
   if (error) { console.error('listExpensesNeedingTriage failed:', error.message); return [] }
-  return (data ?? []) as ExpenseRow[]
+  return (data ?? []).map((r) => mapExpenseRow(r as unknown as RawExpense))
 }
 
 export async function countExpensesNeedingTriage(): Promise<number> {
@@ -115,7 +134,7 @@ export async function countExpensesNeedingTriage(): Promise<number> {
     .from('expenses')
     .select('id', { count: 'exact', head: true })
     .eq('household_id', m.householdId)
-    .or('category.is.null,paid_by.is.null')
+    .or('category_id.is.null,paid_by.is.null')
   if (error) { console.error('countExpensesNeedingTriage failed:', error.message); return 0 }
   return count ?? 0
 }
@@ -131,7 +150,7 @@ export async function setExpenseCategoryPaidBy(
   const supabase = await createClient()
   const { error } = await supabase
     .from('expenses')
-    .update({ category: input.category, paid_by: input.paidBy })
+    .update({ category_id: input.categoryId, paid_by: input.paidBy })
     .eq('id', id)
     .eq('household_id', m.householdId)
   if (error) { console.error('setExpenseCategoryPaidBy failed:', error.message); return { ok: false, error: 'save_failed' } }

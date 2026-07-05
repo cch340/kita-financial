@@ -1,13 +1,11 @@
 // Pure, server/client-safe expense helpers and types — no supabase import here.
-// Kept separate from expenses.ts so client components and vitest can use these
-// without pulling in `next/headers` (via createClient) through the data reads.
 export type Member = 'CH' | 'JC'
 
 export type ExpenseInput = {
   dateISO: string
-  vendor: string | null
-  location: string | null
-  category: string | null
+  categoryId: string | null
+  vendorId: string | null
+  locationId: string | null
   paidBy: Member | null
   amountCents: number
   note: string | null
@@ -23,7 +21,7 @@ export function validateExpenseInput(input: ExpenseInput): { ok: true } | { ok: 
 }
 
 export function parseExpenseForm(fd: FormData): ExpenseInput {
-  const trimmed = (key: string): string | null => {
+  const strOrNull = (key: string): string | null => {
     const v = fd.get(key)
     const s = typeof v === 'string' ? v.trim() : ''
     return s ? s : null
@@ -31,11 +29,11 @@ export function parseExpenseForm(fd: FormData): ExpenseInput {
   const paidByRaw = typeof fd.get('paidBy') === 'string' ? (fd.get('paidBy') as string) : ''
   return {
     dateISO: typeof fd.get('dateISO') === 'string' ? (fd.get('dateISO') as string) : '',
-    vendor: trimmed('vendor'),
-    location: trimmed('location'),
-    category: trimmed('category'),
+    categoryId: strOrNull('categoryId'),
+    vendorId: strOrNull('vendorId'),
+    locationId: strOrNull('locationId'),
     paidBy: paidByRaw === 'CH' || paidByRaw === 'JC' ? paidByRaw : null,
     amountCents: Number(fd.get('amountCents')),
-    note: trimmed('note'),
+    note: strOrNull('note'),
   }
 }
