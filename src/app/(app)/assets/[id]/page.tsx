@@ -35,8 +35,16 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
           <h1 className="truncate text-xl font-extrabold text-[var(--ink-head)]">{asset.name}</h1>
           <p className="truncate text-xs font-semibold text-[var(--muted)]">
             {t(locale, `assets.type.${asset.type}`)}
+            {asset.status === 'closed' ? ` · ${t(locale, 'status.closed')}` : ''}
           </p>
         </div>
+        <Link
+          href={`/assets/${asset.id}/edit`}
+          aria-label={t(locale, 'assets.editAsset')}
+          className="pressable-opacity grid h-11 w-11 shrink-0 place-items-center text-[var(--muted)]"
+        >
+          <Pencil size={18} />
+        </Link>
       </header>
 
       {asset.type === 'property' && <PropertyBody asset={asset} txns={txns} />}

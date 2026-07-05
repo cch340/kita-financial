@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { runningBalanceCents, totalSettledOutCents, nextPaymentCents, assetKeyFigure, groupByTxnType, validateTxnInput, type TxnInput } from './assets-shared'
+import { runningBalanceCents, totalSettledOutCents, nextPaymentCents, assetKeyFigure, groupByTxnType, validateTxnInput, splitByStatus, type TxnInput } from './assets-shared'
 import type { AssetTxn, Asset } from './assets-shared'
 
 const tx = (p: Partial<AssetTxn>): AssetTxn => ({
@@ -57,5 +57,18 @@ describe('validateTxnInput', () => {
   })
   it('rejects a bad direction', () => {
     expect(validateTxnInput({ ...base, direction: 'sideways' as unknown as 'in' })).toEqual({ ok: false, error: 'invalid_direction' })
+  })
+})
+
+describe('splitByStatus', () => {
+  it('partitions active and closed preserving order', () => {
+    const items = [
+      { id: '1', status: 'active' as const },
+      { id: '2', status: 'closed' as const },
+      { id: '3', status: 'active' as const },
+    ]
+    const { active, closed } = splitByStatus(items)
+    expect(active.map((a) => a.id)).toEqual(['1', '3'])
+    expect(closed.map((a) => a.id)).toEqual(['2'])
   })
 })

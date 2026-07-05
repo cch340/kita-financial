@@ -61,6 +61,32 @@ export async function updateAssetTransaction(input: {
   return { ok: true }
 }
 
+export async function updateAsset(input: {
+  id: string; name: string; metadata: Record<string, unknown>
+}): Promise<{ ok: boolean; error?: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  if (!input.name.trim()) return { ok: false, error: 'invalid_name' }
+  const supabase = await createClient()
+  const { error } = await supabase.from('assets')
+    .update({ name: input.name.trim(), metadata: input.metadata })
+    .eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('updateAsset:', error.message); return { ok: false, error: 'save_failed' } }
+  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets')
+  return { ok: true }
+}
+
+export async function setAssetStatus(input: { id: string; status: 'active' | 'closed' }): Promise<{ ok: boolean }> {
+  const m = await getMembership()
+  if (!m) return { ok: false }
+  const supabase = await createClient()
+  const { error } = await supabase.from('assets')
+    .update({ status: input.status }).eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('setAssetStatus:', error.message); return { ok: false } }
+  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets')
+  return { ok: true }
+}
+
 export async function deleteAssetTransaction(input: { id: string; assetId: string }): Promise<{ ok: boolean }> {
   const m = await getMembership()
   if (!m) return { ok: false }

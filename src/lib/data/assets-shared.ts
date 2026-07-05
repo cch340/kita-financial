@@ -47,6 +47,13 @@ export function validateTxnInput(input: TxnInput): { ok: true } | { ok: false; e
   return { ok: true }
 }
 
+export function splitByStatus<T extends { status: 'active' | 'closed' }>(assets: T[]): { active: T[]; closed: T[] } {
+  return {
+    active: assets.filter((a) => a.status === 'active'),
+    closed: assets.filter((a) => a.status === 'closed'),
+  }
+}
+
 export function groupByTxnType(txns: AssetTxn[]): { txnType: string; rows: AssetTxn[] }[] {
   const order: string[] = []
   const map = new Map<string, AssetTxn[]>()
