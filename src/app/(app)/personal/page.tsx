@@ -1,5 +1,6 @@
 import { getPersonalLedger } from '@/lib/data/personal'
 import { getMembership } from '@/lib/data/household'
+import { pickCopySourceMonth } from '@/lib/data/personal-shared'
 import { PersonalView } from './PersonalView'
 
 export default async function PersonalPage({
@@ -43,5 +44,17 @@ export default async function PersonalPage({
 
   const ledger = year === currentYear && month === currentMonth ? probe : await getPersonalLedger(member, year, month)
 
-  return <PersonalView member={member} year={year} month={month} ledger={ledger} />
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const targetPeriod = `${year}-${pad(month)}-01`
+  const canCopyLastMonth = pickCopySourceMonth(ledger.availableMonths, targetPeriod) !== null
+
+  return (
+    <PersonalView
+      member={member}
+      year={year}
+      month={month}
+      ledger={ledger}
+      canCopyLastMonth={canCopyLastMonth}
+    />
+  )
 }

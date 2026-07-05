@@ -9,7 +9,8 @@ import { Card, HeroCard } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Spinner } from '@/components/ui/Spinner'
 import { parseMoneyInput } from '@/lib/money'
-import { addLedgerEntry, updateLedgerEntry, deleteLedgerEntry } from './actions'
+import { Copy } from 'lucide-react'
+import { addLedgerEntry, updateLedgerEntry, deleteLedgerEntry, copyLastMonth } from './actions'
 
 type Member = 'CH' | 'JC'
 type Ledger = {
@@ -26,13 +27,14 @@ type Props = {
   year: number
   month: number
   ledger: Ledger
+  canCopyLastMonth: boolean
 }
 
 const MEMBERS: Member[] = ['CH', 'JC']
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-export function PersonalView({ member, year, month, ledger }: Props) {
+export function PersonalView({ member, year, month, ledger, canCopyLastMonth }: Props) {
   const t = useT()
   const locale = useLocale()
   const router = useRouter()
@@ -116,7 +118,12 @@ export function PersonalView({ member, year, month, ledger }: Props) {
 
       <div className="flex flex-col gap-5">
         {isEmpty ? (
-          <p className="py-10 text-center text-sm font-semibold text-[var(--faint)]">{t('personal.empty')}</p>
+          <div className="flex flex-col items-center gap-4 py-10">
+            <p className="text-center text-sm font-semibold text-[var(--faint)]">{t('personal.empty')}</p>
+            {canCopyLastMonth && (
+              <CopyLastMonth member={member} periodISO={`${year}-${pad(month)}-01`} />
+            )}
+          </div>
         ) : (
           <>
             <LedgerCard
@@ -271,6 +278,38 @@ function LedgerRow({ row }: { row: LedgerEntry }) {
           ×
         </button>
       </div>
+    </div>
+  )
+}
+
+function CopyLastMonth({ member, periodISO }: { member: Member; periodISO: string }) {
+  const t = useT()
+  const router = useRouter()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function run() {
+    setBusy(true)
+    setError(null)
+    const res = await copyLastMonth({ member, targetPeriod: periodISO })
+    setBusy(false)
+    if (!res.ok) { setError(res.error ?? 'save_failed'); return }
+    router.refresh()
+  }
+
+  return (
+    <div className="flex w-full flex-col items-center gap-2">
+      <button
+        type="button"
+        onClick={run}
+        disabled={busy}
+        aria-busy={busy}
+        className="pressable flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[var(--primary)] px-5 py-3 text-sm font-bold text-[var(--primary)] disabled:opacity-40"
+      >
+        {busy ? <Spinner size={16} /> : <Copy size={16} />}
+        {t('personal.copyLastMonth')}
+      </button>
+      {error && <p role="alert" className="text-xs font-semibold text-[var(--danger)]">{t(`error.${error}`)}</p>}
     </div>
   )
 }
