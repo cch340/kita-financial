@@ -18,6 +18,10 @@ export function AddExpenseForm({ error }: { error?: string }) {
   const [payer, setPayer] = useState<'CH' | 'JC' | null>(null)
   const [category, setCategory] = useState<CategoryKey | null>(null)
   const [note, setNote] = useState('')
+  const [vendor, setVendor] = useState('')
+  const [location, setLocation] = useState('')
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [showMore, setShowMore] = useState(false)
 
   function pressKey(key: (typeof KEYS)[number]) {
     if (key === '⌫') {
@@ -30,8 +34,6 @@ export function AddExpenseForm({ error }: { error?: string }) {
     }
     setCents((c) => pushDigit(c, Number(key)))
   }
-
-  const todayISO = new Date().toISOString().slice(0, 10)
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--paper)]">
@@ -71,7 +73,9 @@ export function AddExpenseForm({ error }: { error?: string }) {
           <input type="hidden" name="category" value={category ?? ''} />
           <input type="hidden" name="paidBy" value={payer ?? ''} />
           <input type="hidden" name="note" value={note} />
-          <input type="hidden" name="dateISO" value={todayISO} />
+          <input type="hidden" name="dateISO" value={date} />
+          <input type="hidden" name="vendor" value={vendor} />
+          <input type="hidden" name="location" value={location} />
 
           {/* who paid */}
           <div>
@@ -130,10 +134,45 @@ export function AddExpenseForm({ error }: { error?: string }) {
               placeholder={t('add.note')}
               className="flex-1 bg-transparent text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
             />
-            <span className="shrink-0 rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-semibold text-[var(--muted)]">
-              {t('add.today')}
-            </span>
+            <button
+              type="button"
+              onClick={() => setShowMore((v) => !v)}
+              className="pressable-opacity shrink-0 rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-semibold text-[var(--muted)]"
+            >
+              {showMore ? t('add.today') : t('add.more')}
+            </button>
           </div>
+
+          {/* collapsible: date, vendor, location */}
+          {showMore && (
+            <div className="flex flex-col gap-3">
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-[var(--muted)]">{t('add.date')}</span>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-[var(--muted)]">{t('add.vendor')}</span>
+                <input
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-[var(--muted)]">{t('add.location')}</span>
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+                />
+              </label>
+            </div>
+          )}
 
           {error && (
             <p className="text-sm font-semibold text-[var(--danger)]">{t(`error.${error}`)}</p>
