@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { t, type Locale } from '@/i18n'
 import { totalSettledOutCents } from '@/lib/data/assets-shared'
 import type { AssetTxn } from '@/lib/data/assets-shared'
@@ -16,7 +18,7 @@ function sortSchedule(txns: AssetTxn[]): AssetTxn[] {
 }
 
 // Server component like VehicleBody — no hooks, locale passed in from the page.
-export function InvestmentBody({ txns, locale }: { txns: AssetTxn[]; locale: Locale }) {
+export function InvestmentBody({ txns, locale, assetId }: { txns: AssetTxn[]; locale: Locale; assetId: string }) {
   const paid = totalSettledOutCents(txns)
   const sumAll = txns.reduce((a, tx) => a + tx.amountCents, 0)
   const progress = sumAll > 0 ? paid / sumAll : 0
@@ -61,6 +63,13 @@ export function InvestmentBody({ txns, locale }: { txns: AssetTxn[]; locale: Loc
               <span className="flex-1 text-sm font-bold text-[var(--ink-head)]">{row.date.slice(0, 4)}</span>
               <StatusChip status={row.settled ? 'paid' : 'upcoming'} />
               <MoneyText cents={row.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)] tabular-nums" />
+              <Link
+                href={`/assets/${assetId}/txn/${row.id}`}
+                aria-label={t(locale, 'asset.editTxn')}
+                className="pressable-opacity grid h-8 w-8 shrink-0 place-items-center text-[var(--muted)]"
+              >
+                <Pencil size={15} />
+              </Link>
             </div>
           ))}
         </Card>

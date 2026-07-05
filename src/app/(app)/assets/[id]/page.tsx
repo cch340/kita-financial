@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { getAsset } from '@/lib/data/assets'
 import { getMembership } from '@/lib/data/household'
@@ -39,16 +40,16 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
       </header>
 
       {asset.type === 'property' && <PropertyBody asset={asset} txns={txns} />}
-      {asset.type === 'vehicle' && <VehicleBody txns={txns} locale={locale} />}
-      {asset.type === 'investment' && <InvestmentBody txns={txns} locale={locale} />}
-      {asset.type === 'other' && <GenericBody txns={txns} locale={locale} />}
+      {asset.type === 'vehicle' && <VehicleBody txns={txns} locale={locale} assetId={asset.id} />}
+      {asset.type === 'investment' && <InvestmentBody txns={txns} locale={locale} assetId={asset.id} />}
+      {asset.type === 'other' && <GenericBody txns={txns} locale={locale} assetId={asset.id} />}
 
       <AddTxn assetId={asset.id} defaultDirection={defaultDirection} />
     </div>
   )
 }
 
-function GenericBody({ txns, locale }: { txns: AssetTxn[]; locale: Locale }) {
+function GenericBody({ txns, locale, assetId }: { txns: AssetTxn[]; locale: Locale; assetId: string }) {
   if (txns.length === 0) {
     return (
       <p className="py-10 text-center text-sm font-semibold text-[var(--faint)]">{t(locale, 'asset.empty')}</p>
@@ -63,6 +64,13 @@ function GenericBody({ txns, locale }: { txns: AssetTxn[]; locale: Locale }) {
             <p className="text-xs text-[var(--muted)]">{txn.date}</p>
           </div>
           <MoneyText cents={txn.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+          <Link
+            href={`/assets/${assetId}/txn/${txn.id}`}
+            aria-label={t(locale, 'asset.editTxn')}
+            className="pressable-opacity grid h-8 w-8 shrink-0 place-items-center text-[var(--muted)]"
+          >
+            <Pencil size={15} />
+          </Link>
         </Card>
       ))}
     </div>

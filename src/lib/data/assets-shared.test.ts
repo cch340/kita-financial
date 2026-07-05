@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { runningBalanceCents, totalSettledOutCents, nextPaymentCents, assetKeyFigure, groupByTxnType } from './assets-shared'
+import { runningBalanceCents, totalSettledOutCents, nextPaymentCents, assetKeyFigure, groupByTxnType, validateTxnInput, type TxnInput } from './assets-shared'
 import type { AssetTxn, Asset } from './assets-shared'
 
 const tx = (p: Partial<AssetTxn>): AssetTxn => ({
@@ -38,5 +38,24 @@ describe('groupByTxnType', () => {
     const g = groupByTxnType([tx({ txnType: 'loan' }), tx({ txnType: 'maintenance' }), tx({ txnType: 'loan' })])
     expect(g.map((x) => x.txnType)).toEqual(['loan', 'maintenance'])
     expect(g[0].rows).toHaveLength(2)
+  })
+})
+
+describe('validateTxnInput', () => {
+  const base: TxnInput = {
+    date: '2026-07-05', description: 'Bill', amountCents: 5000,
+    direction: 'out', txnType: null, settled: false, seq: null, notes: null,
+  }
+  it('accepts a valid txn', () => {
+    expect(validateTxnInput(base)).toEqual({ ok: true })
+  })
+  it('rejects a bad date', () => {
+    expect(validateTxnInput({ ...base, date: 'nope' })).toEqual({ ok: false, error: 'invalid_date' })
+  })
+  it('rejects a non-positive amount', () => {
+    expect(validateTxnInput({ ...base, amountCents: 0 })).toEqual({ ok: false, error: 'invalid_amount' })
+  })
+  it('rejects a bad direction', () => {
+    expect(validateTxnInput({ ...base, direction: 'sideways' as unknown as 'in' })).toEqual({ ok: false, error: 'invalid_direction' })
   })
 })
