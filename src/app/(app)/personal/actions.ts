@@ -2,6 +2,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getMembership } from '@/lib/data/household'
+import { validateLedgerInput } from '@/lib/data/personal-shared'
 
 export async function addLedgerEntry(input: {
   member: 'CH' | 'JC'
@@ -30,5 +31,34 @@ export async function addLedgerEntry(input: {
   }
   revalidatePath('/personal')
   revalidatePath('/')
+  return { ok: true }
+}
+
+export async function updateLedgerEntry(input: {
+  id: string
+  entryType: 'income' | 'expense'
+  description: string
+  amountCents: number
+}): Promise<{ ok: boolean; error?: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  const valid = validateLedgerInput(input)
+  if (!valid.ok) return { ok: false, error: valid.error }
+  const supabase = await createClient()
+  const { error } = await supabase.from('ledger_entries')
+    .update({ entry_type: input.entryType, description: input.description.trim(), amount_cents: input.amountCents })
+    .eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('updateLedgerEntry:', error.message); return { ok: false, error: 'save_failed' } }
+  revalidatePath('/personal'); revalidatePath('/')
+  return { ok: true }
+}
+
+export async function deleteLedgerEntry(id: string): Promise<{ ok: boolean }> {
+  const m = await getMembership()
+  if (!m) return { ok: false }
+  const supabase = await createClient()
+  const { error } = await supabase.from('ledger_entries').delete().eq('id', id).eq('household_id', m.householdId)
+  if (error) { console.error('deleteLedgerEntry:', error.message); return { ok: false } }
+  revalidatePath('/personal'); revalidatePath('/')
   return { ok: true }
 }
