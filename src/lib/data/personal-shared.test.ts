@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sumByType, balanceCents, validateLedgerInput } from './personal-shared'
+import { sumByType, balanceCents, validateLedgerInput, pickCopySourceMonth } from './personal-shared'
 import type { LedgerEntry } from './personal-shared'
 
 const e = (entryType: 'income' | 'expense', amountCents: number): LedgerEntry => ({
@@ -40,5 +40,24 @@ describe('validateLedgerInput', () => {
   })
   it('rejects a non-positive amount', () => {
     expect(validateLedgerInput({ ...base, amountCents: 0 })).toEqual({ ok: false, error: 'invalid_amount' })
+  })
+})
+
+describe('pickCopySourceMonth', () => {
+  it('returns the most recent month strictly before the target', () => {
+    const months = ['2026-06-01', '2026-05-01', '2026-04-01']
+    expect(pickCopySourceMonth(months, '2026-07-01')).toBe('2026-06-01')
+  })
+  it('ignores the target month itself and any later months', () => {
+    const months = ['2026-08-01', '2026-07-01', '2026-06-01']
+    expect(pickCopySourceMonth(months, '2026-07-01')).toBe('2026-06-01')
+  })
+  it('does not assume input ordering', () => {
+    const months = ['2026-04-01', '2026-06-01', '2026-05-01']
+    expect(pickCopySourceMonth(months, '2026-07-01')).toBe('2026-06-01')
+  })
+  it('returns null when there is no earlier month', () => {
+    expect(pickCopySourceMonth(['2026-07-01'], '2026-07-01')).toBeNull()
+    expect(pickCopySourceMonth([], '2026-07-01')).toBeNull()
   })
 })
