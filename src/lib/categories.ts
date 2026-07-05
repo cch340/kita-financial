@@ -23,3 +23,11 @@ export function categoryLabel(key: string | null, locale: 'en' | 'zh'): string {
   const k = key ?? 'uncategorized'
   return LABELS[k]?.[locale] ?? LABELS['uncategorized'][locale]
 }
+
+const CATEGORY_KEY_SET: ReadonlySet<string> = new Set(CATEGORIES.map((c) => c.key))
+
+// True only for the fixed expense categories (excludes 'uncategorized', which is a
+// display-only fallback, not an assignable category).
+export function isCategoryKey(k: string): k is CategoryKey {
+  return CATEGORY_KEY_SET.has(k)
+}
