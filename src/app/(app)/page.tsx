@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { SlidersHorizontal } from 'lucide-react'
+import { SlidersHorizontal, ChartColumn } from 'lucide-react'
 import { getMembership } from '@/lib/data/household'
 import { getHomeSummary } from '@/lib/data/home'
 import { getPersonalBalances } from '@/lib/data/personal'
@@ -109,6 +109,18 @@ export default async function HomePage() {
               CH <MoneyText cents={personalBalances.CH} /> · JC <MoneyText cents={personalBalances.JC} />
             </p>
           </div>
+        </Card>
+      </Link>
+
+      <Link href="/report">
+        <Card className="pressable flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-[var(--ink-head)]">{t(locale, 'home.yearOverview')}</p>
+            <p className="truncate text-xs font-semibold text-[var(--muted)]">
+              {t(locale, 'home.yearOverview.subtitle')}
+            </p>
+          </div>
+          <ChartColumn size={20} className="shrink-0 text-[var(--muted)]" />
         </Card>
       </Link>
 
