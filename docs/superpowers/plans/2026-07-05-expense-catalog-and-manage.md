@@ -153,7 +153,7 @@ git commit -m "feat(db): add expense catalog tables, FK links, backfill migratio
 - Test: `src/lib/data/catalog-shared.test.ts`
 
 **Interfaces:**
-- Produces: `type CatalogItem = { id: string; name: string; sort_order: number }`; `normalizeName(raw: string): string`; `findCaseInsensitiveDuplicate(name: string, existing: CatalogItem[], exceptId?: string): CatalogItem | null`; `nextSortOrder(existing: CatalogItem[]): number`; `reorderIds(currentIds: string[], fromIndex: number, toIndex: number): string[]`.
+- Produces: `type CatalogItem = { id: string; name: string; sort_order: number }`; `normalizeName(raw: string): string`; `findCaseInsensitiveDuplicate(name: string, existing: CatalogItem[], exceptId?: string): CatalogItem | null`; `nextSortOrder(existing: CatalogItem[]): number`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -162,7 +162,7 @@ Create `src/lib/data/catalog-shared.test.ts`:
 ```typescript
 import { describe, it, expect } from 'vitest'
 import {
-  normalizeName, findCaseInsensitiveDuplicate, nextSortOrder, reorderIds,
+  normalizeName, findCaseInsensitiveDuplicate, nextSortOrder,
   type CatalogItem,
 } from './catalog-shared'
 
@@ -193,16 +193,6 @@ describe('nextSortOrder', () => {
   it('is 0 for empty, else max+1', () => {
     expect(nextSortOrder([])).toBe(0)
     expect(nextSortOrder([item('1', 'a', 0), item('2', 'b', 5)])).toBe(6)
-  })
-})
-
-describe('reorderIds', () => {
-  it('moves an id from one index to another', () => {
-    expect(reorderIds(['a', 'b', 'c', 'd'], 0, 2)).toEqual(['b', 'c', 'a', 'd'])
-    expect(reorderIds(['a', 'b', 'c'], 2, 0)).toEqual(['c', 'a', 'b'])
-  })
-  it('returns the same order for a no-op move', () => {
-    expect(reorderIds(['a', 'b'], 1, 1)).toEqual(['a', 'b'])
   })
 })
 ```
@@ -238,20 +228,12 @@ export function findCaseInsensitiveDuplicate(
 export function nextSortOrder(existing: CatalogItem[]): number {
   return existing.length === 0 ? 0 : Math.max(...existing.map((i) => i.sort_order)) + 1
 }
-
-/** Pure array move: returns a new id order with the item at fromIndex placed at toIndex. */
-export function reorderIds(currentIds: string[], fromIndex: number, toIndex: number): string[] {
-  const next = [...currentIds]
-  const [moved] = next.splice(fromIndex, 1)
-  next.splice(toIndex, 0, moved)
-  return next
-}
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run src/lib/data/catalog-shared.test.ts`
-Expected: PASS (all 4 describe blocks).
+Expected: PASS (all 3 describe blocks).
 
 - [ ] **Step 5: Commit**
 
@@ -276,7 +258,6 @@ git commit -m "feat(data): pure catalog-shared helpers with tests"
   - `createCategory(name: string): Promise<{ ok: true; id: string } | { ok: false; error: 'duplicate' | 'invalid' | 'save_failed' }>`
   - `renameCategory(id: string, name: string): Promise<{ ok: true } | { ok: false; error: 'duplicate' | 'invalid' | 'save_failed' }>`
   - `deleteCategory(id: string): Promise<{ ok: boolean }>`
-  - `reorderCategories(orderedIds: string[]): Promise<{ ok: boolean }>`
   - `countExpensesUsingCategory(id: string): Promise<number>` (column `category_id`; vendors → `vendor_id`, locations → `location_id`)
 
 - [ ] **Step 1: Write `categories.ts`**
@@ -354,19 +335,6 @@ export async function deleteCategory(id: string): Promise<{ ok: boolean }> {
   return { ok: true }
 }
 
-export async function reorderCategories(orderedIds: string[]): Promise<{ ok: boolean }> {
-  const m = await getMembership()
-  if (!m) return { ok: false }
-  const supabase = await createClient()
-  // Persist sort_order = position in the given list.
-  const updates = orderedIds.map((id, i) =>
-    supabase.from(TABLE).update({ sort_order: i }).eq('id', id).eq('household_id', m.householdId))
-  const results = await Promise.all(updates)
-  const failed = results.find((r) => r.error)
-  if (failed?.error) { console.error('reorderCategories failed:', failed.error.message); return { ok: false } }
-  return { ok: true }
-}
-
 export async function countExpensesUsingCategory(id: string): Promise<number> {
   const m = await getMembership()
   if (!m) return 0
@@ -381,11 +349,11 @@ export async function countExpensesUsingCategory(id: string): Promise<number> {
 
 - [ ] **Step 2: Write `vendors.ts`**
 
-Create `src/lib/data/vendors.ts` — copy `categories.ts` verbatim, then change: `TABLE = 'vendors'`, `EXPENSE_FK = 'vendor_id'`, and rename every exported function `…Category…` → `…Vendor…` (`listVendors`, `createVendor`, `renameVendor`, `deleteVendor`, `reorderVendors`, `countExpensesUsingVendor`). Internal `listVendors()` calls replace `listCategories()`.
+Create `src/lib/data/vendors.ts` — copy `categories.ts` verbatim, then change: `TABLE = 'vendors'`, `EXPENSE_FK = 'vendor_id'`, and rename every exported function `…Category…` → `…Vendor…` (`listVendors`, `createVendor`, `renameVendor`, `deleteVendor`, `countExpensesUsingVendor`). Internal `listVendors()` calls replace `listCategories()`.
 
 - [ ] **Step 3: Write `locations.ts`**
 
-Create `src/lib/data/locations.ts` — same copy, with `TABLE = 'locations'`, `EXPENSE_FK = 'location_id'`, functions `listLocations`, `createLocation`, `renameLocation`, `deleteLocation`, `reorderLocations`, `countExpensesUsingLocation`.
+Create `src/lib/data/locations.ts` — same copy, with `TABLE = 'locations'`, `EXPENSE_FK = 'location_id'`, functions `listLocations`, `createLocation`, `renameLocation`, `deleteLocation`, `countExpensesUsingLocation`.
 
 - [ ] **Step 4: Typecheck**
 
@@ -1114,7 +1082,7 @@ git commit -m "feat(nav): replace Assets tab with More menu (Assets + Manage)"
 
 ---
 
-### Task 11: Manage screen — three list sections with CRUD + reorder
+### Task 11: Manage screen — three list sections with CRUD
 
 **Files:**
 - Create: `src/app/(app)/manage/page.tsx`
@@ -1123,7 +1091,7 @@ git commit -m "feat(nav): replace Assets tab with More menu (Assets + Manage)"
 
 **Interfaces:**
 - Consumes: the three data modules (Task 3), `CatalogItem`.
-- Produces: server actions `create/rename/delete/reorder<Kind>Action` returning `{ ok: boolean; error?: string; count?: number }`; a client `ManageSection` reused for all three kinds.
+- Produces: server actions `createItemAction/renameItemAction/deleteItemAction/countUsageAction` keyed by `CatalogKind`; a client `ManageSection` reused for all three kinds.
 
 - [ ] **Step 1: Create the server actions**
 
@@ -1133,13 +1101,13 @@ Create `src/app/(app)/manage/actions.ts`:
 'use server'
 import { revalidatePath } from 'next/cache'
 import {
-  createCategory, renameCategory, deleteCategory, reorderCategories, countExpensesUsingCategory,
+  createCategory, renameCategory, deleteCategory, countExpensesUsingCategory,
 } from '@/lib/data/categories'
 import {
-  createVendor, renameVendor, deleteVendor, reorderVendors, countExpensesUsingVendor,
+  createVendor, renameVendor, deleteVendor, countExpensesUsingVendor,
 } from '@/lib/data/vendors'
 import {
-  createLocation, renameLocation, deleteLocation, reorderLocations, countExpensesUsingLocation,
+  createLocation, renameLocation, deleteLocation, countExpensesUsingLocation,
 } from '@/lib/data/locations'
 
 export type CatalogKind = 'category' | 'vendor' | 'location'
@@ -1176,13 +1144,6 @@ export async function countUsageAction(kind: CatalogKind, id: string): Promise<n
   const fn = kind === 'category' ? countExpensesUsingCategory
     : kind === 'vendor' ? countExpensesUsingVendor : countExpensesUsingLocation
   return fn(id)
-}
-
-export async function reorderAction(kind: CatalogKind, orderedIds: string[]): Promise<{ ok: boolean }> {
-  const fn = kind === 'category' ? reorderCategories : kind === 'vendor' ? reorderVendors : reorderLocations
-  const res = await fn(orderedIds)
-  if (res.ok) revalidate()
-  return res
 }
 ```
 
@@ -1353,7 +1314,7 @@ function ManageRow({
 }
 ```
 
-> **Reorder note:** this MVP ships create/rename/delete. Drag-reorder (`reorderAction` + `reorderIds`) is wired but not yet surfaced in the row UI; add a drag handle in a follow-up. `reorderAction` is intentionally kept in `actions.ts` so the follow-up needs no data-layer change. This is a deliberate, logged scope cut — not silent.
+> **Reorder is out of scope this round** (deferred per pre-flight decision). Items display in creation order via `sort_order`. Do not add reorder data functions, actions, or UI here — a later self-contained task adds drag-reorder end-to-end.
 
 - [ ] **Step 4: Verify in the app**
 
@@ -2201,6 +2162,6 @@ git commit -m "chore: lint/type fixes for expense catalog feature"
 ## Deferred (out of scope — recorded in the spec §12)
 
 - Move Budget's manage (categories & commitments) into `/manage`.
-- Drag-reorder UI in `ManageSection` (data layer `reorderAction` already present).
+- Drag-reorder in `ManageSection` end-to-end (pure `reorderIds` helper + `reorder<Kind>` data fns + `reorderAction` + drag UI) — none of it built yet.
 - Optional `color` column on categories (seam preserved in `categories.ts`).
 - Actual-vs-budget spend link (budget currently planned-only).
