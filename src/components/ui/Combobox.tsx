@@ -20,6 +20,7 @@ export function Combobox({ label, placeholder, items, valueId, onChange, onCreat
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
   const [localItems, setLocalItems] = useState<CatalogItem[]>(items)
+  const [error, setError] = useState<string | null>(null)
 
   const selected = localItems.find((i) => i.id === valueId) ?? null
   const clean = normalizeName(query)
@@ -39,9 +40,11 @@ export function Combobox({ label, placeholder, items, valueId, onChange, onCreat
       const item = { id: res.id, name: clean, sort_order: localItems.length }
       setLocalItems((prev) => [...prev, item])
       onChange(res.id)
-      setQuery(''); setOpen(false)
+      setQuery(''); setOpen(false); setError(null)
+    } else {
+      // create failed (e.g. duplicate race with another client) — surface it and keep the panel open so the user can adjust the name
+      setError(res.error === 'duplicate' ? t('manage.duplicate') : t('error.save_failed'))
     }
-    // duplicate race: item already exists — leave panel open, user can pick it
   }
 
   return (
@@ -61,8 +64,8 @@ export function Combobox({ label, placeholder, items, valueId, onChange, onCreat
         <div className="mt-1 flex flex-col gap-1 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] p-2 shadow-[0_6px_20px_oklch(0.5_0.05_45/.12)]">
           <input
             value={query} autoFocus
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && canCreate) create() }}
+            onChange={(e) => { setQuery(e.target.value); setError(null) }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (canCreate) create() } }}
             placeholder={t('combobox.search')}
             className="min-h-[40px] rounded-lg border border-[var(--hairline)] bg-[var(--paper)] px-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
           />
@@ -88,6 +91,7 @@ export function Combobox({ label, placeholder, items, valueId, onChange, onCreat
               </button>
             )}
           </div>
+          {error && <p className="px-3 pt-1 text-xs font-semibold text-[var(--danger)]">{error}</p>}
         </div>
       )}
     </div>
