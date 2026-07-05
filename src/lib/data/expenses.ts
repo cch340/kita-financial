@@ -2,8 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { getMembership } from './household'
 import { monthRange } from './summary'
 import type { ExpenseRow } from './types'
+import { validateExpenseInput, type ExpenseInput } from './expenses-shared'
 
-const COLS = 'id, date, vendor, details, category, amount_cents, paid_by'
+// Re-exported for convenience; client components should import from './expenses-shared'.
+export { validateExpenseInput }
+export type { ExpenseInput }
+
+const COLS = 'id, date, vendor, location, details, category, amount_cents, paid_by'
 
 export async function listExpenses(opts?: { year?: number; month?: number }): Promise<ExpenseRow[]> {
   const m = await getMembership()
@@ -24,17 +29,31 @@ export async function getMonthTotalCents(year: number, month: number): Promise<n
   return rows.reduce((a, r) => a + r.amount_cents, 0)
 }
 
-export async function addExpense(input: {
-  amountCents: number; category: string | null; paidBy: 'CH' | 'JC' | null; note: string | null; dateISO: string
-}): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function getExpense(id: string): Promise<ExpenseRow | null> {
+  const m = await getMembership()
+  if (!m) return null
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('expenses').select(COLS).eq('id', id).eq('household_id', m.householdId).single()
+  if (error || !data) {
+    if (error && error.code !== 'PGRST116') console.error('getExpense failed:', error.message)
+    return null
+  }
+  return data as ExpenseRow
+}
+
+export async function addExpense(input: ExpenseInput): Promise<{ ok: true } | { ok: false; error: string }> {
   const m = await getMembership()
   if (!m) return { ok: false, error: 'not_authenticated' }
-  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) return { ok: false, error: 'invalid_amount' }
+  const valid = validateExpenseInput(input)
+  if (!valid.ok) return valid
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { error } = await supabase.from('expenses').insert({
     household_id: m.householdId,
     date: input.dateISO,
+    vendor: input.vendor,
+    location: input.location,
     details: input.note,
     category: input.category,
     amount_cents: input.amountCents,
@@ -42,6 +61,25 @@ export async function addExpense(input: {
     created_by: user?.id ?? null,
   })
   if (error) { console.error('addExpense failed:', error.message); return { ok: false, error: 'save_failed' } }
+  return { ok: true }
+}
+
+export async function updateExpense(id: string, input: ExpenseInput): Promise<{ ok: true } | { ok: false; error: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  const valid = validateExpenseInput(input)
+  if (!valid.ok) return valid
+  const supabase = await createClient()
+  const { error } = await supabase.from('expenses').update({
+    date: input.dateISO,
+    vendor: input.vendor,
+    location: input.location,
+    details: input.note,
+    category: input.category,
+    amount_cents: input.amountCents,
+    paid_by: input.paidBy,
+  }).eq('id', id).eq('household_id', m.householdId)
+  if (error) { console.error('updateExpense failed:', error.message); return { ok: false, error: 'save_failed' } }
   return { ok: true }
 }
 

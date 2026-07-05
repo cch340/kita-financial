@@ -3,6 +3,7 @@ export type ExpenseRow = {
   id: string
   date: string
   vendor: string | null
+  location: string | null
   details: string | null
   category: string | null
   amount_cents: number
