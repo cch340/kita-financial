@@ -1,0 +1,52 @@
+/*
+ * Route navigation transitions (Next.js 16 experimental.viewTransition + React <ViewTransition>).
+ * A subtle cross-fade with a slight upward slide on the incoming page content.
+ * Applied via the enter/exit classes on the <ViewTransition> wrapping (app) route content.
+ */
+
+::view-transition-old(.page-exit) {
+  animation: 120ms ease-out both kita-page-fade-out;
+}
+
+::view-transition-new(.page-enter) {
+  animation:
+    170ms ease-out both kita-page-fade-in,
+    170ms ease-out both kita-page-slide-up;
+}
+
+@keyframes kita-page-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes kita-page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kita-page-slide-up {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Respect reduced-motion: drop positional movement, keep an instant/near-instant
+ * swap. Nuking all durations gives the browser's default (instant) behavior.
+ */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

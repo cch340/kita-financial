@@ -21,7 +21,7 @@ export function BottomTabBar() {
           const active = href === '/' ? path === '/' || path.startsWith('/personal') : path.startsWith(href)
           return (
             <li key={href} className="flex-1">
-              <Link href={href} className="flex h-full flex-col items-center justify-center gap-1"
+              <Link href={href} className="pressable-opacity flex h-full flex-col items-center justify-center gap-1 transition-colors"
                     style={{ color: active ? 'var(--primary)' : 'var(--faint)' }}>
                 <Icon size={22} strokeWidth={active ? 2.4 : 2} />
                 <span className="text-[10px] font-semibold">{t(key)}</span>

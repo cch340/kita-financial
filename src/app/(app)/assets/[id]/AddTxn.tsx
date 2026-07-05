@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useT } from '@/i18n/LocaleProvider'
+import { Spinner } from '@/components/ui/Spinner'
 import { addAssetTransaction } from '@/app/(app)/assets/actions'
 import { parseMoneyInput } from '@/lib/money'
 
@@ -61,7 +62,7 @@ export function AddTxn({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="min-h-[44px] w-full rounded-xl border border-dashed border-[var(--primary)] py-3 text-sm font-bold text-[var(--primary)]"
+        className="pressable min-h-[44px] w-full rounded-xl border border-dashed border-[var(--primary)] py-3 text-sm font-bold text-[var(--primary)]"
       >
         ＋ {t('asset.addTxn')}
       </button>
@@ -79,7 +80,7 @@ export function AddTxn({
           type="button"
           onClick={() => setOpen(false)}
           aria-label={t('common.close')}
-          className="grid h-11 w-11 place-items-center text-xl text-[var(--muted)]"
+          className="pressable-opacity grid h-11 w-11 place-items-center text-xl text-[var(--muted)]"
         >
           ×
         </button>
@@ -91,7 +92,7 @@ export function AddTxn({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] outline-none"
+          className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none"
         />
       </label>
 
@@ -100,7 +101,7 @@ export function AddTxn({
         <input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+          className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
         />
       </label>
 
@@ -113,7 +114,7 @@ export function AddTxn({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="flex-1 bg-transparent text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+            className="flex-1 bg-transparent text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
           />
         </div>
       </label>
@@ -127,7 +128,7 @@ export function AddTxn({
               key={d}
               type="button"
               onClick={() => setDirection(d)}
-              className="min-h-[44px] flex-1 rounded-xl border py-2.5 text-sm font-semibold"
+              className="pressable min-h-[44px] flex-1 rounded-xl border py-2.5 text-sm font-semibold"
               style={{
                 borderColor: selected ? color : 'var(--hairline)',
                 background: selected ? color : 'var(--surface)',
@@ -145,7 +146,7 @@ export function AddTxn({
         <input
           value={txnType}
           onChange={(e) => setTxnType(e.target.value)}
-          className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+          className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
         />
       </label>
 
@@ -158,8 +159,10 @@ export function AddTxn({
       <button
         type="submit"
         disabled={!canSubmit}
-        className="min-h-[44px] w-full rounded-xl bg-[var(--primary-btn)] py-3 text-sm font-bold text-white disabled:opacity-40"
+        aria-busy={submitting}
+        className="pressable flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary-btn)] py-3 text-sm font-bold text-white disabled:opacity-40"
       >
+        {submitting && <Spinner />}
         {t('asset.form.save')}
       </button>
     </form>

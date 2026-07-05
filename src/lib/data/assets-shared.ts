@@ -27,6 +27,33 @@ export function assetKeyFigure(asset: Asset, txns: AssetTxn[]): KeyFigure {
   if (asset.type === 'vehicle') return { label: 'next_payment', amountCents: nextPaymentCents(txns) }
   return { label: 'balance', amountCents: runningBalanceCents(asset.openingBalanceCents, txns) }
 }
+export type TxnInput = {
+  date: string
+  description: string | null
+  amountCents: number
+  direction: 'in' | 'out'
+  txnType: string | null
+  settled: boolean
+  seq: number | null
+  notes: string | null
+}
+
+const TXN_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
+export function validateTxnInput(input: TxnInput): { ok: true } | { ok: false; error: string } {
+  if (!TXN_DATE_RE.test(input.date)) return { ok: false, error: 'invalid_date' }
+  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) return { ok: false, error: 'invalid_amount' }
+  if (input.direction !== 'in' && input.direction !== 'out') return { ok: false, error: 'invalid_direction' }
+  return { ok: true }
+}
+
+export function splitByStatus<T extends { status: 'active' | 'closed' }>(assets: T[]): { active: T[]; closed: T[] } {
+  return {
+    active: assets.filter((a) => a.status === 'active'),
+    closed: assets.filter((a) => a.status === 'closed'),
+  }
+}
+
 export function groupByTxnType(txns: AssetTxn[]): { txnType: string; rows: AssetTxn[] }[] {
   const order: string[] = []
   const map = new Map<string, AssetTxn[]>()

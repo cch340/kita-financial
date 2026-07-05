@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sumByType, balanceCents } from './personal-shared'
+import { sumByType, balanceCents, validateLedgerInput } from './personal-shared'
 import type { LedgerEntry } from './personal-shared'
 
 const e = (entryType: 'income' | 'expense', amountCents: number): LedgerEntry => ({
@@ -24,5 +24,21 @@ describe('personal-shared', () => {
     expect(sumByType([], 'income')).toBe(0)
     expect(sumByType([], 'expense')).toBe(0)
     expect(balanceCents([])).toBe(0)
+  })
+})
+
+describe('validateLedgerInput', () => {
+  const base = { entryType: 'expense' as const, description: 'Lunch', amountCents: 1500 }
+  it('accepts a valid entry', () => {
+    expect(validateLedgerInput(base)).toEqual({ ok: true })
+  })
+  it('rejects an empty description', () => {
+    expect(validateLedgerInput({ ...base, description: '   ' })).toEqual({ ok: false, error: 'invalid_description' })
+  })
+  it('rejects a bad type', () => {
+    expect(validateLedgerInput({ ...base, entryType: 'x' as unknown as 'income' })).toEqual({ ok: false, error: 'invalid_type' })
+  })
+  it('rejects a non-positive amount', () => {
+    expect(validateLedgerInput({ ...base, amountCents: 0 })).toEqual({ ok: false, error: 'invalid_amount' })
   })
 })

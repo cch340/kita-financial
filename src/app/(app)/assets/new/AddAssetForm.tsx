@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useT } from '@/i18n/LocaleProvider'
+import { Spinner } from '@/components/ui/Spinner'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import type { AssetType } from '@/lib/data/assets-shared'
 import { parseMoneyInput } from '@/lib/money'
@@ -96,7 +97,7 @@ export function AddAssetForm() {
           <Link
             href="/assets"
             aria-label={t('common.close')}
-            className="grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
+            className="pressable-opacity grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
           >
             ×
           </Link>
@@ -116,7 +117,7 @@ export function AddAssetForm() {
                     type="button"
                     key={ty}
                     onClick={() => setType(ty)}
-                    className="min-h-[44px] rounded-xl border px-4 py-3 text-sm font-semibold"
+                    className="pressable min-h-[44px] rounded-xl border px-4 py-3 text-sm font-semibold"
                     style={{
                       borderColor: selected ? 'var(--primary)' : 'var(--hairline)',
                       background: selected ? 'var(--primary)' : 'var(--surface)',
@@ -137,7 +138,7 @@ export function AddAssetForm() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={type ? t(`assets.placeholder.${type}`) : t('assets.name')}
-              className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+              className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
             />
           </div>
 
@@ -171,7 +172,7 @@ export function AddAssetForm() {
                         type="button"
                         key={m}
                         onClick={() => setHolder((h) => (h === m ? null : m))}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 font-semibold"
+                        className="pressable flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 font-semibold"
                         style={{
                           borderColor: selected ? memberColor : 'var(--hairline)',
                           background: selected ? memberColor : 'var(--surface)',
@@ -201,8 +202,10 @@ export function AddAssetForm() {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="w-full rounded-xl bg-[var(--primary-btn)] py-3.5 font-bold text-white disabled:opacity-40"
+            aria-busy={submitting}
+            className="pressable flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary-btn)] py-3.5 font-bold text-white disabled:opacity-40"
           >
+            {submitting && <Spinner />}
             {t('assets.create')}
           </button>
         </form>
@@ -222,7 +225,7 @@ function MoneyField({ label, value, onChange }: { label: string; value: string; 
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="0.00"
-          className="flex-1 bg-transparent text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+          className="flex-1 bg-transparent text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
         />
       </div>
     </label>
@@ -236,7 +239,7 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+        className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
       />
     </label>
   )
@@ -251,7 +254,7 @@ function NumberField({ label, value, onChange }: { label: string; value: string;
         min={0}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+        className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
       />
     </label>
   )

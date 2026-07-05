@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getBudget } from '@/lib/data/budget'
 import { getMembership } from '@/lib/data/household'
 import { formatMonthYear } from '@/lib/data/summary'
@@ -25,9 +26,17 @@ export default async function BudgetPage() {
     <div className="flex flex-col gap-[15px] pb-6">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t(locale, 'budget.title')}</h1>
-        <span className="rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
-          {monthLabel}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
+            {monthLabel}
+          </span>
+          <Link
+            href="/budget/manage"
+            className="pressable rounded-full bg-[var(--primary-btn)] px-3 py-1 text-xs font-bold text-white"
+          >
+            {t(locale, 'budget.manage')}
+          </Link>
+        </div>
       </header>
 
       <Card>

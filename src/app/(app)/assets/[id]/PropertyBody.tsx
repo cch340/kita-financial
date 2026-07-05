@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowDown, ArrowUp, Pencil } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { HeroCard, Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -61,6 +62,13 @@ export function PropertyBody({ asset, txns }: { asset: Asset; txns: AssetTxn[] }
                   <span className="shrink-0 text-sm font-bold tabular-nums" style={{ color }}>
                     {txn.direction === 'in' ? '+' : '−'} <MoneyText cents={txn.amountCents} />
                   </span>
+                  <Link
+                    href={`/assets/${asset.id}/txn/${txn.id}`}
+                    aria-label={t('asset.editTxn')}
+                    className="pressable-opacity grid h-8 w-8 shrink-0 place-items-center text-[var(--muted)]"
+                  >
+                    <Pencil size={15} />
+                  </Link>
                 </div>
 
                 <div className="flex items-center justify-between border-t border-[var(--hairline)] pt-3">
@@ -101,7 +109,7 @@ function Switch({
       aria-checked={checked}
       disabled={disabled}
       onClick={onChange}
-      className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center disabled:opacity-50"
+      className="pressable-opacity flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center disabled:opacity-50"
     >
       <span
         className="relative inline-block h-7 w-12 rounded-full transition-colors"

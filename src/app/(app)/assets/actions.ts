@@ -1,6 +1,7 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { getMembership } from '@/lib/data/household'
+import { validateTxnInput, type TxnInput } from '@/lib/data/assets-shared'
 import { revalidatePath } from 'next/cache'
 
 export async function addAssetTransaction(input: {
@@ -38,6 +39,61 @@ export async function toggleTransferred(txnId: string): Promise<{ ok: boolean }>
   const { error: upErr } = await supabase.from('asset_transactions')
     .update({ settled: !data.settled }).eq('id', txnId).eq('household_id', m.householdId)
   if (upErr) { console.error('toggleTransferred update:', upErr.message); return { ok: false } }
-  revalidatePath(`/assets/${data.asset_id}`); revalidatePath('/assets')
+  revalidatePath(`/assets/${data.asset_id}`); revalidatePath('/assets'); revalidatePath('/')
+  return { ok: true }
+}
+
+export async function updateAssetTransaction(input: {
+  id: string; assetId: string
+} & TxnInput): Promise<{ ok: boolean; error?: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  const valid = validateTxnInput(input)
+  if (!valid.ok) return { ok: false, error: valid.error }
+  const supabase = await createClient()
+  const { error } = await supabase.from('asset_transactions').update({
+    date: input.date, description: input.description, amount_cents: input.amountCents,
+    direction: input.direction, txn_type: input.txnType, settled: input.settled,
+    seq: input.seq, notes: input.notes,
+  }).eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('updateAssetTransaction:', error.message); return { ok: false, error: 'save_failed' } }
+  revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets'); revalidatePath('/')
+  return { ok: true }
+}
+
+export async function updateAsset(input: {
+  id: string; name: string; metadata: Record<string, unknown>
+}): Promise<{ ok: boolean; error?: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  if (!input.name.trim()) return { ok: false, error: 'invalid_name' }
+  const supabase = await createClient()
+  const { error } = await supabase.from('assets')
+    .update({ name: input.name.trim(), metadata: input.metadata })
+    .eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('updateAsset:', error.message); return { ok: false, error: 'save_failed' } }
+  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets'); revalidatePath('/')
+  return { ok: true }
+}
+
+export async function setAssetStatus(input: { id: string; status: 'active' | 'closed' }): Promise<{ ok: boolean }> {
+  const m = await getMembership()
+  if (!m) return { ok: false }
+  const supabase = await createClient()
+  const { error } = await supabase.from('assets')
+    .update({ status: input.status }).eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('setAssetStatus:', error.message); return { ok: false } }
+  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets'); revalidatePath('/')
+  return { ok: true }
+}
+
+export async function deleteAssetTransaction(input: { id: string; assetId: string }): Promise<{ ok: boolean }> {
+  const m = await getMembership()
+  if (!m) return { ok: false }
+  const supabase = await createClient()
+  const { error } = await supabase.from('asset_transactions')
+    .delete().eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('deleteAssetTransaction:', error.message); return { ok: false } }
+  revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }

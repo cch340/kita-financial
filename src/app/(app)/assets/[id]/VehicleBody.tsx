@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { t, type Locale } from '@/i18n'
 import { nextPaymentCents, groupByTxnType } from '@/lib/data/assets-shared'
 import type { AssetTxn } from '@/lib/data/assets-shared'
@@ -15,7 +17,7 @@ function txnTypeLabel(locale: Locale, txnType: string): string {
 // No 'use client' here: this body has no interactivity of its own, so it stays a
 // server component (locale is pre-resolved by the parent and passed down, rather
 // than reading it via useLocale()/useT() — keeps this file free of client-only hooks).
-export function VehicleBody({ txns, locale }: { txns: AssetTxn[]; locale: Locale }) {
+export function VehicleBody({ txns, locale, assetId }: { txns: AssetTxn[]; locale: Locale; assetId: string }) {
   const nextPayment = nextPaymentCents(txns)
   const groups = groupByTxnType(txns)
 
@@ -60,6 +62,13 @@ export function VehicleBody({ txns, locale }: { txns: AssetTxn[]; locale: Locale
                     </div>
                     <MoneyText cents={row.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
                     <StatusChip status={row.settled ? 'paid' : 'upcoming'} />
+                    <Link
+                      href={`/assets/${assetId}/txn/${row.id}`}
+                      aria-label={t(locale, 'asset.editTxn')}
+                      className="pressable-opacity grid h-8 w-8 shrink-0 place-items-center text-[var(--muted)]"
+                    >
+                      <Pencil size={15} />
+                    </Link>
                   </div>
                 ))}
               </Card>

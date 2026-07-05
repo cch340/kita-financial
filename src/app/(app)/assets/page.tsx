@@ -4,6 +4,7 @@ import { getAssetsList } from '@/lib/data/assets'
 import { getMembership } from '@/lib/data/household'
 import { t } from '@/i18n'
 import type { Asset, AssetType, KeyFigure } from '@/lib/data/assets-shared'
+import { splitByStatus } from '@/lib/data/assets-shared'
 import { Card } from '@/components/ui/Card'
 import { IconTile } from '@/components/ui/IconTile'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -42,24 +43,29 @@ export default async function AssetsPage() {
   const [groups, membership] = await Promise.all([getAssetsList(), getMembership()])
   const locale = membership?.language ?? 'en'
 
+  const activeGroups = groups
+    .map((g) => ({ type: g.type, assets: splitByStatus(g.assets).active }))
+    .filter((g) => g.assets.length > 0)
+  const closedAssets = groups.flatMap((g) => splitByStatus(g.assets).closed)
+
   return (
     <div className="flex flex-col gap-5 pb-6">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t(locale, 'assets.title')}</h1>
         <Link
           href="/assets/new"
-          className="flex min-h-[44px] items-center gap-1 rounded-full bg-[var(--primary-btn)] px-4 py-2 text-sm font-bold text-white"
+          className="pressable flex min-h-[44px] items-center gap-1 rounded-full bg-[var(--primary-btn)] px-4 py-2 text-sm font-bold text-white"
         >
           <Plus size={16} strokeWidth={2.5} />
           {t(locale, 'assets.add')}
         </Link>
       </header>
 
-      {groups.length === 0 ? (
+      {activeGroups.length === 0 && closedAssets.length === 0 ? (
         <p className="py-10 text-center text-sm font-semibold text-[var(--faint)]">{t(locale, 'assets.empty')}</p>
       ) : (
         <div className="flex flex-col gap-5">
-          {groups.map((g) => (
+          {activeGroups.map((g) => (
             <div key={g.type} className="flex flex-col gap-2">
               <span className="px-1 text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
                 {t(locale, `assets.type.${g.type}`)}
@@ -71,9 +77,26 @@ export default async function AssetsPage() {
               </div>
             </div>
           ))}
+
+          {closedAssets.length > 0 && <ClosedAssets assets={closedAssets} locale={locale} />}
         </div>
       )}
     </div>
+  )
+}
+
+function ClosedAssets({ assets, locale }: { assets: (Asset & { key: KeyFigure })[]; locale: 'en' | 'zh' }) {
+  return (
+    <details className="flex flex-col gap-2">
+      <summary className="cursor-pointer list-none px-1 text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
+        {t(locale, 'status.closed')} · {assets.length}
+      </summary>
+      <div className="mt-2 flex flex-col gap-2 opacity-60">
+        {assets.map((a) => (
+          <AssetCard key={a.id} asset={a} locale={locale} />
+        ))}
+      </div>
+    </details>
   )
 }
 
@@ -81,7 +104,7 @@ function AssetCard({ asset, locale }: { asset: Asset & { key: KeyFigure }; local
   const meta = assetMetaText(asset)
   return (
     <Link href={`/assets/${asset.id}`}>
-      <Card className="flex items-center gap-3">
+      <Card className="pressable flex items-center gap-3">
         <IconTile name={TYPE_ICON[asset.type]} tint={TYPE_TINT[asset.type]} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold text-[var(--ink)]">{asset.name}</p>
