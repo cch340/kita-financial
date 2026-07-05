@@ -30,7 +30,7 @@
 ### Task 1: Migration — tables, RLS, FK columns, backfill, drop old text
 
 **Files:**
-- Create: `supabase/migrations/0003_expense_catalog.sql`
+- Create: `supabase/migrations/0005_expense_catalog.sql`
 - Modify: `src/lib/data/types.ts` (ExpenseRow reshape)
 
 **Interfaces:**
@@ -39,7 +39,7 @@
 
 - [ ] **Step 1: Write the migration SQL**
 
-Create `supabase/migrations/0003_expense_catalog.sql`:
+Create `supabase/migrations/0005_expense_catalog.sql`:
 
 ```sql
 -- === Expense catalog: user-managed Category / Vendor / Location ===
@@ -138,11 +138,11 @@ This project has no local Postgres; the migration is applied by hand in the Supa
 - [ ] **Step 4: Commit**
 
 ```bash
-git add supabase/migrations/0003_expense_catalog.sql src/lib/data/types.ts
+git add supabase/migrations/0005_expense_catalog.sql src/lib/data/types.ts
 git commit -m "feat(db): add expense catalog tables, FK links, backfill migration"
 ```
 
-> ⚠️ **Deploy note (record in PR description, not code):** because columns are dropped, run `0003` in the Supabase SQL editor in the **same release** as this code. Verify backfill counts (`select count(*) from vendors;` etc.) before the `drop column` lines if applying interactively.
+> ⚠️ **Deploy note (record in PR description, not code):** because columns are dropped, run `0005` in the Supabase SQL editor in the **same release** as this code. Verify backfill counts (`select count(*) from vendors;` etc.) before the `drop column` lines if applying interactively.
 
 ---
 
