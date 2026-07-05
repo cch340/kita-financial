@@ -53,7 +53,7 @@ The app's **schema already covers ~95% of the Excel**. What's missing is not dat
 - Decide whether live DB rows past June match the Excel; if the Excel has newer rows than the DB (or vice versa), do a one-time reconciliation before Phase 8.
 
 ## 4. Open questions for the user
-1. Is the Excel or the app currently ahead (which one has the newer entries since ~June)?
-2. For budget-vs-actual: happy to link expense categories to budget categories explicitly (Phase 8.5), or should budget categories become the expense categories outright?
-3. Is settle-up between CH/JC (who owes whom) a wanted feature, or is the joint fund the only sharing mechanism?
-4. Priority check: is full-CRUD-first (Phase 7) the right order, or is anything above more urgent?
+1. Is the Excel or the app currently ahead (which one has the newer entries since ~June)? they are both the same now, no new row added in both excel and this app
+2. For budget-vs-actual: happy to link expense categories to budget categories explicitly (Phase 8.5), or should budget categories become the expense categories outright? dont link them, expense will have it's own category
+3. Is settle-up between CH/JC (who owes whom) a wanted feature, or is the joint fund the only sharing mechanism? settle-up is not a wanted feature, and yes joint fund is the only sharing mechanism
+4. Priority check: is full-CRUD-first (Phase 7) the right order, or is anything above more urgent? the currently is the right order
