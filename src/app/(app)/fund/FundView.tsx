@@ -63,7 +63,8 @@ export function FundView({ overview, locale, month, config }: Props) {
             type="button"
             onClick={() => setEditingConfig((v) => !v)}
             aria-label={t('fund.editConfig')}
-            className="pressable-opacity grid h-9 w-9 place-items-center rounded-full text-[var(--muted)]"
+            aria-expanded={editingConfig}
+            className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]"
           >
             <Pencil size={16} />
           </button>
