@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { moveItem } from './budget-shared'
+import { moveItem, localizedName } from './budget-shared'
 
 describe('moveItem', () => {
   it('moves an item up', () => {
@@ -18,5 +18,20 @@ describe('moveItem', () => {
     const src = ['a', 'b', 'c']
     moveItem(src, 1, 1)
     expect(src).toEqual(['a', 'b', 'c'])
+  })
+})
+
+describe('localizedName', () => {
+  it('returns the English name for en locale', () => {
+    expect(localizedName('House', '房贷', 'en')).toBe('House')
+  })
+  it('returns the Chinese name for zh locale when present', () => {
+    expect(localizedName('House', '房贷', 'zh')).toBe('房贷')
+  })
+  it('falls back to English when zh name is null', () => {
+    expect(localizedName('House', null, 'zh')).toBe('House')
+  })
+  it('falls back to English when zh name is empty', () => {
+    expect(localizedName('House', '', 'zh')).toBe('House')
   })
 })

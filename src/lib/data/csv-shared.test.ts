@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { centsToDecimal, csvField, toCsv } from './csv-shared'
+import { centsToDecimal, csvField, toCsv, assetCsvFilename } from './csv-shared'
 
 describe('centsToDecimal', () => {
   it('formats positive cents with two decimals', () => {
@@ -41,5 +41,20 @@ describe('toCsv', () => {
     expect(csv).toBe(
       'Date,Vendor,Amount\r\n2026-01-02,"Cafe, Co",12.50\r\n2026-01-03,Shop,3.00',
     )
+  })
+})
+
+describe('assetCsvFilename', () => {
+  it('slugifies an ASCII asset name', () => {
+    expect(assetCsvFilename('TreeO Condo', 'abc-123')).toBe('kita-asset-treeo-condo.csv')
+  })
+  it('falls back to the id when the name is all non-ASCII (all-CJK)', () => {
+    expect(assetCsvFilename('房产', 'abc-123')).toBe('kita-asset-abc-123.csv')
+  })
+  it('falls back to the id when the name is empty', () => {
+    expect(assetCsvFilename('', 'abc-123')).toBe('kita-asset-abc-123.csv')
+  })
+  it('trims leading/trailing separators from the slug', () => {
+    expect(assetCsvFilename('  Myvi!!  ', 'x')).toBe('kita-asset-myvi.csv')
   })
 })

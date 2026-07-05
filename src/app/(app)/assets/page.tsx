@@ -89,7 +89,7 @@ function ClosedAssets({ assets, locale }: { assets: (Asset & { key: KeyFigure })
   return (
     <details className="flex flex-col gap-2">
       <summary className="cursor-pointer list-none px-1 text-xs font-bold tracking-wide text-[var(--muted)] uppercase">
-        {t(locale, 'status.closed')} · {assets.length}
+        {t(locale, 'assets.closed')} · {assets.length}
       </summary>
       <div className="mt-2 flex flex-col gap-2 opacity-60">
         {assets.map((a) => (

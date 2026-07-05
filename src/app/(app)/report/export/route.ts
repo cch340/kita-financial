@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getMembership } from '@/lib/data/household'
 import { getExpensesForYear, getLedgerForYear } from '@/lib/data/report'
 import { getAsset } from '@/lib/data/assets'
-import { toCsv, centsToDecimal } from '@/lib/data/csv-shared'
+import { toCsv, centsToDecimal, assetCsvFilename } from '@/lib/data/csv-shared'
 import { categoryLabel } from '@/lib/categories'
 
 // Export CSVs are always request-time, per-user (RLS-scoped) — never cache.
@@ -89,8 +89,7 @@ export async function GET(request: NextRequest) {
         t.notes,
       ]),
     )
-    const safeName = result.asset.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()
-    return csvResponse(`kita-asset-${safeName}.csv`, csv)
+    return csvResponse(assetCsvFilename(result.asset.name, result.asset.id), csv)
   }
 
   return NextResponse.json({ ok: false, error: 'invalid_type' }, { status: 400 })

@@ -218,7 +218,10 @@ function ExpenseRowCard({
       <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
         <button
           type="button"
-          onClick={() => router.push(`/expenses/edit/${row.id}`)}
+          onClick={() => {
+            setDragX(0)
+            router.push(`/expenses/edit/${row.id}`)
+          }}
           className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
           style={{ background: 'var(--pending-text)' }}
         >

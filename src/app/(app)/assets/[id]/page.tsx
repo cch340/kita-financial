@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Pencil } from 'lucide-react'
+import { Pencil, Download } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { getAsset } from '@/lib/data/assets'
 import { getMembership } from '@/lib/data/household'
@@ -35,7 +35,7 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
           <h1 className="truncate text-xl font-extrabold text-[var(--ink-head)]">{asset.name}</h1>
           <p className="truncate text-xs font-semibold text-[var(--muted)]">
             {t(locale, `assets.type.${asset.type}`)}
-            {asset.status === 'closed' ? ` · ${t(locale, 'status.closed')}` : ''}
+            {asset.status === 'closed' ? ` · ${t(locale, 'assets.closed')}` : ''}
           </p>
         </div>
         <Link
@@ -53,6 +53,15 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
       {asset.type === 'other' && <GenericBody txns={txns} locale={locale} assetId={asset.id} />}
 
       <AddTxn assetId={asset.id} defaultDirection={defaultDirection} />
+
+      <a
+        href={`/report/export?type=asset&id=${asset.id}`}
+        download
+        className="pressable flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] py-3 text-sm font-bold text-[var(--ink)]"
+      >
+        <Download size={16} className="text-[var(--muted)]" />
+        {t(locale, 'asset.exportCsv')}
+      </a>
     </div>
   )
 }

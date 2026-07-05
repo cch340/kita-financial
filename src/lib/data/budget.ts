@@ -70,11 +70,11 @@ export async function getBudgetCategoriesRaw(): Promise<CategoryRow[]> {
   if (!m) return []
   const supabase = await createClient()
   const { data, error } = await supabase.from('budget_categories')
-    .select('id, name_en, jc_cents, ch_cents, total_cents, sort_order')
+    .select('id, name_en, name_zh, jc_cents, ch_cents, total_cents, sort_order')
     .eq('household_id', m.householdId).order('sort_order', { ascending: true })
   if (error) { console.error('getBudgetCategoriesRaw:', error.message); return [] }
-  return ((data ?? []) as { id: string; name_en: string; jc_cents: number; ch_cents: number; total_cents: number; sort_order: number }[])
-    .map((c) => ({ id: c.id, nameEn: c.name_en, jcCents: c.jc_cents, chCents: c.ch_cents, totalCents: c.total_cents, sortOrder: c.sort_order }))
+  return ((data ?? []) as { id: string; name_en: string; name_zh: string | null; jc_cents: number; ch_cents: number; total_cents: number; sort_order: number }[])
+    .map((c) => ({ id: c.id, nameEn: c.name_en, nameZh: c.name_zh, jcCents: c.jc_cents, chCents: c.ch_cents, totalCents: c.total_cents, sortOrder: c.sort_order }))
 }
 
 export async function getCommitmentsRaw(): Promise<CommitmentRow[]> {
@@ -82,9 +82,9 @@ export async function getCommitmentsRaw(): Promise<CommitmentRow[]> {
   if (!m) return []
   const supabase = await createClient()
   const { data, error } = await supabase.from('monthly_commitments')
-    .select('id, name_en, amount_cents, sort_order')
+    .select('id, name_en, name_zh, amount_cents, sort_order')
     .eq('household_id', m.householdId).order('sort_order', { ascending: true })
   if (error) { console.error('getCommitmentsRaw:', error.message); return [] }
-  return ((data ?? []) as { id: string; name_en: string; amount_cents: number; sort_order: number }[])
-    .map((c) => ({ id: c.id, nameEn: c.name_en, amountCents: c.amount_cents, sortOrder: c.sort_order }))
+  return ((data ?? []) as { id: string; name_en: string; name_zh: string | null; amount_cents: number; sort_order: number }[])
+    .map((c) => ({ id: c.id, nameEn: c.name_en, nameZh: c.name_zh, amountCents: c.amount_cents, sortOrder: c.sort_order }))
 }

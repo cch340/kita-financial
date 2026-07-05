@@ -63,12 +63,12 @@ export function BudgetManager({
             disabled={busy}
             canUp={i > 0}
             canDown={i < categories.length - 1}
-            onSave={(nameEn, jcCents, chCents) => run(() => updateCategory({ id: c.id, nameEn, jcCents, chCents }))}
+            onSave={(nameEn, nameZh, jcCents, chCents) => run(() => updateCategory({ id: c.id, nameEn, nameZh, jcCents, chCents }))}
             onDelete={() => run(() => deleteCategory(c.id))}
             onMove={(delta) => run(() => reorderCategories(moveItem(categories, i, delta).map((x) => x.id)))}
           />
         ))}
-        <CategoryAdder disabled={busy} onAdd={(nameEn, jcCents, chCents) => run(() => createCategory({ nameEn, jcCents, chCents }))} />
+        <CategoryAdder disabled={busy} onAdd={(nameEn, nameZh, jcCents, chCents) => run(() => createCategory({ nameEn, nameZh, jcCents, chCents }))} />
       </section>
 
       {/* commitments */}
@@ -81,12 +81,12 @@ export function BudgetManager({
             disabled={busy}
             canUp={i > 0}
             canDown={i < commitments.length - 1}
-            onSave={(nameEn, amountCents) => run(() => updateCommitment({ id: c.id, nameEn, amountCents }))}
+            onSave={(nameEn, nameZh, amountCents) => run(() => updateCommitment({ id: c.id, nameEn, nameZh, amountCents }))}
             onDelete={() => run(() => deleteCommitment(c.id))}
             onMove={(delta) => run(() => reorderCommitments(moveItem(commitments, i, delta).map((x) => x.id)))}
           />
         ))}
-        <CommitmentAdder disabled={busy} onAdd={(nameEn, amountCents) => run(() => createCommitment({ nameEn, amountCents }))} />
+        <CommitmentAdder disabled={busy} onAdd={(nameEn, nameZh, amountCents) => run(() => createCommitment({ nameEn, nameZh, amountCents }))} />
       </section>
 
       {busy && <div className="flex justify-center py-2"><Spinner /></div>}
@@ -113,11 +113,12 @@ function MoveButtons({ canUp, canDown, disabled, onMove }: {
 
 function CategoryEditor({ row, disabled, canUp, canDown, onSave, onDelete, onMove }: {
   row: CategoryRow; disabled: boolean; canUp: boolean; canDown: boolean
-  onSave: (nameEn: string, jcCents: number, chCents: number) => void
+  onSave: (nameEn: string, nameZh: string | null, jcCents: number, chCents: number) => void
   onDelete: () => void; onMove: (delta: -1 | 1) => void
 }) {
   const t = useT()
   const [name, setName] = useState(row.nameEn)
+  const [nameZh, setNameZh] = useState(row.nameZh ?? '')
   const [jc, setJc] = useState((row.jcCents / 100).toFixed(2))
   const [ch, setCh] = useState((row.chCents / 100).toFixed(2))
   return (
@@ -126,12 +127,14 @@ function CategoryEditor({ row, disabled, canUp, canDown, onSave, onDelete, onMov
       <div className="flex flex-1 flex-col gap-2">
         <input value={name} onChange={(e) => setName(e.target.value)}
           className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)] outline-none" />
+        <input value={nameZh} onChange={(e) => setNameZh(e.target.value)} placeholder={t('budget.nameZhOptional')}
+          className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
         <div className="flex gap-2">
           <MoneyMini label="JC" value={jc} onChange={setJc} />
           <MoneyMini label="CH" value={ch} onChange={setCh} />
         </div>
         <div className="flex gap-2">
-          <button type="button" disabled={disabled} onClick={() => onSave(name, parseMoneyInput(jc), parseMoneyInput(ch))}
+          <button type="button" disabled={disabled} onClick={() => onSave(name, nameZh.trim() || null, parseMoneyInput(jc), parseMoneyInput(ch))}
             className="pressable min-h-[40px] flex-1 rounded-lg bg-[var(--primary-btn)] text-sm font-bold text-white disabled:opacity-40">
             {t('personal.save')}
           </button>
@@ -145,10 +148,11 @@ function CategoryEditor({ row, disabled, canUp, canDown, onSave, onDelete, onMov
   )
 }
 
-function CategoryAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameEn: string, jcCents: number, chCents: number) => void }) {
+function CategoryAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameEn: string, nameZh: string | null, jcCents: number, chCents: number) => void }) {
   const t = useT()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
+  const [nameZh, setNameZh] = useState('')
   const [jc, setJc] = useState('')
   const [ch, setCh] = useState('')
   if (!open) {
@@ -163,13 +167,15 @@ function CategoryAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameEn:
     <Card className="flex flex-col gap-2">
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('budget.categoryName')}
         className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
+      <input value={nameZh} onChange={(e) => setNameZh(e.target.value)} placeholder={t('budget.nameZhOptional')}
+        className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
       <div className="flex gap-2">
         <MoneyMini label="JC" value={jc} onChange={setJc} />
         <MoneyMini label="CH" value={ch} onChange={setCh} />
       </div>
       <div className="flex gap-2">
         <button type="button" disabled={disabled || !name.trim()}
-          onClick={() => { onAdd(name, parseMoneyInput(jc), parseMoneyInput(ch)); setOpen(false); setName(''); setJc(''); setCh('') }}
+          onClick={() => { onAdd(name, nameZh.trim() || null, parseMoneyInput(jc), parseMoneyInput(ch)); setOpen(false); setName(''); setNameZh(''); setJc(''); setCh('') }}
           className="pressable min-h-[40px] flex-1 rounded-lg bg-[var(--primary-btn)] text-sm font-bold text-white disabled:opacity-40">
           {t('budget.add')}
         </button>
@@ -182,38 +188,46 @@ function CategoryAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameEn:
 
 function CommitmentEditor({ row, disabled, canUp, canDown, onSave, onDelete, onMove }: {
   row: CommitmentRow; disabled: boolean; canUp: boolean; canDown: boolean
-  onSave: (nameEn: string, amountCents: number) => void
+  onSave: (nameEn: string, nameZh: string | null, amountCents: number) => void
   onDelete: () => void; onMove: (delta: -1 | 1) => void
 }) {
   const t = useT()
   const [name, setName] = useState(row.nameEn)
+  const [nameZh, setNameZh] = useState(row.nameZh ?? '')
   const [amount, setAmount] = useState((row.amountCents / 100).toFixed(2))
   return (
-    <Card className="flex items-center gap-2">
+    <Card className="flex items-start gap-2">
       <MoveButtons canUp={canUp} canDown={canDown} disabled={disabled} onMove={onMove} />
-      <input value={name} onChange={(e) => setName(e.target.value)}
-        className="min-w-0 flex-1 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)] outline-none" />
-      <div className="flex w-24 shrink-0 items-center gap-1 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-2 py-2">
-        <span className="text-xs text-[var(--muted)]">RM</span>
-        <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)}
-          className="w-full bg-transparent text-sm text-[var(--ink)] outline-none" />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <input value={name} onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)] outline-none" />
+        <input value={nameZh} onChange={(e) => setNameZh(e.target.value)} placeholder={t('budget.nameZhOptional')}
+          className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
+        <div className="flex items-center gap-2">
+          <div className="flex w-24 shrink-0 items-center gap-1 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-2 py-2">
+            <span className="text-xs text-[var(--muted)]">RM</span>
+            <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)}
+              className="w-full bg-transparent text-sm text-[var(--ink)] outline-none" />
+          </div>
+          <button type="button" disabled={disabled} onClick={() => onSave(name, nameZh.trim() || null, parseMoneyInput(amount))}
+            className="pressable min-h-[40px] flex-1 rounded-lg bg-[var(--primary-btn)] px-3 text-sm font-bold text-white disabled:opacity-40">
+            {t('personal.save')}
+          </button>
+          <button type="button" disabled={disabled} onClick={onDelete} aria-label={t('personal.delete')}
+            className="pressable grid min-h-[40px] w-10 shrink-0 place-items-center rounded-lg border border-[var(--hairline)] text-[var(--danger)] disabled:opacity-40">
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
-      <button type="button" disabled={disabled} onClick={() => onSave(name, parseMoneyInput(amount))}
-        className="pressable min-h-[40px] shrink-0 rounded-lg bg-[var(--primary-btn)] px-3 text-sm font-bold text-white disabled:opacity-40">
-        {t('personal.save')}
-      </button>
-      <button type="button" disabled={disabled} onClick={onDelete} aria-label={t('personal.delete')}
-        className="pressable grid min-h-[40px] w-10 shrink-0 place-items-center rounded-lg border border-[var(--hairline)] text-[var(--danger)] disabled:opacity-40">
-        <Trash2 size={16} />
-      </button>
     </Card>
   )
 }
 
-function CommitmentAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameEn: string, amountCents: number) => void }) {
+function CommitmentAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameEn: string, nameZh: string | null, amountCents: number) => void }) {
   const t = useT()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
+  const [nameZh, setNameZh] = useState('')
   const [amount, setAmount] = useState('')
   if (!open) {
     return (
@@ -227,6 +241,8 @@ function CommitmentAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameE
     <Card className="flex flex-col gap-2">
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('budget.commitmentName')}
         className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
+      <input value={nameZh} onChange={(e) => setNameZh(e.target.value)} placeholder={t('budget.nameZhOptional')}
+        className="w-full rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
       <div className="flex items-center gap-2 rounded-lg border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2">
         <span className="text-xs text-[var(--muted)]">RM</span>
         <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00"
@@ -234,7 +250,7 @@ function CommitmentAdder({ disabled, onAdd }: { disabled: boolean; onAdd: (nameE
       </div>
       <div className="flex gap-2">
         <button type="button" disabled={disabled || !name.trim()}
-          onClick={() => { onAdd(name, parseMoneyInput(amount)); setOpen(false); setName(''); setAmount('') }}
+          onClick={() => { onAdd(name, nameZh.trim() || null, parseMoneyInput(amount)); setOpen(false); setName(''); setNameZh(''); setAmount('') }}
           className="pressable min-h-[40px] flex-1 rounded-lg bg-[var(--primary-btn)] text-sm font-bold text-white disabled:opacity-40">
           {t('budget.add')}
         </button>

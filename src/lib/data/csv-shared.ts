@@ -19,3 +19,11 @@ export function csvField(value: string | number | null | undefined): string {
 export function toCsv(headers: string[], rows: (string | number | null)[][]): string {
   return [headers, ...rows].map((row) => row.map(csvField).join(',')).join('\r\n')
 }
+
+/** Build the download filename for an asset CSV. Slugifies the asset name to ASCII;
+ *  when that yields nothing (e.g. an all-CJK name) or the name is blank, falls back
+ *  to the asset id so the file is never named `kita-asset-.csv`. */
+export function assetCsvFilename(name: string, id: string): string {
+  const slug = name.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase()
+  return `kita-asset-${slug || id}.csv`
+}

@@ -1,21 +1,28 @@
 import Link from 'next/link'
 import { getBudget } from '@/lib/data/budget'
+import { localizedName } from '@/lib/data/budget-shared'
 import { getMembership } from '@/lib/data/household'
-import { formatMonthYear } from '@/lib/data/summary'
 import { t } from '@/i18n'
 import { Card } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { MoneyText } from '@/components/ui/MoneyText'
+import { MonthStepper } from '@/components/ui/MonthStepper'
 import { SplitBar, ActualBar } from './BudgetBars'
 
-export default async function BudgetPage() {
+export default async function BudgetPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ y?: string; m?: string }>
+}) {
+  const { y, m } = await searchParams
   const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth() + 1
+  const parsedYear = Number(y)
+  const parsedMonth = Number(m)
+  const year = Number.isInteger(parsedYear) && parsedYear >= 2000 && parsedYear <= 2100 ? parsedYear : now.getFullYear()
+  const month = Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth : now.getMonth() + 1
 
   const [budget, membership] = await Promise.all([getBudget(year, month), getMembership()])
   const locale = membership?.language ?? 'en'
-  const monthLabel = formatMonthYear(year, month, locale)
 
   const { overall, categories, commitments } = budget
   const overallProgress = overall.totalCents > 0 ? overall.spentCents / overall.totalCents : 0
@@ -26,18 +33,15 @@ export default async function BudgetPage() {
     <div className="flex flex-col gap-[15px] pb-6">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t(locale, 'budget.title')}</h1>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
-            {monthLabel}
-          </span>
-          <Link
-            href="/budget/manage"
-            className="pressable rounded-full bg-[var(--primary-btn)] px-3 py-1 text-xs font-bold text-white"
-          >
-            {t(locale, 'budget.manage')}
-          </Link>
-        </div>
+        <Link
+          href="/budget/manage"
+          className="pressable rounded-full bg-[var(--primary-btn)] px-3 py-1 text-xs font-bold text-white"
+        >
+          {t(locale, 'budget.manage')}
+        </Link>
       </header>
+
+      <MonthStepper year={year} month={month} basePath="/budget" />
 
       <Card>
         <div className="flex items-baseline gap-1.5">
@@ -55,7 +59,7 @@ export default async function BudgetPage() {
       </Card>
 
       {categories.map((cat, i) => {
-        const name = locale === 'zh' && cat.nameZh ? cat.nameZh : cat.nameEn
+        const name = localizedName(cat.nameEn, cat.nameZh, locale)
         return (
           <Card key={i} className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -76,7 +80,7 @@ export default async function BudgetPage() {
           </span>
         </div>
         {commitments.map((c, i) => {
-          const name = locale === 'zh' && c.nameZh ? c.nameZh : c.nameEn
+          const name = localizedName(c.nameEn, c.nameZh, locale)
           return (
             <div
               key={i}

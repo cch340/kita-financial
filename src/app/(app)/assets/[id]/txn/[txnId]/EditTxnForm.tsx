@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useT } from '@/i18n/LocaleProvider'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmButton } from '@/components/ui/ConfirmButton'
 import { parseMoneyInput } from '@/lib/money'
 import type { AssetTxn, AssetType } from '@/lib/data/assets-shared'
 import { updateAssetTransaction, deleteAssetTransaction } from '@/app/(app)/assets/actions'
@@ -165,14 +166,13 @@ export function EditTxnForm({
             {busy && <Spinner />}
             {t('asset.form.saveChanges')}
           </button>
-          <button
-            type="button"
-            onClick={remove}
+          <ConfirmButton
+            onConfirm={remove}
+            label={t('asset.deleteTxn')}
+            confirmLabel={t('common.sure')}
             disabled={busy}
             className="pressable min-h-[44px] w-full rounded-xl border border-[var(--hairline)] py-3 text-sm font-bold text-[var(--danger)] disabled:opacity-40"
-          >
-            {t('asset.deleteTxn')}
-          </button>
+          />
         </form>
       </div>
     </div>
