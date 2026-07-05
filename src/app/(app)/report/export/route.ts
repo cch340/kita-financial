@@ -3,7 +3,6 @@ import { getMembership } from '@/lib/data/household'
 import { getExpensesForYear, getLedgerForYear } from '@/lib/data/report'
 import { getAsset } from '@/lib/data/assets'
 import { toCsv, centsToDecimal, assetCsvFilename } from '@/lib/data/csv-shared'
-import { categoryLabel } from '@/lib/categories'
 
 // Export CSVs are always request-time, per-user (RLS-scoped) — never cache.
 export const dynamic = 'force-dynamic'
@@ -40,10 +39,10 @@ export async function GET(request: NextRequest) {
       ['Date', 'Vendor', 'Location', 'Details', 'Category', 'Amount', 'Paid By'],
       rows.map((r) => [
         r.date,
-        r.vendor,
-        r.location,
+        r.vendor_name,
+        r.location_name,
         r.details,
-        r.category ? categoryLabel(r.category, 'en') : '',
+        r.category_name ?? '',
         centsToDecimal(r.amount_cents),
         r.paid_by,
       ]),
