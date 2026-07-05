@@ -99,7 +99,13 @@ export async function runReminderScan(todayISO: string): Promise<{ sent: number;
       .eq('txn_type', 'monthly_commitment')
       .gte('date', firstOfThisMonth)
       .lt('date', firstOfNextMonth)
-    if (existErr) console.error('runReminderScan commitment txns:', existErr.message)
+    if (existErr) {
+      // Fail-safe: if we cannot verify which commitments were already posted this
+      // month, skip posting entirely rather than risk double-posting. Return the
+      // current tallies with `posted` unchanged.
+      console.error('runReminderScan commitment txns:', existErr.message)
+      return { sent, posted }
+    }
     const existing: ExistingCommitment[] = (existingTxns ?? []).map((r) => ({
       assetId: r.asset_id as string,
       dateISO: r.date as string,
