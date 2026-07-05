@@ -11,5 +11,6 @@ export async function setExpenseTriageAction(
   if (!res.ok) return { ok: false, error: res.error }
   revalidatePath('/expenses')
   revalidatePath('/')
+  revalidatePath('/budget')
   return { ok: true }
 }
