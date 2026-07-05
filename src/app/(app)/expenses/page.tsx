@@ -1,4 +1,4 @@
-import { listExpenses, getMonthTotalCents } from '@/lib/data/expenses'
+import { listExpenses, getMonthTotalCents, countExpensesNeedingTriage } from '@/lib/data/expenses'
 import { ExpensesView } from './ExpensesView'
 
 export default async function ExpensesPage({
@@ -14,9 +14,10 @@ export default async function ExpensesPage({
   const year = Number.isInteger(parsedYear) && parsedYear >= 2000 && parsedYear <= 2100 ? parsedYear : now.getFullYear()
   const month = Number.isInteger(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth : now.getMonth() + 1
 
-  const [rows, totalCents] = await Promise.all([
+  const [rows, totalCents, triageCount] = await Promise.all([
     listExpenses({ year, month }),
     getMonthTotalCents(year, month),
+    countExpensesNeedingTriage(),
   ])
 
   const todayISO = now.toISOString().slice(0, 10)
@@ -28,6 +29,7 @@ export default async function ExpensesPage({
       year={year}
       month={month}
       todayISO={todayISO}
+      triageCount={triageCount}
     />
   )
 }
