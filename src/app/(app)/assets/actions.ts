@@ -39,7 +39,7 @@ export async function toggleTransferred(txnId: string): Promise<{ ok: boolean }>
   const { error: upErr } = await supabase.from('asset_transactions')
     .update({ settled: !data.settled }).eq('id', txnId).eq('household_id', m.householdId)
   if (upErr) { console.error('toggleTransferred update:', upErr.message); return { ok: false } }
-  revalidatePath(`/assets/${data.asset_id}`); revalidatePath('/assets')
+  revalidatePath(`/assets/${data.asset_id}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }
 
@@ -57,7 +57,7 @@ export async function updateAssetTransaction(input: {
     seq: input.seq, notes: input.notes,
   }).eq('id', input.id).eq('household_id', m.householdId)
   if (error) { console.error('updateAssetTransaction:', error.message); return { ok: false, error: 'save_failed' } }
-  revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets')
+  revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }
 
@@ -72,7 +72,7 @@ export async function updateAsset(input: {
     .update({ name: input.name.trim(), metadata: input.metadata })
     .eq('id', input.id).eq('household_id', m.householdId)
   if (error) { console.error('updateAsset:', error.message); return { ok: false, error: 'save_failed' } }
-  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets')
+  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }
 
@@ -83,7 +83,7 @@ export async function setAssetStatus(input: { id: string; status: 'active' | 'cl
   const { error } = await supabase.from('assets')
     .update({ status: input.status }).eq('id', input.id).eq('household_id', m.householdId)
   if (error) { console.error('setAssetStatus:', error.message); return { ok: false } }
-  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets')
+  revalidatePath(`/assets/${input.id}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }
 
@@ -94,6 +94,6 @@ export async function deleteAssetTransaction(input: { id: string; assetId: strin
   const { error } = await supabase.from('asset_transactions')
     .delete().eq('id', input.id).eq('household_id', m.householdId)
   if (error) { console.error('deleteAssetTransaction:', error.message); return { ok: false } }
-  revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets')
+  revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }
