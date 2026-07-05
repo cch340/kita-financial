@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getBudget } from '@/lib/data/budget'
+import { localizedName } from '@/lib/data/budget-shared'
 import { getMembership } from '@/lib/data/household'
 import { formatMonthYear } from '@/lib/data/summary'
 import { t } from '@/i18n'
@@ -55,7 +56,7 @@ export default async function BudgetPage() {
       </Card>
 
       {categories.map((cat, i) => {
-        const name = locale === 'zh' && cat.nameZh ? cat.nameZh : cat.nameEn
+        const name = localizedName(cat.nameEn, cat.nameZh, locale)
         return (
           <Card key={i} className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -76,7 +77,7 @@ export default async function BudgetPage() {
           </span>
         </div>
         {commitments.map((c, i) => {
-          const name = locale === 'zh' && c.nameZh ? c.nameZh : c.nameEn
+          const name = localizedName(c.nameEn, c.nameZh, locale)
           return (
             <div
               key={i}
