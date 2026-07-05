@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { useT, useLocale } from '@/i18n/LocaleProvider'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
+import { Spinner } from '@/components/ui/Spinner'
 import type { SettingsData } from '@/lib/data/settings-shared'
 import { urlBase64ToUint8Array, serializeSubscription } from '@/lib/push/push-shared'
 import {
@@ -16,12 +17,16 @@ export function SettingsView({ data }: { data: SettingsData }) {
   const t = useT()
   const locale = useLocale()
   const router = useRouter()
-  const [, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
 
   const [monthly, setMonthly] = useState(data.reminders.monthly)
   const [yearly, setYearly] = useState(data.reminders.yearly)
   const [email, setEmail] = useState('')
   const [inviteMsg, setInviteMsg] = useState<{ ok: boolean; key: string } | null>(null)
+  const [inviting, setInviting] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [pushBusy, setPushBusy] = useState(false)
 
   const [pushOn, setPushOn] = useState(data.pushSubscribed)
   const [supported, setSupported] = useState(false)
@@ -37,7 +42,8 @@ export function SettingsView({ data }: { data: SettingsData }) {
   }, [])
 
   async function onPush(next: boolean) {
-    if (!supported) return
+    if (!supported || pushBusy) return
+    setPushBusy(true)
     try {
       const reg = await navigator.serviceWorker.ready
       if (next) {
@@ -53,12 +59,16 @@ export function SettingsView({ data }: { data: SettingsData }) {
         setPushOn(false)
       }
     } catch { setPushOn(false) }
+    finally { setPushBusy(false) }
   }
 
   async function onTest() {
+    if (testing) return
+    setTesting(true)
     setTestMsg(null)
     const res = await sendTestPush()
     setTestMsg(res.ok ? { ok: true, key: 'push.testSent' } : { ok: false, key: `error.${res.error}` })
+    setTesting(false)
   }
 
   function onLanguage(lang: 'en' | 'zh') {
@@ -77,9 +87,18 @@ export function SettingsView({ data }: { data: SettingsData }) {
     startTransition(() => { updateReminderSetting('yearly_big_payment', next) })
   }
   async function onInvite() {
+    if (inviting || !email.trim()) return
+    setInviting(true)
     const res = await inviteMember(email)
     if (res.ok) { setInviteMsg({ ok: true, key: 'settings.inviteAdded' }); setEmail(''); router.refresh() }
     else setInviteMsg({ ok: false, key: `error.${res.error}` })
+    setInviting(false)
+  }
+
+  function onSignOut() {
+    if (signingOut) return
+    setSigningOut(true)
+    startTransition(() => { signOutAction() })
   }
 
   return (
@@ -87,7 +106,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
       <div className="mx-auto flex min-h-full max-w-[430px] flex-col px-[18px] pb-10 pt-4">
         {/* header */}
         <div className="flex items-center gap-1 py-2">
-          <Link href="/" aria-label={t('common.back')} className="grid h-11 w-11 place-items-center -ml-2 text-[var(--muted)]">
+          <Link href="/" aria-label={t('common.back')} className="pressable-opacity grid h-11 w-11 place-items-center -ml-2 text-[var(--muted)]">
             <ChevronLeft size={24} />
           </Link>
           <h1 className="text-lg font-extrabold text-[var(--ink-head)]">{t('settings.title')}</h1>
@@ -112,10 +131,11 @@ export function SettingsView({ data }: { data: SettingsData }) {
             <input
               type="email" value={email} onChange={(e) => { setEmail(e.target.value); setInviteMsg(null) }}
               placeholder={t('settings.invitePlaceholder')}
-              className="flex-1 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-2.5 text-sm outline-none placeholder:text-[var(--faint)]"
+              className="min-h-[44px] flex-1 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-2.5 text-base outline-none placeholder:text-[var(--faint)]"
             />
-            <button onClick={onInvite} disabled={!email.trim()}
-              className="rounded-xl bg-[var(--primary-btn)] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-40">
+            <button onClick={onInvite} disabled={!email.trim() || inviting} aria-busy={inviting}
+              className="pressable flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[var(--primary-btn)] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-40">
+              {inviting && <Spinner />}
               {t('settings.invite')}
             </button>
           </div>
@@ -132,8 +152,8 @@ export function SettingsView({ data }: { data: SettingsData }) {
             {(['en', 'zh'] as const).map((lang) => {
               const active = locale === lang
               return (
-                <button key={lang} onClick={() => onLanguage(lang)}
-                  className="flex-1 rounded-xl border py-2.5 text-sm font-bold"
+                <button key={lang} onClick={() => onLanguage(lang)} disabled={isPending}
+                  className="pressable min-h-[44px] flex-1 rounded-xl border py-2.5 text-sm font-bold disabled:opacity-60"
                   style={{
                     borderColor: active ? 'var(--primary)' : 'var(--hairline)',
                     background: active ? 'var(--primary)' : 'var(--surface)',
@@ -155,12 +175,13 @@ export function SettingsView({ data }: { data: SettingsData }) {
             desc={supported ? t('settings.notif.pushDesc') : t('push.notSupported')}
             checked={pushOn}
             onChange={onPush}
-            disabled={!supported}
+            disabled={!supported || pushBusy}
           />
           {pushOn && (
             <div className="mt-2 flex items-center justify-between gap-3">
-              <button onClick={onTest}
-                className="rounded-lg border border-[var(--hairline)] px-3 py-2 text-xs font-bold text-[var(--ink)]">
+              <button onClick={onTest} disabled={testing} aria-busy={testing}
+                className="pressable flex min-h-[44px] items-center gap-2 rounded-lg border border-[var(--hairline)] px-3 py-2 text-xs font-bold text-[var(--ink)] disabled:opacity-50">
+                {testing && <Spinner size={12} />}
                 {t('push.test')}
               </button>
               {testMsg && (
@@ -194,8 +215,9 @@ export function SettingsView({ data }: { data: SettingsData }) {
 
         <div className="flex-1" />
 
-        <button onClick={() => startTransition(() => { signOutAction() })}
-          className="mt-6 w-full rounded-xl border border-[var(--danger)] py-3 text-sm font-bold text-[var(--danger)]">
+        <button onClick={onSignOut} disabled={signingOut} aria-busy={signingOut}
+          className="pressable mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[var(--danger)] py-3 text-sm font-bold text-[var(--danger)] disabled:opacity-50">
+          {signingOut && <Spinner />}
           {t('settings.signOut')}
         </button>
       </div>
@@ -224,7 +246,7 @@ export function SwitchRow({
       <button
         role="switch" aria-checked={checked} aria-label={label} disabled={disabled}
         onClick={() => onChange(!checked)}
-        className="relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-40"
+        className="pressable-opacity relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-40"
         style={{ background: checked ? 'var(--primary)' : 'var(--hairline)' }}>
         <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all"
           style={{ left: checked ? '22px' : '2px' }} />

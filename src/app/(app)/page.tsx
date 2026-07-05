@@ -43,7 +43,7 @@ export default async function HomePage() {
           <Link
             href="/settings"
             aria-label={t(locale, 'settings.title')}
-            className="grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]"
+            className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]"
           >
             <SlidersHorizontal size={20} strokeWidth={2} />
           </Link>
@@ -98,7 +98,7 @@ export default async function HomePage() {
       </Card>
 
       <Link href="/personal">
-        <Card className="flex items-center gap-3">
+        <Card className="pressable flex items-center gap-3">
           <div className="flex -space-x-3">
             <MemberAvatar member="CH" size={36} />
             <MemberAvatar member="JC" size={36} />

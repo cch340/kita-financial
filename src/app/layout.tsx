@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Public_Sans, Noto_Sans_SC } from "next/font/google";
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import "./globals.css";
+import "./transitions.css";
 
 const publicSans = Public_Sans({
   subsets: ["latin"],

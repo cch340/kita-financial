@@ -34,9 +34,70 @@
   --hairline: oklch(0.34 0.02 55);
 }
 
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html, body {
   background: var(--paper);
   color: var(--ink);
   font-family: 'Public Sans','Noto Sans SC',system-ui,sans-serif;
   font-variant-numeric: tabular-nums;
+}
+
+button, a {
+  touch-action: manipulation;
+}
+button {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@layer utilities {
+  .pressable {
+    position: relative;
+    overflow: hidden;
+    transition: transform 120ms ease, opacity 120ms ease;
+  }
+  .pressable::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at center, oklch(0.3 0.02 50 / 0.08), transparent 70%);
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 250ms ease-out, transform 250ms ease-out;
+    pointer-events: none;
+  }
+  .pressable:active {
+    transform: scale(0.97);
+  }
+  .pressable:active::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .pressable-opacity {
+    transition: opacity 120ms ease;
+  }
+  .pressable-opacity:active {
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pressable {
+      transition: none;
+    }
+    .pressable:active {
+      transform: none;
+    }
+    .pressable::after {
+      transition: none;
+    }
+    .pressable:active::after {
+      opacity: 0;
+      transform: scale(0);
+    }
+  }
 }

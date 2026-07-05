@@ -10,6 +10,7 @@ import { Card, HeroCard } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
+import { Spinner } from '@/components/ui/Spinner'
 import { toggleContributionPaid } from './actions'
 
 type Locale = 'en' | 'zh'
@@ -25,19 +26,25 @@ export function FundView({ overview, locale, month }: Props) {
   const t = useT()
   const router = useRouter()
   const [error, setError] = useState(false)
+  const [pendingKey, setPendingKey] = useState<string | null>(null)
 
   const progress = overview.yearExpectedCents > 0 ? overview.yearContributedCents / overview.yearExpectedCents : 0
   const { CH, JC } = overview.expectedEachCents
   const { summary, rest } = collapseLeadingPaid(overview.months)
 
   async function handleToggle(member: Member, periodISO: string) {
+    const key = `${member}-${periodISO}`
+    if (pendingKey) return
     setError(false)
+    setPendingKey(key)
     const res = await toggleContributionPaid(member, periodISO)
     if (!res.ok) {
       setError(true)
+      setPendingKey(null)
       return
     }
     router.refresh()
+    setPendingKey(null)
   }
 
   return (
@@ -120,6 +127,7 @@ export function FundView({ overview, locale, month }: Props) {
                 member="CH"
                 periodISO={m.periodISO}
                 isCurrent={isCurrent}
+                pending={pendingKey === `CH-${m.periodISO}`}
                 onToggle={handleToggle}
                 t={t}
               />
@@ -128,6 +136,7 @@ export function FundView({ overview, locale, month }: Props) {
                 member="JC"
                 periodISO={m.periodISO}
                 isCurrent={isCurrent}
+                pending={pendingKey === `JC-${m.periodISO}`}
                 onToggle={handleToggle}
                 t={t}
               />
@@ -144,6 +153,7 @@ function FundCell({
   member,
   periodISO,
   isCurrent,
+  pending,
   onToggle,
   t,
 }: {
@@ -151,6 +161,7 @@ function FundCell({
   member: Member
   periodISO: string
   isCurrent: boolean
+  pending: boolean
   onToggle: (member: Member, periodISO: string) => void
   t: (key: string) => string
 }) {
@@ -176,10 +187,12 @@ function FundCell({
       <button
         type="button"
         onClick={() => onToggle(member, periodISO)}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-xs font-bold whitespace-nowrap text-white"
+        disabled={pending}
+        aria-busy={pending}
+        className="pressable inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-xs font-bold whitespace-nowrap text-white"
         style={{ background: 'var(--primary)' }}
       >
-        {t('fund.markPaid')}
+        {pending ? <Spinner size={12} /> : t('fund.markPaid')}
       </button>
     )
   }
@@ -187,11 +200,19 @@ function FundCell({
     <button
       type="button"
       onClick={() => onToggle(member, periodISO)}
-      className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap"
+      disabled={pending}
+      aria-busy={pending}
+      className="pressable inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap"
       style={{ background: 'var(--pending-bg)', color: 'var(--pending-text)' }}
     >
-      <MoneyText cents={cell.amountCents} />
-      <span>{t('status.pending')}</span>
+      {pending ? (
+        <Spinner size={12} />
+      ) : (
+        <>
+          <MoneyText cents={cell.amountCents} />
+          <span>{t('status.pending')}</span>
+        </>
+      )}
     </button>
   )
 }

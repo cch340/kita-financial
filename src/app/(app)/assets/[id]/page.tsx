@@ -26,7 +26,7 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
         <Link
           href="/assets"
           aria-label={t(locale, 'common.back')}
-          className="grid h-11 w-11 shrink-0 place-items-center text-2xl text-[var(--muted)]"
+          className="pressable-opacity grid h-11 w-11 shrink-0 place-items-center text-2xl text-[var(--muted)]"
         >
           ‹
         </Link>

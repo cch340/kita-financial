@@ -101,7 +101,7 @@ function Switch({
       aria-checked={checked}
       disabled={disabled}
       onClick={onChange}
-      className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center disabled:opacity-50"
+      className="pressable-opacity flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center disabled:opacity-50"
     >
       <span
         className="relative inline-block h-7 w-12 rounded-full transition-colors"

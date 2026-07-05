@@ -9,6 +9,7 @@ import type { ExpenseRow } from '@/lib/data/types'
 import { IconTile } from '@/components/ui/IconTile'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
+import { Spinner } from '@/components/ui/Spinner'
 import { deleteExpenseAction } from './actions'
 
 type Props = {
@@ -71,7 +72,7 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
           type="button"
           aria-label={t('expenses.prevMonth')}
           onClick={() => goMonth(-1)}
-          className="grid h-11 w-11 place-items-center rounded-full text-xl text-[var(--muted)]"
+          className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-xl text-[var(--muted)]"
         >
           ‹
         </button>
@@ -80,7 +81,7 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
           type="button"
           aria-label={t('expenses.nextMonth')}
           onClick={() => goMonth(1)}
-          className="grid h-11 w-11 place-items-center rounded-full text-xl text-[var(--muted)]"
+          className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-xl text-[var(--muted)]"
         >
           ›
         </button>
@@ -97,7 +98,7 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
         <button
           type="button"
           onClick={() => setSelected(null)}
-          className="rounded-full border px-4 py-2 text-sm font-semibold whitespace-nowrap"
+          className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
           style={{
             borderColor: selected == null ? 'var(--primary)' : 'var(--hairline)',
             background: selected == null ? 'var(--primary)' : 'var(--surface)',
@@ -113,7 +114,7 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
               key={key}
               type="button"
               onClick={() => setSelected((cur) => (cur === key ? null : key))}
-              className="rounded-full border px-4 py-2 text-sm font-semibold whitespace-nowrap"
+              className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
               style={{
                 borderColor: active ? 'var(--primary)' : 'var(--hairline)',
                 background: active ? 'var(--primary)' : 'var(--surface)',
@@ -167,6 +168,7 @@ function ExpenseRowCard({
 }) {
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
 
   const cat = CATEGORIES.find((c) => c.key === row.category)
@@ -202,21 +204,26 @@ function ExpenseRowCard({
         <button
           type="button"
           onClick={() => setDragX(0)}
-          className="flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
           style={{ background: 'var(--pending-text)' }}
         >
           {t('expenses.edit')}
         </button>
         <button
           type="button"
+          disabled={deleting}
           onClick={async () => {
+            setDeleting(true)
             const res = await deleteExpenseAction(row.id)
-            if (!res.ok) onDeleteError()
+            if (!res.ok) {
+              setDeleting(false)
+              onDeleteError()
+            }
           }}
-          className="flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
           style={{ background: 'var(--danger)' }}
         >
-          {t('expenses.delete')}
+          {deleting ? <Spinner /> : t('expenses.delete')}
         </button>
       </div>
 

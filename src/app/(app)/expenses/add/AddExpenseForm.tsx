@@ -5,6 +5,7 @@ import { useT, useLocale } from '@/i18n/LocaleProvider'
 import { formatRM, pushDigit, pushDoubleZero, backspace } from '@/lib/money'
 import { CATEGORIES, categoryLabel, type CategoryKey } from '@/lib/categories'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
+import { SubmitButton } from '@/components/ui/SubmitButton'
 import { addExpenseAction } from './actions'
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', '⌫'] as const
@@ -40,7 +41,7 @@ export function AddExpenseForm({ error }: { error?: string }) {
           <Link
             href="/expenses"
             aria-label={t('common.back')}
-            className="grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
+            className="pressable-opacity grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
           >
             ‹
           </Link>
@@ -48,7 +49,7 @@ export function AddExpenseForm({ error }: { error?: string }) {
           <Link
             href="/expenses"
             aria-label={t('common.close')}
-            className="grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
+            className="pressable-opacity grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
           >
             ×
           </Link>
@@ -84,7 +85,7 @@ export function AddExpenseForm({ error }: { error?: string }) {
                     type="button"
                     key={m}
                     onClick={() => setPayer((p) => (p === m ? null : m))}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 font-semibold"
+                    className="pressable flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 font-semibold"
                     style={{
                       borderColor: selected ? memberColor : 'var(--hairline)',
                       background: selected ? memberColor : 'var(--surface)',
@@ -108,7 +109,7 @@ export function AddExpenseForm({ error }: { error?: string }) {
                   type="button"
                   key={c.key}
                   onClick={() => setCategory((cur) => (cur === c.key ? null : c.key))}
-                  className="rounded-full border px-4 py-2 text-sm font-semibold whitespace-nowrap"
+                  className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
                   style={{
                     borderColor: selected ? 'var(--primary)' : 'var(--hairline)',
                     background: selected ? 'var(--primary)' : 'var(--surface)',
@@ -127,7 +128,7 @@ export function AddExpenseForm({ error }: { error?: string }) {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t('add.note')}
-              className="flex-1 bg-transparent text-sm text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
+              className="flex-1 bg-transparent text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
             />
             <span className="shrink-0 rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-semibold text-[var(--muted)]">
               {t('add.today')}
@@ -148,21 +149,20 @@ export function AddExpenseForm({ error }: { error?: string }) {
                 key={k}
                 type="button"
                 onClick={() => pressKey(k)}
-                className="rounded-xl bg-[var(--surface)] text-lg font-semibold text-[var(--ink)]"
-                style={{ height: 50 }}
+                className="pressable rounded-xl bg-[var(--surface)] text-lg font-semibold text-[var(--ink)]"
+                style={{ height: 56 }}
               >
                 {k}
               </button>
             ))}
           </div>
 
-          <button
-            type="submit"
+          <SubmitButton
             disabled={cents <= 0}
             className="w-full rounded-xl bg-[var(--primary-btn)] py-3.5 font-bold text-white disabled:opacity-40"
           >
             {t('add.save')}
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>
