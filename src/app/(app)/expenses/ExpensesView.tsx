@@ -166,6 +166,7 @@ function ExpenseRowCard({
   t: (key: string) => string
   onDeleteError: () => void
 }) {
+  const router = useRouter()
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -203,7 +204,7 @@ function ExpenseRowCard({
       <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
         <button
           type="button"
-          onClick={() => setDragX(0)}
+          onClick={() => router.push(`/expenses/edit/${row.id}`)}
           className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
           style={{ background: 'var(--pending-text)' }}
         >
