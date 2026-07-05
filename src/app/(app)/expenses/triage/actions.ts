@@ -4,10 +4,10 @@ import { revalidatePath } from 'next/cache'
 
 export async function setExpenseTriageAction(
   id: string,
-  category: string,
+  categoryId: string,
   paidBy: 'CH' | 'JC',
 ): Promise<{ ok: boolean; error?: string }> {
-  const res = await setExpenseCategoryPaidBy(id, { category, paidBy })
+  const res = await setExpenseCategoryPaidBy(id, { categoryId, paidBy })
   if (!res.ok) return { ok: false, error: res.error }
   revalidatePath('/expenses')
   revalidatePath('/')
