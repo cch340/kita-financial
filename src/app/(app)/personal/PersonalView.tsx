@@ -8,6 +8,7 @@ import type { LedgerEntry } from '@/lib/data/personal-shared'
 import { Card, HeroCard } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmButton } from '@/components/ui/ConfirmButton'
 import { parseMoneyInput } from '@/lib/money'
 import { Copy } from 'lucide-react'
 import { addLedgerEntry, updateLedgerEntry, deleteLedgerEntry, copyLastMonth } from './actions'
@@ -261,14 +262,13 @@ function LedgerRow({ row }: { row: LedgerEntry }) {
           {busy && <Spinner size={16} />}
           {t('personal.save')}
         </button>
-        <button
-          type="button"
-          onClick={remove}
+        <ConfirmButton
+          onConfirm={remove}
+          label={t('personal.delete')}
+          confirmLabel={t('common.sure')}
           disabled={busy}
           className="pressable min-h-[44px] rounded-lg border border-[var(--hairline)] px-3 py-2 text-sm font-bold text-[var(--danger)] disabled:opacity-40"
-        >
-          {t('personal.delete')}
-        </button>
+        />
         <button
           type="button"
           onClick={() => setEditing(false)}
