@@ -43,18 +43,20 @@ create index expenses_household_category_idx on expenses (household_id, category
 
 -- Backfill vendors from distinct non-blank vendor text (skip '-')
 insert into vendors (household_id, name)
-  select distinct household_id, trim(vendor)
+  select distinct on (household_id, lower(trim(vendor))) household_id, trim(vendor)
   from expenses
-  where vendor is not null and trim(vendor) <> '' and trim(vendor) <> '-';
+  where vendor is not null and trim(vendor) <> '' and trim(vendor) <> '-'
+  order by household_id, lower(trim(vendor));
 update expenses e set vendor_id = v.id
   from vendors v
   where v.household_id = e.household_id and lower(v.name) = lower(trim(e.vendor));
 
 -- Backfill locations (treat '-' as no location)
 insert into locations (household_id, name)
-  select distinct household_id, trim(location)
+  select distinct on (household_id, lower(trim(location))) household_id, trim(location)
   from expenses
-  where location is not null and trim(location) <> '' and trim(location) <> '-';
+  where location is not null and trim(location) <> '' and trim(location) <> '-'
+  order by household_id, lower(trim(location));
 update expenses e set location_id = l.id
   from locations l
   where l.household_id = e.household_id and lower(l.name) = lower(trim(e.location));
