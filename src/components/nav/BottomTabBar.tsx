@@ -8,7 +8,7 @@ const TABS = [
   { href: '/expenses', key: 'nav.expenses', Icon: Receipt },
   { href: '/fund', key: 'nav.fund', Icon: HandCoins },
   { href: '/budget', key: 'nav.budget', Icon: ChartColumn },
-  { href: '/assets', key: 'nav.assets', Icon: LayoutGrid },
+  { href: '/more', key: 'nav.more', Icon: LayoutGrid },
 ]
 export function BottomTabBar() {
   const path = usePathname()
@@ -18,7 +18,11 @@ export function BottomTabBar() {
          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <ul className="mx-auto flex h-[60px] max-w-[430px] items-stretch justify-around">
         {TABS.map(({ href, key, Icon }) => {
-          const active = href === '/' ? path === '/' || path.startsWith('/personal') : path.startsWith(href)
+          const active = href === '/'
+            ? path === '/' || path.startsWith('/personal')
+            : href === '/more'
+              ? path.startsWith('/more') || path.startsWith('/assets') || path.startsWith('/manage')
+              : path.startsWith(href)
           return (
             <li key={href} className="flex-1">
               <Link href={href} className="pressable-opacity flex h-full flex-col items-center justify-center gap-1 transition-colors"
