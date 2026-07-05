@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check } from 'lucide-react'
+import { Check, Pencil } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { monthShort } from '@/lib/data/summary'
 import { collapseLeadingPaid } from '@/lib/data/fund-shared'
@@ -11,6 +11,8 @@ import { ProgressBar } from '@/components/ui/ProgressBar'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Spinner } from '@/components/ui/Spinner'
+import type { FundConfig } from '@/lib/data/fund'
+import { FundConfigEditor } from './FundConfigEditor'
 import { toggleContributionPaid } from './actions'
 
 type Locale = 'en' | 'zh'
@@ -20,13 +22,15 @@ type Props = {
   overview: FundOverview
   locale: Locale
   month: number
+  config: FundConfig
 }
 
-export function FundView({ overview, locale, month }: Props) {
+export function FundView({ overview, locale, month, config }: Props) {
   const t = useT()
   const router = useRouter()
   const [error, setError] = useState(false)
   const [pendingKey, setPendingKey] = useState<string | null>(null)
+  const [editingConfig, setEditingConfig] = useState(false)
 
   const progress = overview.yearExpectedCents > 0 ? overview.yearContributedCents / overview.yearExpectedCents : 0
   const { CH, JC } = overview.expectedEachCents
@@ -51,10 +55,22 @@ export function FundView({ overview, locale, month }: Props) {
     <div className="flex flex-col gap-5 pb-6">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('fund.title')}</h1>
-        <span className="rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
-          {overview.year}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
+            {overview.year}
+          </span>
+          <button
+            type="button"
+            onClick={() => setEditingConfig((v) => !v)}
+            aria-label={t('fund.editConfig')}
+            className="pressable-opacity grid h-9 w-9 place-items-center rounded-full text-[var(--muted)]"
+          >
+            <Pencil size={16} />
+          </button>
+        </div>
       </header>
+
+      {editingConfig && <FundConfigEditor config={config} onClose={() => setEditingConfig(false)} />}
 
       {error && (
         <p

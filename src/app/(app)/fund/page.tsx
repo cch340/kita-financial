@@ -1,4 +1,4 @@
-import { getFundOverview } from '@/lib/data/fund'
+import { getFundOverview, getFundConfig } from '@/lib/data/fund'
 import { getMembership } from '@/lib/data/household'
 import { FundView } from './FundView'
 
@@ -7,8 +7,8 @@ export default async function FundPage() {
   const year = now.getFullYear()
   const month = now.getMonth() + 1
 
-  const [overview, membership] = await Promise.all([getFundOverview(year), getMembership()])
+  const [overview, membership, config] = await Promise.all([getFundOverview(year), getMembership(), getFundConfig()])
   const locale = membership?.language ?? 'en'
 
-  return <FundView overview={overview} locale={locale} month={month} />
+  return <FundView overview={overview} locale={locale} month={month} config={config} />
 }
