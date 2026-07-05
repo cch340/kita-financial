@@ -162,7 +162,7 @@ Shared between `AddExpenseForm.tsx` and `EditExpenseForm.tsx`. Both load the hou
 └───────────────────────────┘
 ```
 
-- **Add** keeps the keypad-driven cents entry (`pushDigit` etc.). **Edit** keeps its existing decimal text entry OR adopts the same keypad — keep Edit's current text entry to limit scope, but relocate amount/who-paid to match Add's bottom cluster for consistency.
+- **Add** and **Edit** both use the keypad-driven cents entry (`pushDigit`/`pushDoubleZero`/`backspace`), with the same bottom cluster (numpad → amount → who-paid → Save). Edit seeds the keypad `cents` state from `row.amount_cents` and drops its old decimal text input, so the two forms share one interaction. Consider extracting the shared keypad + bottom cluster into a small component reused by both.
 
 ## 7. Expenses list — unified Filter sheet
 
