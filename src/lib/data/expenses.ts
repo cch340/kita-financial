@@ -3,10 +3,11 @@ import { getMembership } from './household'
 import { monthRange } from './summary'
 import type { ExpenseRow } from './types'
 import { validateExpenseInput, type ExpenseInput } from './expenses-shared'
+import { validateTriageInput, type TriageInput } from './triage-shared'
 
-// Re-exported for convenience; client components should import from './expenses-shared'.
-export { validateExpenseInput }
-export type { ExpenseInput }
+// Re-exported for convenience; client components should import from the -shared modules.
+export { validateExpenseInput, validateTriageInput }
+export type { ExpenseInput, TriageInput }
 
 const COLS = 'id, date, vendor, location, details, category, amount_cents, paid_by'
 
@@ -89,5 +90,50 @@ export async function deleteExpense(id: string): Promise<{ ok: boolean; error?: 
   const supabase = await createClient()
   const { error } = await supabase.from('expenses').delete().eq('id', id).eq('household_id', m.householdId)
   if (error) { console.error('deleteExpense failed:', error.message); return { ok: false, error: error.message } }
+  return { ok: true }
+}
+
+export async function listExpensesNeedingTriage(): Promise<ExpenseRow[]> {
+  const m = await getMembership()
+  if (!m) return []
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('expenses')
+    .select(COLS)
+    .eq('household_id', m.householdId)
+    .or('category.is.null,paid_by.is.null')
+    .order('date', { ascending: true })
+  if (error) { console.error('listExpensesNeedingTriage failed:', error.message); return [] }
+  return (data ?? []) as ExpenseRow[]
+}
+
+export async function countExpensesNeedingTriage(): Promise<number> {
+  const m = await getMembership()
+  if (!m) return 0
+  const supabase = await createClient()
+  const { count, error } = await supabase
+    .from('expenses')
+    .select('id', { count: 'exact', head: true })
+    .eq('household_id', m.householdId)
+    .or('category.is.null,paid_by.is.null')
+  if (error) { console.error('countExpensesNeedingTriage failed:', error.message); return 0 }
+  return count ?? 0
+}
+
+export async function setExpenseCategoryPaidBy(
+  id: string,
+  input: TriageInput,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  const valid = validateTriageInput(input)
+  if (!valid.ok) return valid
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('expenses')
+    .update({ category: input.category, paid_by: input.paidBy })
+    .eq('id', id)
+    .eq('household_id', m.householdId)
+  if (error) { console.error('setExpenseCategoryPaidBy failed:', error.message); return { ok: false, error: 'save_failed' } }
   return { ok: true }
 }

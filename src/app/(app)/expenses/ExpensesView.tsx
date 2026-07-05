@@ -2,6 +2,7 @@
 import { useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useT, useLocale } from '@/i18n/LocaleProvider'
 import { CATEGORIES, categoryLabel } from '@/lib/categories'
 import { groupByDay, formatMonthYear } from '@/lib/data/summary'
@@ -18,11 +19,12 @@ type Props = {
   year: number
   month: number
   todayISO: string
+  triageCount: number
 }
 
 const REVEAL_WIDTH = 152 // px — two 76px action buttons behind each row
 
-export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props) {
+export function ExpensesView({ rows, totalCents, year, month, todayISO, triageCount }: Props) {
   const t = useT()
   const locale = useLocale()
   const router = useRouter()
@@ -56,6 +58,18 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO }: Props)
   return (
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('expenses.title')}</h1>
+
+      {triageCount > 0 && (
+        <Link
+          href="/expenses/triage"
+          className="pressable flex min-h-[44px] items-center justify-between gap-2 rounded-full bg-[var(--pending-bg)] px-4 py-2.5 text-sm font-bold text-[var(--pending-text)]"
+        >
+          <span>
+            {triageCount} {t('triage.needSorting')}
+          </span>
+          <span aria-hidden className="text-base">›</span>
+        </Link>
+      )}
 
       {deleteFailed && (
         <p
