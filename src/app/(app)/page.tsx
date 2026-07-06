@@ -11,7 +11,6 @@ import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { IconTile } from '@/components/ui/IconTile'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { MoneyText } from '@/components/ui/MoneyText'
-import { Fab } from '@/components/ui/Fab'
 
 export default async function HomePage() {
   const now = new Date()
@@ -162,8 +161,6 @@ export default async function HomePage() {
           </div>
         )}
       </Card>
-
-      <Fab href="/expenses/add" label={t(locale, 'add.title')} />
     </div>
   )
 }
