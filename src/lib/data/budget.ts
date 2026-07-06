@@ -36,7 +36,7 @@ export async function getBudget(year: number, month: number): Promise<BudgetData
     name_en: string; name_zh: string | null; jc_cents: number; ch_cents: number; total_cents: number
   }[]).map((c) => ({
     nameEn: c.name_en, nameZh: c.name_zh, jcCents: c.jc_cents, chCents: c.ch_cents,
-    totalCents: c.total_cents, spentCents: 0,
+    totalCents: c.total_cents, spentCents: 0, // planned-only: per-category actuals are decoupled from expense categories (out of scope)
   }))
   const commitments: BudgetCommitment[] = ((commitRes.data ?? []) as {
     name_en: string; name_zh: string | null; amount_cents: number

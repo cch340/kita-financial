@@ -47,7 +47,7 @@ export function ManageSection({
             className="min-h-[44px] flex-1 rounded-xl border border-[var(--hairline)] bg-[var(--paper)] px-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
           />
           <button
-            type="button" onClick={add} disabled={!newName.trim() || adding} aria-busy={adding}
+            type="button" onClick={add} disabled={!newName.trim() || adding} aria-busy={adding} aria-label={t('manage.add')}
             className="pressable grid h-11 w-11 place-items-center rounded-xl bg-[var(--primary-btn)] text-white disabled:opacity-40"
           >
             {adding ? <Spinner /> : <Plus size={20} />}
