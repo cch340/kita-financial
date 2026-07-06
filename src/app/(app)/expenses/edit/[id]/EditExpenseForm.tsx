@@ -1,173 +1,139 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { useT, useLocale } from '@/i18n/LocaleProvider'
-import { formatRM, parseMoneyInput } from '@/lib/money'
-import { CATEGORIES, categoryLabel, type CategoryKey } from '@/lib/categories'
+import { useT } from '@/i18n/LocaleProvider'
+import { formatRM, pushDigit, pushDoubleZero, backspace } from '@/lib/money'
+import type { CatalogItem } from '@/lib/data/catalog-shared'
+import type { ExpenseRow } from '@/lib/data/types'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { SubmitButton } from '@/components/ui/SubmitButton'
-import type { ExpenseRow } from '@/lib/data/types'
+import { Combobox } from '@/components/ui/Combobox'
 import { updateExpenseAction } from '../../actions'
+import { createVendorAction, createLocationAction } from './catalog-actions'
 
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', '⌫'] as const
 const MEMBERS = ['CH', 'JC'] as const
 
-export function EditExpenseForm({ row, error }: { row: ExpenseRow; error?: string }) {
+export function EditExpenseForm({
+  row, error, categories, vendors, locations,
+}: {
+  row: ExpenseRow
+  error?: string
+  categories: CatalogItem[]
+  vendors: CatalogItem[]
+  locations: CatalogItem[]
+}) {
   const t = useT()
-  const locale = useLocale()
-  const [amount, setAmount] = useState((row.amount_cents / 100).toFixed(2))
+  const [cents, setCents] = useState(row.amount_cents)
   const [payer, setPayer] = useState<'CH' | 'JC' | null>(row.paid_by)
-  const [category, setCategory] = useState<CategoryKey | null>((row.category as CategoryKey | null) ?? null)
+  const [categoryId, setCategoryId] = useState<string | null>(row.category_id)
+  const [vendorId, setVendorId] = useState<string | null>(row.vendor_id)
+  const [locationId, setLocationId] = useState<string | null>(row.location_id)
   const [note, setNote] = useState(row.details ?? '')
-  const [vendor, setVendor] = useState(row.vendor ?? '')
-  const [location, setLocation] = useState(row.location ?? '')
   const [date, setDate] = useState(row.date)
 
-  const cents = parseMoneyInput(amount)
+  function pressKey(key: (typeof KEYS)[number]) {
+    if (key === '⌫') return setCents((c) => backspace(c))
+    if (key === '00') return setCents((c) => pushDoubleZero(c))
+    setCents((c) => pushDigit(c, Number(key)))
+  }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--paper)]">
-      <div className="mx-auto flex min-h-full max-w-[430px] flex-col px-[18px] pb-6 pt-4">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[var(--paper)]">
+      <div className="mx-auto flex min-h-0 w-full max-w-[430px] flex-1 flex-col px-[18px] pb-6 pt-4">
         <div className="flex items-center justify-between py-2">
-          <Link
-            href="/expenses"
-            aria-label={t('common.back')}
-            className="pressable-opacity grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
-          >
-            ‹
-          </Link>
+          <Link href="/expenses" aria-label={t('common.back')}
+            className="pressable-opacity grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]">‹</Link>
           <h1 className="text-base font-bold text-[var(--ink-head)]">{t('edit.title')}</h1>
-          <Link
-            href="/expenses"
-            aria-label={t('common.close')}
-            className="pressable-opacity grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]"
-          >
-            ×
-          </Link>
+          <Link href="/expenses" aria-label={t('common.close')}
+            className="pressable-opacity grid h-11 w-11 place-items-center text-2xl text-[var(--muted)]">×</Link>
         </div>
 
-        <div className="flex flex-col items-center gap-1 py-6">
-          <span className="text-xs font-semibold tracking-wide text-[var(--muted)] uppercase">{t('add.amount')}</span>
-          <div className="text-[36px] leading-none font-extrabold text-[var(--ink-head)]">{formatRM(cents)}</div>
-        </div>
-
-        <form action={updateExpenseAction} className="flex flex-1 flex-col gap-5">
+        <form action={updateExpenseAction} className="flex min-h-0 flex-1 flex-col">
           <input type="hidden" name="id" value={row.id} />
           <input type="hidden" name="amountCents" value={cents} />
-          <input type="hidden" name="category" value={category ?? ''} />
+          <input type="hidden" name="categoryId" value={categoryId ?? ''} />
+          <input type="hidden" name="vendorId" value={vendorId ?? ''} />
+          <input type="hidden" name="locationId" value={locationId ?? ''} />
           <input type="hidden" name="paidBy" value={payer ?? ''} />
           <input type="hidden" name="note" value={note} />
           <input type="hidden" name="dateISO" value={date} />
-          <input type="hidden" name="vendor" value={vendor} />
-          <input type="hidden" name="location" value={location} />
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-[var(--muted)]">{t('add.amount')}</span>
-            <div className="flex items-center gap-2 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3">
-              <span className="text-sm font-semibold text-[var(--muted)]">RM</span>
-              <input
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="flex-1 bg-transparent text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
-              />
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-4">
+            <div>
+              <p className="mb-2 text-sm font-semibold text-[var(--muted)]">{t('expenses.category')}</p>
+              {categories.length === 0 ? (
+                <Link href="/manage" className="text-sm font-semibold text-[var(--primary)]">{t('add.noCategories')}</Link>
+              ) : (
+                <div className="grid grid-flow-col grid-rows-2 gap-2 overflow-x-auto pb-1" style={{ gridAutoColumns: 'max-content' }}>
+                  {categories.map((c) => {
+                    const selected = categoryId === c.id
+                    return (
+                      <button type="button" key={c.id}
+                        onClick={() => setCategoryId((cur) => (cur === c.id ? null : c.id))}
+                        className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
+                        style={{
+                          borderColor: selected ? 'var(--primary)' : 'var(--hairline)',
+                          background: selected ? 'var(--primary)' : 'var(--surface)',
+                          color: selected ? 'white' : 'var(--ink)',
+                        }}>{c.name}</button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
-          </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-[var(--muted)]">{t('add.date')}</span>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none"
-            />
-          </label>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('add.note')}
+              className="min-h-[44px] rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
 
-          <div>
-            <p className="mb-2 text-sm font-semibold text-[var(--muted)]">{t('add.whoPaid')}</p>
+            <Combobox label={t('add.vendor')} placeholder={t('add.selectVendor')} items={vendors}
+              valueId={vendorId} onChange={setVendorId} onCreate={createVendorAction} />
+            <Combobox label={t('add.location')} placeholder={t('add.selectLocation')} items={locations}
+              valueId={locationId} onChange={setLocationId} onCreate={createLocationAction} />
+
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-semibold text-[var(--muted)]">{t('add.date')}</span>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+                className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none" />
+            </label>
+
+            {error && <p className="text-sm font-semibold text-[var(--danger)]">{t(`error.${error}`)}</p>}
+          </div>
+
+          <div className="flex shrink-0 flex-col gap-3 pt-2">
+            <div className="grid grid-cols-3 gap-2">
+              {KEYS.map((k) => (
+                <button key={k} type="button" onClick={() => pressKey(k)}
+                  className="pressable rounded-xl bg-[var(--surface)] text-lg font-semibold text-[var(--ink)]"
+                  style={{ height: 52 }}>{k}</button>
+              ))}
+            </div>
+            <div className="flex items-center justify-center gap-1 text-[32px] leading-none font-extrabold text-[var(--ink-head)]">
+              {formatRM(cents)}
+              <span className="ml-1 inline-block h-7 w-[3px] animate-pulse bg-[var(--primary)]" />
+            </div>
             <div className="flex gap-2">
               {MEMBERS.map((mem) => {
                 const selected = payer === mem
                 const memberColor = mem === 'CH' ? 'var(--member-ch)' : 'var(--member-jc)'
                 return (
-                  <button
-                    type="button"
-                    key={mem}
-                    onClick={() => setPayer((p) => (p === mem ? null : mem))}
+                  <button type="button" key={mem} onClick={() => setPayer((p) => (p === mem ? null : mem))}
                     className="pressable flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 font-semibold"
                     style={{
                       borderColor: selected ? memberColor : 'var(--hairline)',
                       background: selected ? memberColor : 'var(--surface)',
                       color: selected ? 'white' : 'var(--ink)',
-                    }}
-                  >
-                    <MemberAvatar member={mem} size={24} />
-                    {mem}
+                    }}>
+                    <MemberAvatar member={mem} size={24} />{mem}
                   </button>
                 )
               })}
             </div>
+            <SubmitButton disabled={cents <= 0}
+              className="w-full rounded-xl bg-[var(--primary-btn)] py-3.5 font-bold text-white disabled:opacity-40">
+              {t('edit.saveChanges')}
+            </SubmitButton>
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((c) => {
-              const selected = category === c.key
-              return (
-                <button
-                  type="button"
-                  key={c.key}
-                  onClick={() => setCategory((cur) => (cur === c.key ? null : c.key))}
-                  className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
-                  style={{
-                    borderColor: selected ? 'var(--primary)' : 'var(--hairline)',
-                    background: selected ? 'var(--primary)' : 'var(--surface)',
-                    color: selected ? 'white' : 'var(--ink)',
-                  }}
-                >
-                  {categoryLabel(c.key, locale)}
-                </button>
-              )
-            })}
-          </div>
-
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-[var(--muted)]">{t('add.vendor')}</span>
-            <input
-              value={vendor}
-              onChange={(e) => setVendor(e.target.value)}
-              className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-[var(--muted)]">{t('add.location')}</span>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-[var(--muted)]">{t('add.note')}</span>
-            <input
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]"
-            />
-          </label>
-
-          {error && <p className="text-sm font-semibold text-[var(--danger)]">{t(`error.${error}`)}</p>}
-
-          <div className="flex-1" />
-
-          <SubmitButton
-            disabled={cents <= 0}
-            className="w-full rounded-xl bg-[var(--primary-btn)] py-3.5 font-bold text-white disabled:opacity-40"
-          >
-            {t('edit.saveChanges')}
-          </SubmitButton>
         </form>
       </div>
     </div>

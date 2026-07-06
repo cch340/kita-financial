@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { MonthStepper } from '@/components/ui/MonthStepper'
-import { SplitBar, ActualBar } from './BudgetBars'
+import { SplitBar } from './BudgetBars'
 
 export default async function BudgetPage({
   searchParams,
@@ -67,7 +67,6 @@ export default async function BudgetPage({
               <MoneyText cents={cat.totalCents} className="text-sm font-bold text-[var(--ink-head)]" />
             </div>
             <SplitBar jcCents={cat.jcCents} chCents={cat.chCents} totalCents={cat.totalCents} />
-            <ActualBar spentCents={cat.spentCents} totalCents={cat.totalCents} />
           </Card>
         )
       })}

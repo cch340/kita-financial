@@ -1,17 +1,19 @@
 'use client'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { SlidersHorizontal } from 'lucide-react'
 import { useT, useLocale } from '@/i18n/LocaleProvider'
-import { CATEGORIES, categoryLabel } from '@/lib/categories'
 import { groupByDay, formatMonthYear } from '@/lib/data/summary'
 import type { ExpenseRow } from '@/lib/data/types'
+import type { CatalogItem } from '@/lib/data/catalog-shared'
 import { IconTile } from '@/components/ui/IconTile'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
 import { deleteExpenseAction } from './actions'
+import { FilterSheet, type Filters, type FilterValue } from './FilterSheet'
 
 type Props = {
   rows: ExpenseRow[]
@@ -20,26 +22,32 @@ type Props = {
   month: number
   todayISO: string
   triageCount: number
+  categories: CatalogItem[]
+  vendors: CatalogItem[]
+  locations: CatalogItem[]
 }
 
 const REVEAL_WIDTH = 152 // px — two 76px action buttons behind each row
 
-export function ExpensesView({ rows, totalCents, year, month, todayISO, triageCount }: Props) {
+export function ExpensesView({
+  rows, totalCents, year, month, todayISO, triageCount, categories, vendors, locations,
+}: Props) {
   const t = useT()
   const locale = useLocale()
   const router = useRouter()
-  const [selected, setSelected] = useState<string | null>(null) // null = "All"
   const [deleteFailed, setDeleteFailed] = useState(false)
   const monthLabel = formatMonthYear(year, month, locale)
 
-  const presentCategoryKeys = useMemo(() => {
-    const present = new Set(rows.map((r) => r.category ?? 'uncategorized'))
-    const ordered = CATEGORIES.filter((c) => present.has(c.key)).map((c) => c.key as string)
-    if (present.has('uncategorized')) ordered.push('uncategorized')
-    return ordered
-  }, [rows])
+  const [filters, setFilters] = useState<Filters>({ categoryId: null, vendorId: null, locationId: null })
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const activeCount = [filters.categoryId, filters.vendorId, filters.locationId].filter((v) => v !== null).length
 
-  const filteredRows = selected == null ? rows : rows.filter((r) => (r.category ?? 'uncategorized') === selected)
+  const matchField = (rowId: string | null, f: FilterValue) =>
+    f === null ? true : f === 'other' ? rowId === null : rowId === f
+  const filteredRows = rows.filter((r) =>
+    matchField(r.category_id, filters.categoryId) &&
+    matchField(r.vendor_id, filters.vendorId) &&
+    matchField(r.location_id, filters.locationId))
   const groups = groupByDay(filteredRows, todayISO)
 
   function goMonth(delta: number) {
@@ -57,7 +65,14 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO, triageCo
 
   return (
     <div className="flex flex-col gap-5 pb-6">
-      <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('expenses.title')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('expenses.title')}</h1>
+        <button type="button" onClick={() => setSheetOpen(true)}
+          className="pressable-opacity flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]">
+          <SlidersHorizontal size={16} />
+          {t('expenses.filter')}{activeCount > 0 ? ` · ${activeCount}` : ''}
+        </button>
+      </div>
 
       {triageCount > 0 && (
         <Link
@@ -107,40 +122,6 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO, triageCo
         <span className="text-sm font-semibold text-[var(--muted)]">{t('expenses.spentThisMonth')}</span>
       </div>
 
-      {/* filter chips */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setSelected(null)}
-          className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
-          style={{
-            borderColor: selected == null ? 'var(--primary)' : 'var(--hairline)',
-            background: selected == null ? 'var(--primary)' : 'var(--surface)',
-            color: selected == null ? 'white' : 'var(--ink)',
-          }}
-        >
-          {t('expenses.all')}
-        </button>
-        {presentCategoryKeys.map((key) => {
-          const active = selected === key
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setSelected((cur) => (cur === key ? null : key))}
-              className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
-              style={{
-                borderColor: active ? 'var(--primary)' : 'var(--hairline)',
-                background: active ? 'var(--primary)' : 'var(--surface)',
-                color: active ? 'white' : 'var(--ink)',
-              }}
-            >
-              {categoryLabel(key === 'uncategorized' ? null : key, locale)}
-            </button>
-          )
-        })}
-      </div>
-
       {/* date-grouped list */}
       {groups.length === 0 ? (
         <p className="py-10 text-center text-sm font-semibold text-[var(--faint)]">{t('expenses.empty')}</p>
@@ -156,7 +137,7 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO, triageCo
               </div>
               <div className="flex flex-col gap-2">
                 {g.rows.map((r) => (
-                  <ExpenseRowCard key={r.id} row={r} locale={locale} t={t} onDeleteError={() => setDeleteFailed(true)} />
+                  <ExpenseRowCard key={r.id} row={r} t={t} onDeleteError={() => setDeleteFailed(true)} />
                 ))}
               </div>
             </div>
@@ -165,18 +146,21 @@ export function ExpensesView({ rows, totalCents, year, month, todayISO, triageCo
       )}
 
       <Fab href="/expenses/add" />
+
+      {sheetOpen && (
+        <FilterSheet categories={categories} vendors={vendors} locations={locations}
+          filters={filters} onChange={setFilters} onClose={() => setSheetOpen(false)} />
+      )}
     </div>
   )
 }
 
 function ExpenseRowCard({
   row,
-  locale,
   t,
   onDeleteError,
 }: {
   row: ExpenseRow
-  locale: 'en' | 'zh'
   t: (key: string) => string
   onDeleteError: () => void
 }) {
@@ -186,12 +170,9 @@ function ExpenseRowCard({
   const [deleting, setDeleting] = useState(false)
   const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
 
-  const cat = CATEGORIES.find((c) => c.key === row.category)
-  const iconName = cat?.icon ?? 'Tag'
-  const tint = cat?.tint ?? 'var(--subtle)'
-  // Fall back to the category label (not the page title) when a row has no vendor/note.
-  const title = row.vendor || row.details || categoryLabel(row.category, locale)
-  const subParts = [categoryLabel(row.category, locale), row.paid_by].filter((p): p is string => Boolean(p))
+  // Fall back to the category name, then the page title, when a row has no vendor/note.
+  const title = row.vendor_name || row.details || row.category_name || t('expenses.title')
+  const subParts = [row.category_name, row.paid_by].filter((p): p is string => Boolean(p))
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
@@ -254,7 +235,7 @@ function ExpenseRowCard({
         className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
         style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
       >
-        <IconTile name={iconName} tint={tint} />
+        <IconTile name="Tag" tint="var(--subtle)" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold text-[var(--ink)]">{title}</p>
           <p className="truncate text-xs text-[var(--muted)]">{subParts.join(' · ')}</p>

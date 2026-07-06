@@ -11,7 +11,9 @@ describe('formatMonthYear', () => {
 })
 
 const row = (id: string, date: string, amount_cents: number): ExpenseRow =>
-  ({ id, date, vendor: null, details: null, category: null, amount_cents, paid_by: null, location: null })
+  ({ id, date, details: null, amount_cents, paid_by: null,
+     category_id: null, vendor_id: null, location_id: null,
+     category_name: null, vendor_name: null, location_name: null })
 
 describe('monthShort', () => {
   it('formats en and zh short month labels', () => {

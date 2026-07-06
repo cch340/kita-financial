@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useT, useLocale } from '@/i18n/LocaleProvider'
-import { CATEGORIES, categoryLabel, type CategoryKey } from '@/lib/categories'
+import type { CatalogItem } from '@/lib/data/catalog-shared'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Spinner } from '@/components/ui/Spinner'
@@ -11,7 +11,7 @@ import { setExpenseTriageAction } from './actions'
 
 const MEMBERS = ['CH', 'JC'] as const
 
-export function TriageView({ items }: { items: ExpenseRow[] }) {
+export function TriageView({ items, categories }: { items: ExpenseRow[]; categories: CatalogItem[] }) {
   const t = useT()
   const [index, setIndex] = useState(0)
   const total = items.length
@@ -59,23 +59,25 @@ export function TriageView({ items }: { items: ExpenseRow[] }) {
         <div className="h-full rounded-full bg-[var(--primary)] transition-[width] duration-200" style={{ width: `${pct}%` }} />
       </div>
 
-      <TriageCard key={current.id} row={current} onResolved={next} onSkip={next} />
+      <TriageCard key={current.id} row={current} categories={categories} onResolved={next} onSkip={next} />
     </div>
   )
 }
 
 function TriageCard({
   row,
+  categories,
   onResolved,
   onSkip,
 }: {
   row: ExpenseRow
+  categories: CatalogItem[]
   onResolved: () => void
   onSkip: () => void
 }) {
   const t = useT()
   const locale = useLocale()
-  const [category, setCategory] = useState<CategoryKey | null>((row.category as CategoryKey | null) ?? null)
+  const [category, setCategory] = useState<string | null>(row.category_id)
   const [payer, setPayer] = useState<'CH' | 'JC' | null>(row.paid_by)
   const [saving, setSaving] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -85,7 +87,7 @@ function TriageCard({
     month: 'short',
     year: 'numeric',
   })
-  const title = row.vendor || row.details || dateLabel
+  const title = row.vendor_name || row.details || dateLabel
 
   async function confirm() {
     if (!category || !payer) return
@@ -112,7 +114,7 @@ function TriageCard({
         {row.details && row.details !== title && (
           <p className="truncate text-xs text-[var(--muted)]">{row.details}</p>
         )}
-        {row.location && <p className="truncate text-xs text-[var(--faint)]">{row.location}</p>}
+        {row.location_name && <p className="truncate text-xs text-[var(--faint)]">{row.location_name}</p>}
       </div>
 
       {/* who paid */}
@@ -145,26 +147,35 @@ function TriageCard({
       {/* category */}
       <div>
         <p className="mb-2 text-sm font-semibold text-[var(--muted)]">{t('triage.category')}</p>
-        <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((c) => {
-            const selected = category === c.key
-            return (
-              <button
-                type="button"
-                key={c.key}
-                onClick={() => setCategory(c.key)}
-                className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
-                style={{
-                  borderColor: selected ? 'var(--primary)' : 'var(--hairline)',
-                  background: selected ? 'var(--primary)' : 'var(--surface)',
-                  color: selected ? 'white' : 'var(--ink)',
-                }}
-              >
-                {categoryLabel(c.key, locale)}
-              </button>
-            )
-          })}
-        </div>
+        {categories.length === 0 ? (
+          <p className="text-sm text-[var(--muted)]">
+            {t('triage.noCategories')}{' '}
+            <Link href="/manage" className="font-semibold text-[var(--primary)] underline">
+              /manage
+            </Link>
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {categories.map((c) => {
+              const selected = category === c.id
+              return (
+                <button
+                  type="button"
+                  key={c.id}
+                  onClick={() => setCategory(c.id)}
+                  className="pressable flex min-h-[44px] items-center rounded-full border px-4 py-2.5 text-sm font-semibold whitespace-nowrap"
+                  style={{
+                    borderColor: selected ? 'var(--primary)' : 'var(--hairline)',
+                    background: selected ? 'var(--primary)' : 'var(--surface)',
+                    color: selected ? 'white' : 'var(--ink)',
+                  }}
+                >
+                  {c.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {failed && <p className="text-sm font-semibold text-[var(--danger)]">{t('error.save_failed')}</p>}

@@ -6,9 +6,11 @@ schema. Money is stored as integer cents. Auth user references are left as
 :CH_UID / :JC_UID placeholders, substituted at apply time once the Supabase
 auth users exist.
 """
-import openpyxl, datetime, re
+import openpyxl, datetime, re, uuid
 
 HH = '00000000-0000-0000-0000-0000000000aa'  # fixed household id
+# Fixed namespace for deterministic vendor/location UUIDs (stable across re-runs).
+SEED_NS = uuid.UUID('00000000-0000-0000-0000-0000000000aa')
 wb = openpyxl.load_workbook('tmp/Financial Report 2026.xlsx', data_only=True)
 out = []
 # phase4 = incremental additions (vehicle transactions + ledger_entries) for
@@ -105,7 +107,29 @@ for r in range(2, 10):
 # expenses.date is NOT NULL; the sheet leaves some rows undated (they belong to
 # the same period as the dated row above). Forward-fill the last seen date so no
 # row is dropped and each stays in the correct month.
+#
+# Vendor/location are now FK columns (0005_expense_catalog.sql dropped the old
+# text columns), so: collect distinct non-blank names, emit vendors/locations
+# rows with stable (deterministic) ids, then link each expense by id. '-' is
+# treated as blank/no-location, matching the migration's backfill logic.
+# Categories are intentionally NOT seeded (the Excel has none).
 ex = wb['Expenses']
+
+
+def blank_or_dash(v):
+    return v is None or str(v).strip() in ('', '-')
+
+
+def stable_id(kind, name):
+    # Deterministic uuid5 from a fixed namespace so re-running the generator
+    # yields identical ids (stable FK links, idempotent regeneration).
+    return str(uuid.uuid5(SEED_NS, f'{HH}:{kind}:{str(name).strip().lower()}'))
+
+
+# Pass 1: read all expense rows once, collecting distinct vendor/location names.
+vendor_ids, vendor_names = {}, {}      # lower(name) -> id / display name
+location_ids, location_names = {}, {}
+expense_rows = []
 last_date = None
 for r in range(2, ex.max_row + 1):
     amt = ex.cell(r, 5).value
@@ -114,9 +138,32 @@ for r in range(2, ex.max_row + 1):
     dt = ex.cell(r, 1).value
     if isinstance(dt, (datetime.datetime, datetime.date)):
         last_date = dt
-    out.append(f"insert into expenses(household_id,date,vendor,location,details,amount_cents,paid_by) "
-               f"values ('{HH}',{d(last_date)},{s(ex.cell(r, 2).value)},{s(ex.cell(r, 3).value)},"
-               f"{s(ex.cell(r, 4).value)},{c(amt)},NULL);")
+    vendor = ex.cell(r, 2).value
+    location = ex.cell(r, 3).value
+    details = ex.cell(r, 4).value
+    expense_rows.append((last_date, vendor, location, details, amt))
+
+    if not blank_or_dash(vendor):
+        key = str(vendor).strip().lower()
+        vendor_names.setdefault(key, str(vendor).strip())
+        vendor_ids.setdefault(key, stable_id('vendor', vendor))
+    if not blank_or_dash(location):
+        key = str(location).strip().lower()
+        location_names.setdefault(key, str(location).strip())
+        location_ids.setdefault(key, stable_id('location', location))
+
+for key in sorted(vendor_names):
+    out.append(f"insert into vendors (id,household_id,name) values ('{vendor_ids[key]}','{HH}',{s(vendor_names[key])});")
+for key in sorted(location_names):
+    out.append(f"insert into locations (id,household_id,name) values ('{location_ids[key]}','{HH}',{s(location_names[key])});")
+
+# Pass 2: emit expenses linked by vendor_id/location_id (blank/'-' -> NULL).
+for last_date, vendor, location, details, amt in expense_rows:
+    vendor_id = 'NULL' if blank_or_dash(vendor) else f"'{vendor_ids[str(vendor).strip().lower()]}'"
+    location_id = 'NULL' if blank_or_dash(location) else f"'{location_ids[str(location).strip().lower()]}'"
+    out.append(f"insert into expenses(household_id,date,vendor_id,location_id,details,amount_cents,paid_by) "
+               f"values ('{HH}',{d(last_date)},{vendor_id},{location_id},"
+               f"{s(details)},{c(amt)},NULL);")
 
 # Assets: TreeO (property), Myvi/Alza (vehicle), AIA-CH/AIA-JC (investment)
 A_TREEO = '00000000-0000-0000-0000-0000000000b1'

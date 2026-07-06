@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ChevronLeft, Download } from 'lucide-react'
 import { t } from '@/i18n'
-import { categoryLabel } from '@/lib/categories'
+import { UNCATEGORIZED } from '@/lib/data/report-shared'
 import type { YearReport } from '@/lib/data/report'
 import { Card, HeroCard } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -102,7 +102,9 @@ export function ReportView({ report, locale }: { report: YearReport; locale: Loc
             {matrix.categories.map((key) => (
               <div key={key} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-bold text-[var(--ink)]">{categoryLabel(key, locale)}</span>
+                  <span className="font-bold text-[var(--ink)]">
+                    {key === UNCATEGORIZED ? t(locale, 'report.uncategorized') : key}
+                  </span>
                   <MoneyText cents={matrix.categoryTotals[key]} className="font-bold text-[var(--ink-head)]" />
                 </div>
                 <MonthBars values={matrix.cells[key]} maxValue={monthMax} locale={locale} />

@@ -4,6 +4,7 @@ import { monthRange } from './summary'
 import { getFundOverview } from './fund'
 import type { FundOverview } from './fund-shared'
 import { buildCategoryMonthMatrix, personalBalanceTrend, type CategoryMonthMatrix } from './report-shared'
+import { EXPENSE_SELECT, mapExpenseRow } from './expenses'
 import type { ExpenseRow, Member } from './types'
 import type { LedgerEntry } from './personal-shared'
 
@@ -11,7 +12,6 @@ import type { LedgerEntry } from './personal-shared'
 export { buildCategoryMonthMatrix, personalBalanceTrend }
 export type { CategoryMonthMatrix }
 
-const EXPENSE_COLS = 'id, date, vendor, location, details, category, amount_cents, paid_by'
 const LEDGER_COLS = 'id, owner_member_code, period, entry_type, description, amount_cents, remark'
 
 function mapLedger(r: Record<string, unknown>): LedgerEntry {
@@ -33,12 +33,12 @@ export async function getExpensesForYear(year: number): Promise<ExpenseRow[]> {
   const { startISO } = monthRange(year, 1)
   const { startISO: nextYearStart } = monthRange(year + 1, 1)
   const { data, error } = await supabase
-    .from('expenses').select(EXPENSE_COLS)
+    .from('expenses').select(EXPENSE_SELECT)
     .eq('household_id', m.householdId)
     .gte('date', startISO).lt('date', nextYearStart)
     .order('date', { ascending: false })
   if (error) { console.error('getExpensesForYear failed:', error.message); return [] }
-  return (data ?? []) as ExpenseRow[]
+  return (data ?? []).map((r) => mapExpenseRow(r as never))
 }
 
 export async function getLedgerForYear(member: Member, year: number): Promise<LedgerEntry[]> {

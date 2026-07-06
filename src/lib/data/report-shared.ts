@@ -1,19 +1,16 @@
 // Pure, server/client-safe report aggregation — no supabase / next/headers here.
-// Client components, the export route, and vitest all import these directly.
-import { CATEGORIES } from '@/lib/categories'
 import type { ExpenseRow } from './types'
 import type { LedgerEntry } from './personal-shared'
 
 export type CategoryMonthMatrix = {
-  categories: string[]
+  categories: string[]          // display names; '' marks the uncategorized bucket, always last
   cells: Record<string, number[]>
   categoryTotals: Record<string, number>
   monthTotals: number[]
   grandTotalCents: number
 }
 
-/** Category ordering for the matrix: defined categories first, 'uncategorized' last. */
-const CATEGORY_ORDER: string[] = [...CATEGORIES.map((c) => c.key as string), 'uncategorized']
+export const UNCATEGORIZED = '' // sentinel key for rows with no category
 
 export function buildCategoryMonthMatrix(rows: ExpenseRow[], year: number): CategoryMonthMatrix {
   const yearStr = String(year)
@@ -22,11 +19,13 @@ export function buildCategoryMonthMatrix(rows: ExpenseRow[], year: number): Cate
     if (r.date.slice(0, 4) !== yearStr) continue
     const monthIndex = Number(r.date.slice(5, 7)) - 1
     if (monthIndex < 0 || monthIndex > 11) continue
-    const key = r.category ?? 'uncategorized'
+    const key = r.category_name ?? UNCATEGORIZED
     ;(cells[key] ??= Array(12).fill(0))[monthIndex] += r.amount_cents
   }
 
-  const categories = CATEGORY_ORDER.filter((k) => k in cells)
+  const named = Object.keys(cells).filter((k) => k !== UNCATEGORIZED).sort((a, b) => a.localeCompare(b))
+  const categories = UNCATEGORIZED in cells ? [...named, UNCATEGORIZED] : named
+
   const categoryTotals: Record<string, number> = {}
   const monthTotals = Array(12).fill(0)
   for (const key of categories) {
@@ -35,7 +34,6 @@ export function buildCategoryMonthMatrix(rows: ExpenseRow[], year: number): Cate
     for (let i = 0; i < 12; i++) monthTotals[i] += row[i]
   }
   const grandTotalCents = monthTotals.reduce((a, b) => a + b, 0)
-
   return { categories, cells, categoryTotals, monthTotals, grandTotalCents }
 }
 
