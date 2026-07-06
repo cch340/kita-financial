@@ -9,9 +9,11 @@ import { groupByDay, formatMonthYear } from '@/lib/data/summary'
 import type { ExpenseRow } from '@/lib/data/types'
 import type { CatalogItem } from '@/lib/data/catalog-shared'
 import { IconTile } from '@/components/ui/IconTile'
+import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
+import { TRIAGE_ENABLED } from '@/lib/features'
 import { deleteExpenseAction } from './actions'
 import { FilterSheet, type Filters, type FilterValue } from './FilterSheet'
 
@@ -64,7 +66,8 @@ export function ExpensesView({
   }
 
   return (
-    <div className="flex flex-col gap-5 pb-6">
+    // pb-28 clears the fixed FAB (bottom-[100px], h-14) so the last rows scroll past it.
+    <div className="flex flex-col gap-5 pb-28">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('expenses.title')}</h1>
         <button type="button" onClick={() => setSheetOpen(true)}
@@ -74,7 +77,7 @@ export function ExpensesView({
         </button>
       </div>
 
-      {triageCount > 0 && (
+      {TRIAGE_ENABLED && triageCount > 0 && (
         <Link
           href="/expenses/triage"
           className="pressable flex min-h-[44px] items-center justify-between gap-2 rounded-full bg-[var(--pending-bg)] px-4 py-2.5 text-sm font-bold text-[var(--pending-text)]"
@@ -170,9 +173,10 @@ function ExpenseRowCard({
   const [deleting, setDeleting] = useState(false)
   const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
 
-  // Fall back to the category name, then the page title, when a row has no vendor/note.
-  const title = row.vendor_name || row.details || row.category_name || t('expenses.title')
-  const subParts = [row.category_name, row.paid_by].filter((p): p is string => Boolean(p))
+  // Title: the note (details); fall back to the category when there's no note.
+  const title = row.details || row.category_name || t('expenses.title')
+  // Subtitle: where it was spent — vendor + location.
+  const subParts = [row.vendor_name, row.location_name].filter((p): p is string => Boolean(p))
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
@@ -235,10 +239,17 @@ function ExpenseRowCard({
         className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
         style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
       >
-        <IconTile name="Tag" tint="var(--subtle)" />
+        {/* left icon: who paid, or a neutral tag when the payer is unset */}
+        {row.paid_by ? (
+          <MemberAvatar member={row.paid_by} size={44} />
+        ) : (
+          <IconTile name="Tag" tint="var(--subtle)" />
+        )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold text-[var(--ink)]">{title}</p>
-          <p className="truncate text-xs text-[var(--muted)]">{subParts.join(' · ')}</p>
+          {subParts.length > 0 && (
+            <p className="truncate text-xs text-[var(--muted)]">{subParts.join(' · ')}</p>
+          )}
         </div>
         <MoneyText cents={row.amount_cents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
       </div>
