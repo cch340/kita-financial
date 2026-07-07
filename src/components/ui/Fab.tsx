@@ -14,6 +14,7 @@ export function Fab({ href, label }: { href: string; label?: string }) {
       <div className="mx-auto flex max-w-[430px] justify-end px-[18px]">
         <Link
           href={href}
+          aria-label={label}
           className={
             label
               ? 'pressable pointer-events-auto flex h-14 min-h-[44px] items-center gap-2 rounded-full bg-[var(--primary-btn)] px-5 text-sm font-bold text-white shadow-[0_10px_24px_-6px_var(--primary)] active:shadow-[0_4px_12px_-6px_var(--primary)]'

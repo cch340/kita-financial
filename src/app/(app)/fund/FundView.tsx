@@ -120,7 +120,7 @@ export function FundView({
         ))}
       </Card>
 
-      <Fab href="/fund/record/add" />
+      <Fab href="/fund/record/add" label={t('fund.addRecord')} />
     </div>
   )
 }
