@@ -13,9 +13,12 @@ import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TRIAGE_ENABLED } from '@/lib/features'
 import { deleteExpenseAction } from './actions'
 import { FilterSheet, type Filters, type FilterValue } from './FilterSheet'
+import { ManageSheet } from './ManageSheet'
+import { ExpenseDetailSheet } from './ExpenseDetailSheet'
 
 type Props = {
   rows: ExpenseRow[]
@@ -42,6 +45,7 @@ export function ExpensesView({
 
   const [filters, setFilters] = useState<Filters>({ categoryId: null, vendorId: null, locationId: null })
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [manageOpen, setManageOpen] = useState(false)
   const activeCount = [filters.categoryId, filters.vendorId, filters.locationId].filter((v) => v !== null).length
 
   const matchField = (rowId: string | null, f: FilterValue) =>
@@ -70,11 +74,18 @@ export function ExpensesView({
     <div className="flex flex-col gap-5 pb-28">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('expenses.title')}</h1>
-        <button type="button" onClick={() => setSheetOpen(true)}
-          className="pressable-opacity flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]">
-          <SlidersHorizontal size={16} />
-          {t('expenses.filter')}{activeCount > 0 ? ` · ${activeCount}` : ''}
-        </button>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setSheetOpen(true)}
+            className="pressable-opacity flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]">
+            <SlidersHorizontal size={16} />
+            {t('expenses.filter')}{activeCount > 0 ? ` · ${activeCount}` : ''}
+          </button>
+          <button type="button" onClick={() => setManageOpen(true)}
+            className="pressable-opacity flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]">
+            <SlidersHorizontal size={16} />
+            {t('common.manage')}
+          </button>
+        </div>
       </div>
 
       {TRIAGE_ENABLED && triageCount > 0 && (
@@ -154,6 +165,11 @@ export function ExpensesView({
         <FilterSheet categories={categories} vendors={vendors} locations={locations}
           filters={filters} onChange={setFilters} onClose={() => setSheetOpen(false)} />
       )}
+
+      {manageOpen && (
+        <ManageSheet categories={categories} vendors={vendors} locations={locations}
+          onClose={() => setManageOpen(false)} />
+      )}
     </div>
   )
 }
@@ -171,7 +187,9 @@ function ExpenseRowCard({
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const dragState = useRef<{ startX: number; startDragX: number; moved: boolean } | null>(null)
 
   // Title: the note (details); fall back to the category when there's no note.
   const title = row.details || row.category_name || t('expenses.title')
@@ -180,79 +198,109 @@ function ExpenseRowCard({
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
-    dragState.current = { startX: e.clientX, startDragX: dragX }
+    dragState.current = { startX: e.clientX, startDragX: dragX, moved: false }
     setDragging(true)
   }
   function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     const ds = dragState.current
     if (!ds) return
     const delta = e.clientX - ds.startX
+    if (Math.abs(delta) > 8) ds.moved = true
     const next = Math.min(0, Math.max(-REVEAL_WIDTH, ds.startDragX + delta))
     setDragX(next)
   }
   function onPointerUp() {
-    if (!dragState.current) return
+    const ds = dragState.current
+    if (!ds) return
+    dragState.current = null
+    setDragging(false)
+    // A tap (no real drag) on a closed row opens the detail sheet.
+    if (!ds.moved && ds.startDragX === 0) {
+      setDragX(0)
+      setDetailOpen(true)
+      return
+    }
+    setDragX((x) => (x < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0))
+  }
+  function onPointerCancel() {
+    const ds = dragState.current
+    if (!ds) return
     dragState.current = null
     setDragging(false)
     setDragX((x) => (x < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0))
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[16px]">
-      {/* revealed actions, sit behind the row */}
-      <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
-        <button
-          type="button"
-          onClick={() => {
-            setDragX(0)
-            router.push(`/expenses/edit/${row.id}`)
-          }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--pending-text)' }}
+    <>
+      <div className="relative overflow-hidden rounded-[16px]">
+        {/* revealed actions, sit behind the row */}
+        <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
+          <button
+            type="button"
+            onClick={() => {
+              setDragX(0)
+              router.push(`/expenses/edit/${row.id}`)
+            }}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--pending-text)' }}
+          >
+            {t('expenses.edit')}
+          </button>
+          <button
+            type="button"
+            disabled={deleting}
+            onClick={() => setConfirmOpen(true)}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--danger)' }}
+          >
+            {deleting ? <Spinner /> : t('expenses.delete')}
+          </button>
+        </div>
+
+        {/* foreground row — drag horizontally to reveal actions */}
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+          className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
+          style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
         >
-          {t('expenses.edit')}
-        </button>
-        <button
-          type="button"
-          disabled={deleting}
-          onClick={async () => {
+          {/* left icon: who paid, or a neutral tag when the payer is unset */}
+          {row.paid_by ? (
+            <MemberAvatar member={row.paid_by} size={44} />
+          ) : (
+            <IconTile name="Tag" tint="var(--subtle)" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-[var(--ink)]">{title}</p>
+            {subParts.length > 0 && (
+              <p className="truncate text-xs text-[var(--muted)]">{subParts.join(' · ')}</p>
+            )}
+          </div>
+          <MoneyText cents={row.amount_cents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+        </div>
+      </div>
+      {confirmOpen && (
+        <ConfirmDialog
+          message={t('expenses.confirmDelete')}
+          confirmLabel={t('expenses.delete')}
+          cancelLabel={t('common.cancel')}
+          busy={deleting}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={async () => {
             setDeleting(true)
             const res = await deleteExpenseAction(row.id)
             if (!res.ok) {
               setDeleting(false)
+              setConfirmOpen(false)
               onDeleteError()
             }
+            // on success the row is removed by revalidatePath; dialog unmounts with it
           }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--danger)' }}
-        >
-          {deleting ? <Spinner /> : t('expenses.delete')}
-        </button>
-      </div>
-
-      {/* foreground row — drag horizontally to reveal actions */}
-      <div
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
-        style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
-      >
-        {/* left icon: who paid, or a neutral tag when the payer is unset */}
-        {row.paid_by ? (
-          <MemberAvatar member={row.paid_by} size={44} />
-        ) : (
-          <IconTile name="Tag" tint="var(--subtle)" />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-[var(--ink)]">{title}</p>
-          {subParts.length > 0 && (
-            <p className="truncate text-xs text-[var(--muted)]">{subParts.join(' · ')}</p>
-          )}
-        </div>
-        <MoneyText cents={row.amount_cents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
-      </div>
-    </div>
+        />
+      )}
+      {detailOpen && <ExpenseDetailSheet row={row} onClose={() => setDetailOpen(false)} />}
+    </>
   )
 }

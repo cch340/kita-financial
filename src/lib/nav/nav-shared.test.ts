@@ -13,7 +13,7 @@ describe('parseLayout', () => {
   })
 
   it('preserves a valid layout unchanged', () => {
-    const layout = { bar: ['home', 'fund'], more: ['expenses', 'budget', 'assets', 'manage'] }
+    const layout = { bar: ['home', 'fund'], more: ['expenses', 'budget', 'assets'] }
     expect(parseLayout(layout)).toEqual(layout)
   })
 
@@ -37,7 +37,7 @@ describe('parseLayout', () => {
 
   it('spills over-cap bar items to the front of more', () => {
     const out = parseLayout({
-      bar: ['home', 'expenses', 'fund', 'budget', 'assets'], more: ['manage'],
+      bar: ['home', 'expenses', 'fund', 'budget', 'assets'], more: [],
     })
     expect(out.bar).toHaveLength(MAX_BAR)
     expect(out.bar).toEqual(['home', 'expenses', 'fund', 'budget'])
@@ -62,12 +62,11 @@ describe('resolveActiveTab', () => {
 
   it('resolves the More slot for destinations that live in more', () => {
     expect(resolveActiveTab('/assets', DEFAULT_LAYOUT)).toBe('more')
-    expect(resolveActiveTab('/manage', DEFAULT_LAYOUT)).toBe('more')
     expect(resolveActiveTab('/more', DEFAULT_LAYOUT)).toBe('more')
   })
 
   it('resolves a promoted destination to its own bar slot', () => {
-    const promoted: NavLayout = { bar: ['home', 'expenses', 'fund', 'assets'], more: ['budget', 'manage'] }
+    const promoted: NavLayout = { bar: ['home', 'expenses', 'fund', 'assets'], more: ['budget'] }
     expect(resolveActiveTab('/assets', promoted)).toBe('assets')
     expect(resolveActiveTab('/budget', promoted)).toBe('more')
   })

@@ -16,7 +16,9 @@ import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { deleteFundRecordAction } from './actions'
+import { FundDetailSheet } from './FundDetailSheet'
 
 const MEMBERS: Member[] = ['CH', 'JC']
 const REVEAL_WIDTH = 152 // px — two 76px action buttons behind each row
@@ -48,8 +50,9 @@ export function FundView({
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('fund.title')}</h1>
         <Link href="/fund/recurring" aria-label={t('fund.manageRecurring')}
-          className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]">
-          <SlidersHorizontal size={18} />
+          className="pressable-opacity flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]">
+          <SlidersHorizontal size={16} />
+          {t('common.manage')}
         </Link>
       </header>
 
@@ -109,67 +112,100 @@ function FundRecordCard({
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const dragState = useRef<{ startX: number; startDragX: number; moved: boolean } | null>(null)
 
   const monthLabel = `${monthShort(Number(row.periodISO.slice(5, 7)), locale)} ${row.periodISO.slice(0, 4)}`
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
-    dragState.current = { startX: e.clientX, startDragX: dragX }
+    dragState.current = { startX: e.clientX, startDragX: dragX, moved: false }
     setDragging(true)
   }
   function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     const ds = dragState.current
     if (!ds) return
     const delta = e.clientX - ds.startX
+    if (Math.abs(delta) > 8) ds.moved = true
     setDragX(Math.min(0, Math.max(-REVEAL_WIDTH, ds.startDragX + delta)))
   }
   function onPointerUp() {
-    if (!dragState.current) return
+    const ds = dragState.current
+    if (!ds) return
+    dragState.current = null
+    setDragging(false)
+    if (!ds.moved && ds.startDragX === 0) {
+      setDragX(0)
+      setDetailOpen(true)
+      return
+    }
+    setDragX((x) => (x < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0))
+  }
+  function onPointerCancel() {
+    const ds = dragState.current
+    if (!ds) return
     dragState.current = null
     setDragging(false)
     setDragX((x) => (x < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0))
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[16px]">
-      {/* revealed actions, sit behind the row */}
-      <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
-        <button type="button"
-          onClick={() => { setDragX(0); router.push(`/fund/record/edit/${row.id}`) }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--pending-text)' }}>
-          {t('fund.edit')}
-        </button>
-        <button type="button" disabled={deleting}
-          onClick={async () => {
+    <>
+      <div className="relative overflow-hidden rounded-[16px]">
+        {/* revealed actions, sit behind the row */}
+        <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
+          <button type="button"
+            onClick={() => { setDragX(0); router.push(`/fund/record/edit/${row.id}`) }}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--pending-text)' }}>
+            {t('fund.edit')}
+          </button>
+          <button type="button" disabled={deleting}
+            onClick={() => setConfirmOpen(true)}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--danger)' }}>
+            {deleting ? <Spinner /> : t('fund.delete')}
+          </button>
+        </div>
+
+        {/* foreground row — drag horizontally to reveal actions */}
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+          className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
+          style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
+        >
+          <MemberAvatar member={row.memberCode} size={44} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-[var(--ink)]">{monthLabel}</p>
+            {row.notes && <p className="truncate text-xs text-[var(--muted)]">{row.notes}</p>}
+          </div>
+          <MoneyText cents={row.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+        </div>
+      </div>
+      {confirmOpen && (
+        <ConfirmDialog
+          message={t('fund.confirmDelete')}
+          confirmLabel={t('fund.delete')}
+          cancelLabel={t('common.cancel')}
+          busy={deleting}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={async () => {
             setDeleting(true)
             const res = await deleteFundRecordAction(row.id)
-            if (!res.ok) { setDeleting(false); onDeleteError() }
+            if (!res.ok) {
+              setDeleting(false)
+              setConfirmOpen(false)
+              onDeleteError()
+            }
           }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--danger)' }}>
-          {deleting ? <Spinner /> : t('fund.delete')}
-        </button>
-      </div>
-
-      {/* foreground row — drag horizontally to reveal actions */}
-      <div
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
-        style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
-      >
-        <MemberAvatar member={row.memberCode} size={44} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-[var(--ink)]">{monthLabel}</p>
-          {row.notes && <p className="truncate text-xs text-[var(--muted)]">{row.notes}</p>}
-        </div>
-        <MoneyText cents={row.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
-      </div>
-    </div>
+        />
+      )}
+      {detailOpen && <FundDetailSheet row={row} locale={locale} onClose={() => setDetailOpen(false)} />}
+    </>
   )
 }
 

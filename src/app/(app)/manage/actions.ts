@@ -15,7 +15,7 @@ export type CatalogKind = 'category' | 'vendor' | 'location'
 type Result = { ok: true; id?: string } | { ok: false; error: string }
 
 function revalidate() {
-  revalidatePath('/manage'); revalidatePath('/expenses')
+  revalidatePath('/expenses')
   revalidatePath('/expenses/add'); revalidatePath('/')
 }
 

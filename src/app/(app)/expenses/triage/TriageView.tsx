@@ -150,8 +150,8 @@ function TriageCard({
         {categories.length === 0 ? (
           <p className="text-sm text-[var(--muted)]">
             {t('triage.noCategories')}{' '}
-            <Link href="/manage" className="font-semibold text-[var(--primary)] underline">
-              /manage
+            <Link href="/expenses" className="font-semibold text-[var(--primary)] underline">
+              {t('nav.expenses')}
             </Link>
           </p>
         ) : (
