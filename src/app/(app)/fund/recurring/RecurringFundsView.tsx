@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
-import { formatRM, parseMoneyInput } from '@/lib/money'
+import { parseMoneyInput } from '@/lib/money'
 import { sumForMember } from '@/lib/data/recurring-funds-shared'
 import type { RecurringFund, Member } from '@/lib/data/recurring-funds-shared'
 import { Card } from '@/components/ui/Card'
@@ -14,7 +14,7 @@ import { createRecurringAction, updateRecurringAction, deleteRecurringAction } f
 
 const MEMBERS: Member[] = ['CH', 'JC']
 
-export function RecurringFundsView({ funds, locale }: { funds: RecurringFund[]; locale: 'en' | 'zh' }) {
+export function RecurringFundsView({ funds }: { funds: RecurringFund[] }) {
   const t = useT()
   const router = useRouter()
   const [editing, setEditing] = useState<RecurringFund | 'new' | null>(null)
