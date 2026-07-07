@@ -3,12 +3,12 @@ import { getMembership } from './household'
 import { monthRange } from './summary'
 import type { Member } from './types'
 import { buildFundMonths, collapseLeadingPaid } from './fund-shared'
-import type { MemberCell, FundMonth, FundOverview, ContribRow } from './fund-shared'
+import type { MemberCell, FundMonth, FundOverview, ContribRow, FundRecord } from './fund-shared'
 
 // Re-exported for backward compatibility — prefer importing from './fund-shared'
 // in client components (this module pulls in supabase/server via getFundOverview).
 export { buildFundMonths, collapseLeadingPaid }
-export type { MemberCell, FundMonth, FundOverview }
+export type { MemberCell, FundMonth, FundOverview, FundRecord }
 
 export async function getFundOverview(year: number): Promise<FundOverview> {
   const empty: FundOverview = {
@@ -66,4 +66,63 @@ export async function getFundConfig(): Promise<FundConfig> {
     out[r.member_code] = { expectedMonthlyCents: r.expected_monthly_cents, carryForwardCents: r.carry_forward_prev_year_cents }
   }
   return out
+}
+
+type FundRecordInput = { memberCode: Member; periodISO: string; amountCents: number; notes: string | null }
+
+function validateFundRecord(input: FundRecordInput): string | null {
+  if (input.memberCode !== 'CH' && input.memberCode !== 'JC') return 'invalid_member'
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.periodISO)) return 'invalid_period'
+  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) return 'invalid_amount'
+  return null
+}
+
+export async function listFundRecords(): Promise<FundRecord[]> {
+  const m = await getMembership()
+  if (!m) return []
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('joint_fund_contributions')
+    .select('id, member_code, period, amount_cents, notes')
+    .eq('household_id', m.householdId)
+    .order('period', { ascending: false })
+  if (error) { console.error('listFundRecords:', error.message); return [] }
+  return ((data ?? []) as { id: string; member_code: Member; period: string; amount_cents: number; notes: string | null }[])
+    .map((r) => ({ id: r.id, memberCode: r.member_code, periodISO: r.period, amountCents: r.amount_cents, notes: r.notes }))
+}
+
+export async function createFundRecord(input: FundRecordInput): Promise<{ ok: boolean; error?: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  const invalid = validateFundRecord(input)
+  if (invalid) return { ok: false, error: invalid }
+  const supabase = await createClient()
+  const { error } = await supabase.from('joint_fund_contributions').insert({
+    household_id: m.householdId, member_code: input.memberCode, period: input.periodISO,
+    amount_cents: input.amountCents, status: 'paid', notes: input.notes,
+  })
+  if (error) { console.error('createFundRecord:', error.message); return { ok: false, error: 'save_failed' } }
+  return { ok: true }
+}
+
+export async function updateFundRecord(id: string, patch: FundRecordInput): Promise<{ ok: boolean; error?: string }> {
+  const m = await getMembership()
+  if (!m) return { ok: false, error: 'not_authenticated' }
+  const invalid = validateFundRecord(patch)
+  if (invalid) return { ok: false, error: invalid }
+  const supabase = await createClient()
+  const { error } = await supabase.from('joint_fund_contributions')
+    .update({ member_code: patch.memberCode, period: patch.periodISO, amount_cents: patch.amountCents, notes: patch.notes })
+    .eq('id', id).eq('household_id', m.householdId)
+  if (error) { console.error('updateFundRecord:', error.message); return { ok: false, error: 'save_failed' } }
+  return { ok: true }
+}
+
+export async function deleteFundRecord(id: string): Promise<{ ok: boolean }> {
+  const m = await getMembership()
+  if (!m) return { ok: false }
+  const supabase = await createClient()
+  const { error } = await supabase.from('joint_fund_contributions').delete().eq('id', id).eq('household_id', m.householdId)
+  if (error) { console.error('deleteFundRecord:', error.message); return { ok: false } }
+  return { ok: true }
 }
