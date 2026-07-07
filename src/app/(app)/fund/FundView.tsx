@@ -1,235 +1,193 @@
 'use client'
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Pencil } from 'lucide-react'
+import Link from 'next/link'
+import { SlidersHorizontal } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { monthShort } from '@/lib/data/summary'
-import { collapseLeadingPaid } from '@/lib/data/fund-shared'
-import type { FundOverview, MemberCell } from '@/lib/data/fund-shared'
-import { Card, HeroCard } from '@/components/ui/Card'
-import { ProgressBar } from '@/components/ui/ProgressBar'
+import {
+  filterRecords, filteredTotal, totalContributedThisYear,
+  type FundRecord, type FundFilters,
+} from '@/lib/data/fund-shared'
+import type { Member } from '@/lib/data/types'
+import { HeroCard } from '@/components/ui/Card'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
+import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
-import type { FundConfig } from '@/lib/data/fund'
-import { FundConfigEditor } from './FundConfigEditor'
-import { toggleContributionPaid } from './actions'
+import { deleteFundRecordAction } from './actions'
 
-type Locale = 'en' | 'zh'
-type Member = 'CH' | 'JC'
+const MEMBERS: Member[] = ['CH', 'JC']
+const REVEAL_WIDTH = 152 // px — two 76px action buttons behind each row
 
-type Props = {
-  overview: FundOverview
-  locale: Locale
-  month: number
-  config: FundConfig
-}
-
-export function FundView({ overview, locale, month, config }: Props) {
+export function FundView({
+  records, currentYear, locale,
+}: {
+  records: FundRecord[]
+  currentYear: number
+  locale: 'en' | 'zh'
+}) {
   const t = useT()
-  const router = useRouter()
-  const [error, setError] = useState(false)
-  const [pendingKey, setPendingKey] = useState<string | null>(null)
-  const [editingConfig, setEditingConfig] = useState(false)
+  const [deleteFailed, setDeleteFailed] = useState(false)
+  const [filters, setFilters] = useState<FundFilters>({ member: 'all', month: 'all', year: currentYear })
 
-  const progress = overview.yearExpectedCents > 0 ? overview.yearContributedCents / overview.yearExpectedCents : 0
-  const { CH, JC } = overview.expectedEachCents
-  const { summary, rest } = collapseLeadingPaid(overview.months)
+  const years = useMemo(() => {
+    const set = new Set<number>(records.map((r) => Number(r.periodISO.slice(0, 4))))
+    set.add(currentYear)
+    return Array.from(set).sort((a, b) => b - a)
+  }, [records, currentYear])
 
-  async function handleToggle(member: Member, periodISO: string) {
-    const key = `${member}-${periodISO}`
-    if (pendingKey) return
-    setError(false)
-    setPendingKey(key)
-    const res = await toggleContributionPaid(member, periodISO)
-    if (!res.ok) {
-      setError(true)
-      setPendingKey(null)
-      return
-    }
-    router.refresh()
-    setPendingKey(null)
-  }
+  const shown = useMemo(() => filterRecords(records, filters), [records, filters])
+  const shownTotal = useMemo(() => filteredTotal(records, filters), [records, filters])
+  const yearTotal = useMemo(() => totalContributedThisYear(records, currentYear), [records, currentYear])
 
   return (
-    <div className="flex flex-col gap-5 pb-6">
+    // pb-28 clears the fixed FAB (bottom-[100px], h-14) so the last rows scroll past it.
+    <div className="flex flex-col gap-5 pb-28">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('fund.title')}</h1>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
-            {overview.year}
-          </span>
-          <button
-            type="button"
-            onClick={() => setEditingConfig((v) => !v)}
-            aria-label={t('fund.editConfig')}
-            aria-expanded={editingConfig}
-            className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]"
-          >
-            <Pencil size={16} />
-          </button>
-        </div>
+        <Link href="/fund/recurring" aria-label={t('fund.manageRecurring')}
+          className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]">
+          <SlidersHorizontal size={18} />
+        </Link>
       </header>
 
-      {editingConfig && <FundConfigEditor config={config} onClose={() => setEditingConfig(false)} />}
+      <HeroCard>
+        <span className="text-sm font-bold opacity-90">{t('fund.thisYearTotal')}</span>
+        <div className="mt-1"><MoneyText cents={yearTotal} className="text-[32px] font-extrabold" /></div>
+        <p className="mt-2 flex items-center gap-1 text-sm font-semibold opacity-80">
+          {t('fund.filteredTotal')} · <MoneyText cents={shownTotal} />
+        </p>
+      </HeroCard>
 
-      {error && (
-        <p
-          role="alert"
-          className="rounded-xl bg-[var(--pending-bg)] px-4 py-2 text-sm font-semibold text-[var(--danger)]"
-        >
-          {t('error.save_failed')}
+      {deleteFailed && (
+        <p role="alert" className="rounded-xl bg-[var(--pending-bg)] px-4 py-2 text-sm font-semibold text-[var(--danger)]">
+          {t('error.delete_failed')}
         </p>
       )}
 
-      <HeroCard>
-        <span className="text-sm font-bold opacity-90">{t('fund.contributed')}</span>
-        <div className="mt-1">
-          <MoneyText cents={overview.yearContributedCents} className="text-[32px] font-extrabold" />
-        </div>
-        <p className="mt-1 flex items-center gap-1 text-sm font-semibold opacity-80">
-          <MoneyText cents={overview.yearExpectedCents} /> {t('fund.ofYear')}
-        </p>
-        <div className="mt-3">
-          <ProgressBar value={progress} trackClassName="bg-white/25" barClassName="bg-white" />
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap">
-            <span>{t('fund.carryForward')}</span>
-            <span>·</span>
-            <MoneyText cents={overview.carryForwardCents} />
-          </div>
-          <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap">
-            {CH === JC ? (
-              <>
-                <MoneyText cents={CH} /> <span>{t('fund.perMonthEach')}</span>
-              </>
-            ) : (
-              <>
-                <MoneyText cents={CH} /> <span>/</span> <MoneyText cents={JC} /> <span>{t('fund.perMonthEach')}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </HeroCard>
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        <FilterSelect label={t('fund.paidBy')} value={String(filters.member)}
+          onChange={(v) => setFilters((f) => ({ ...f, member: v === 'all' ? 'all' : (v as Member) }))}
+          options={[{ v: 'all', label: t('fund.allPersons') }, ...MEMBERS.map((m) => ({ v: m, label: m }))]} />
+        <FilterSelect label={t('fund.month')} value={String(filters.month)}
+          onChange={(v) => setFilters((f) => ({ ...f, month: v === 'all' ? 'all' : Number(v) }))}
+          options={[{ v: 'all', label: t('fund.allMonths') },
+            ...Array.from({ length: 12 }, (_, i) => ({ v: String(i + 1), label: monthShort(i + 1, locale) }))]} />
+        <FilterSelect label={t('fund.year')} value={String(filters.year)}
+          onChange={(v) => setFilters((f) => ({ ...f, year: Number(v) }))}
+          options={years.map((y) => ({ v: String(y), label: String(y) }))} />
+      </div>
 
-      <Card className="overflow-hidden p-0">
-        <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-[var(--hairline)] px-4 py-3">
-          <span />
-          <MemberAvatar member="CH" size={32} />
-          <MemberAvatar member="JC" size={32} />
+      {/* records list — swipe a row left to reveal edit/delete (mirrors the expenses list) */}
+      {shown.length === 0 ? (
+        <p className="py-10 text-center text-sm font-semibold text-[var(--faint)]">{t('fund.noRecords')}</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {shown.map((r) => (
+            <FundRecordCard key={r.id} row={r} locale={locale} t={t} onDeleteError={() => setDeleteFailed(true)} />
+          ))}
         </div>
+      )}
 
-        {summary && (
-          <div className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-[var(--hairline)] px-4 py-3">
-            <span className="text-sm font-semibold text-[var(--muted)]">
-              {monthShort(1, locale)}–{monthShort(summary.throughMonth, locale)} · {t('fund.allPaid')}
-            </span>
-            <MoneyText cents={summary.totalCents} className="text-sm font-bold text-[var(--ink-head)]" />
-          </div>
-        )}
-
-        {rest.map((m, i) => {
-          const isCurrent = m.month === month
-          return (
-            <div
-              key={m.month}
-              className={`grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3 ${
-                i < rest.length - 1 ? 'border-b border-[var(--hairline)]' : ''
-              } ${isCurrent ? 'bg-[var(--subtle)]' : ''}`}
-            >
-              <span className="text-sm font-bold text-[var(--ink-head)]">{monthShort(m.month, locale)}</span>
-              <FundCell
-                cell={m.ch}
-                member="CH"
-                periodISO={m.periodISO}
-                isCurrent={isCurrent}
-                pending={pendingKey === `CH-${m.periodISO}`}
-                onToggle={handleToggle}
-                t={t}
-              />
-              <FundCell
-                cell={m.jc}
-                member="JC"
-                periodISO={m.periodISO}
-                isCurrent={isCurrent}
-                pending={pendingKey === `JC-${m.periodISO}`}
-                onToggle={handleToggle}
-                t={t}
-              />
-            </div>
-          )
-        })}
-      </Card>
+      <Fab href="/fund/record/add" />
     </div>
   )
 }
 
-function FundCell({
-  cell,
-  member,
-  periodISO,
-  isCurrent,
-  pending,
-  onToggle,
-  t,
+function FundRecordCard({
+  row, locale, t, onDeleteError,
 }: {
-  cell: MemberCell
-  member: Member
-  periodISO: string
-  isCurrent: boolean
-  pending: boolean
-  onToggle: (member: Member, periodISO: string) => void
+  row: FundRecord
+  locale: 'en' | 'zh'
   t: (key: string) => string
+  onDeleteError: () => void
 }) {
-  if (cell == null) {
-    return <span className="grid h-11 min-w-11 place-items-center text-sm text-[var(--faint)]">—</span>
+  const router = useRouter()
+  const [dragX, setDragX] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
+
+  const monthLabel = `${monthShort(Number(row.periodISO.slice(5, 7)), locale)} ${row.periodISO.slice(0, 4)}`
+
+  function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
+    ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
+    dragState.current = { startX: e.clientX, startDragX: dragX }
+    setDragging(true)
+  }
+  function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    const ds = dragState.current
+    if (!ds) return
+    const delta = e.clientX - ds.startX
+    setDragX(Math.min(0, Math.max(-REVEAL_WIDTH, ds.startDragX + delta)))
+  }
+  function onPointerUp() {
+    if (!dragState.current) return
+    dragState.current = null
+    setDragging(false)
+    setDragX((x) => (x < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0))
   }
 
-  if (cell.status === 'paid') {
-    return (
-      <span
-        className="inline-flex min-h-11 items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap"
-        style={{ background: 'var(--positive-bg)', color: 'var(--positive-text)' }}
-      >
-        <Check size={12} strokeWidth={3} />
-        <MoneyText cents={cell.amountCents} />
-      </span>
-    )
-  }
-
-  // pending
-  if (isCurrent) {
-    return (
-      <button
-        type="button"
-        onClick={() => onToggle(member, periodISO)}
-        disabled={pending}
-        aria-busy={pending}
-        className="pressable inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-xs font-bold whitespace-nowrap text-white"
-        style={{ background: 'var(--primary)' }}
-      >
-        {pending ? <Spinner size={12} /> : t('fund.markPaid')}
-      </button>
-    )
-  }
   return (
-    <button
-      type="button"
-      onClick={() => onToggle(member, periodISO)}
-      disabled={pending}
-      aria-busy={pending}
-      className="pressable inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap"
-      style={{ background: 'var(--pending-bg)', color: 'var(--pending-text)' }}
-    >
-      {pending ? (
-        <Spinner size={12} />
-      ) : (
-        <>
-          <MoneyText cents={cell.amountCents} />
-          <span>{t('status.pending')}</span>
-        </>
-      )}
-    </button>
+    <div className="relative overflow-hidden rounded-[16px]">
+      {/* revealed actions, sit behind the row */}
+      <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
+        <button type="button"
+          onClick={() => { setDragX(0); router.push(`/fund/record/edit/${row.id}`) }}
+          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+          style={{ background: 'var(--pending-text)' }}>
+          {t('fund.edit')}
+        </button>
+        <button type="button" disabled={deleting}
+          onClick={async () => {
+            setDeleting(true)
+            const res = await deleteFundRecordAction(row.id)
+            if (!res.ok) { setDeleting(false); onDeleteError() }
+          }}
+          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+          style={{ background: 'var(--danger)' }}>
+          {deleting ? <Spinner /> : t('fund.delete')}
+        </button>
+      </div>
+
+      {/* foreground row — drag horizontally to reveal actions */}
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
+        style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
+      >
+        <MemberAvatar member={row.memberCode} size={44} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-bold text-[var(--ink)]">{monthLabel}</p>
+          {row.notes && <p className="truncate text-xs text-[var(--muted)]">{row.notes}</p>}
+        </div>
+        <MoneyText cents={row.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+      </div>
+    </div>
+  )
+}
+
+function FilterSelect({
+  label, value, onChange, options,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  options: { v: string; label: string }[]
+}) {
+  return (
+    <label className="flex items-center gap-1 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)]">
+      <span className="text-[var(--muted)]">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className="bg-transparent font-bold text-[var(--ink)] outline-none">
+        {options.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
+      </select>
+    </label>
   )
 }
