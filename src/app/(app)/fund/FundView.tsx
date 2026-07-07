@@ -1,235 +1,145 @@
 'use client'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, Pencil } from 'lucide-react'
+import { Pencil, Trash2, Repeat, SlidersHorizontal } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { monthShort } from '@/lib/data/summary'
-import { collapseLeadingPaid } from '@/lib/data/fund-shared'
-import type { FundOverview, MemberCell } from '@/lib/data/fund-shared'
+import {
+  filterRecords, filteredTotal, totalContributedThisYear,
+  type FundRecord, type FundFilters,
+} from '@/lib/data/fund-shared'
+import type { Member } from '@/lib/data/types'
 import { Card, HeroCard } from '@/components/ui/Card'
-import { ProgressBar } from '@/components/ui/ProgressBar'
 import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
-import { Spinner } from '@/components/ui/Spinner'
+import { Fab } from '@/components/ui/Fab'
 import type { FundConfig } from '@/lib/data/fund'
 import { FundConfigEditor } from './FundConfigEditor'
-import { toggleContributionPaid } from './actions'
+import { deleteFundRecordAction } from './actions'
 
-type Locale = 'en' | 'zh'
-type Member = 'CH' | 'JC'
+const MEMBERS: Member[] = ['CH', 'JC']
 
-type Props = {
-  overview: FundOverview
-  locale: Locale
-  month: number
+export function FundView({
+  records, currentYear, locale, config,
+}: {
+  records: FundRecord[]
+  currentYear: number
+  locale: 'en' | 'zh'
   config: FundConfig
-}
-
-export function FundView({ overview, locale, month, config }: Props) {
+}) {
   const t = useT()
   const router = useRouter()
-  const [error, setError] = useState(false)
-  const [pendingKey, setPendingKey] = useState<string | null>(null)
   const [editingConfig, setEditingConfig] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [filters, setFilters] = useState<FundFilters>({ member: 'all', month: 'all', year: currentYear })
 
-  const progress = overview.yearExpectedCents > 0 ? overview.yearContributedCents / overview.yearExpectedCents : 0
-  const { CH, JC } = overview.expectedEachCents
-  const { summary, rest } = collapseLeadingPaid(overview.months)
+  const years = useMemo(() => {
+    const set = new Set<number>(records.map((r) => Number(r.periodISO.slice(0, 4))))
+    set.add(currentYear)
+    return Array.from(set).sort((a, b) => b - a)
+  }, [records, currentYear])
 
-  async function handleToggle(member: Member, periodISO: string) {
-    const key = `${member}-${periodISO}`
-    if (pendingKey) return
-    setError(false)
-    setPendingKey(key)
-    const res = await toggleContributionPaid(member, periodISO)
-    if (!res.ok) {
-      setError(true)
-      setPendingKey(null)
-      return
-    }
+  const shown = useMemo(() => filterRecords(records, filters), [records, filters])
+  const shownTotal = useMemo(() => filteredTotal(records, filters), [records, filters])
+  const yearTotal = useMemo(() => totalContributedThisYear(records, currentYear), [records, currentYear])
+
+  async function handleDelete(id: string) {
+    if (busy || !confirm(t('fund.deleteConfirm'))) return
+    setBusy(true)
+    await deleteFundRecordAction(id)
     router.refresh()
-    setPendingKey(null)
+    setBusy(false)
   }
 
   return (
-    <div className="flex flex-col gap-5 pb-6">
+    // pb-28 clears the fixed FAB (bottom-[100px], h-14) so the last rows scroll past it.
+    <div className="flex flex-col gap-5 pb-28">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('fund.title')}</h1>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-[var(--subtle)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
-            {overview.year}
-          </span>
-          <button
-            type="button"
-            onClick={() => setEditingConfig((v) => !v)}
-            aria-label={t('fund.editConfig')}
+        <div className="flex items-center gap-1">
+          <Link href="/fund/recurring" aria-label={t('fund.manageRecurring')}
+            className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]">
+            <Repeat size={18} />
+          </Link>
+          <button type="button" onClick={() => setEditingConfig((v) => !v)} aria-label={t('fund.editConfig')}
             aria-expanded={editingConfig}
-            className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]"
-          >
-            <Pencil size={16} />
+            className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]">
+            <SlidersHorizontal size={16} />
           </button>
         </div>
       </header>
 
       {editingConfig && <FundConfigEditor config={config} onClose={() => setEditingConfig(false)} />}
 
-      {error && (
-        <p
-          role="alert"
-          className="rounded-xl bg-[var(--pending-bg)] px-4 py-2 text-sm font-semibold text-[var(--danger)]"
-        >
-          {t('error.save_failed')}
-        </p>
-      )}
-
       <HeroCard>
-        <span className="text-sm font-bold opacity-90">{t('fund.contributed')}</span>
-        <div className="mt-1">
-          <MoneyText cents={overview.yearContributedCents} className="text-[32px] font-extrabold" />
-        </div>
-        <p className="mt-1 flex items-center gap-1 text-sm font-semibold opacity-80">
-          <MoneyText cents={overview.yearExpectedCents} /> {t('fund.ofYear')}
+        <span className="text-sm font-bold opacity-90">{t('fund.thisYearTotal')}</span>
+        <div className="mt-1"><MoneyText cents={yearTotal} className="text-[32px] font-extrabold" /></div>
+        <p className="mt-2 flex items-center gap-1 text-sm font-semibold opacity-80">
+          {t('fund.filteredTotal')} · <MoneyText cents={shownTotal} />
         </p>
-        <div className="mt-3">
-          <ProgressBar value={progress} trackClassName="bg-white/25" barClassName="bg-white" />
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap">
-            <span>{t('fund.carryForward')}</span>
-            <span>·</span>
-            <MoneyText cents={overview.carryForwardCents} />
-          </div>
-          <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap">
-            {CH === JC ? (
-              <>
-                <MoneyText cents={CH} /> <span>{t('fund.perMonthEach')}</span>
-              </>
-            ) : (
-              <>
-                <MoneyText cents={CH} /> <span>/</span> <MoneyText cents={JC} /> <span>{t('fund.perMonthEach')}</span>
-              </>
-            )}
-          </div>
-        </div>
       </HeroCard>
 
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        <FilterSelect label={t('fund.paidBy')} value={String(filters.member)}
+          onChange={(v) => setFilters((f) => ({ ...f, member: v === 'all' ? 'all' : (v as Member) }))}
+          options={[{ v: 'all', label: t('fund.allPersons') }, ...MEMBERS.map((m) => ({ v: m, label: m }))]} />
+        <FilterSelect label={t('fund.month')} value={String(filters.month)}
+          onChange={(v) => setFilters((f) => ({ ...f, month: v === 'all' ? 'all' : Number(v) }))}
+          options={[{ v: 'all', label: t('fund.allMonths') },
+            ...Array.from({ length: 12 }, (_, i) => ({ v: String(i + 1), label: monthShort(i + 1, locale) }))]} />
+        <FilterSelect label={t('fund.year')} value={String(filters.year)}
+          onChange={(v) => setFilters((f) => ({ ...f, year: Number(v) }))}
+          options={years.map((y) => ({ v: String(y), label: String(y) }))} />
+      </div>
+
       <Card className="overflow-hidden p-0">
-        <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-[var(--hairline)] px-4 py-3">
-          <span />
-          <MemberAvatar member="CH" size={32} />
-          <MemberAvatar member="JC" size={32} />
-        </div>
-
-        {summary && (
-          <div className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-[var(--hairline)] px-4 py-3">
-            <span className="text-sm font-semibold text-[var(--muted)]">
-              {monthShort(1, locale)}–{monthShort(summary.throughMonth, locale)} · {t('fund.allPaid')}
-            </span>
-            <MoneyText cents={summary.totalCents} className="text-sm font-bold text-[var(--ink-head)]" />
-          </div>
-        )}
-
-        {rest.map((m, i) => {
-          const isCurrent = m.month === month
-          return (
-            <div
-              key={m.month}
-              className={`grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3 ${
-                i < rest.length - 1 ? 'border-b border-[var(--hairline)]' : ''
-              } ${isCurrent ? 'bg-[var(--subtle)]' : ''}`}
-            >
-              <span className="text-sm font-bold text-[var(--ink-head)]">{monthShort(m.month, locale)}</span>
-              <FundCell
-                cell={m.ch}
-                member="CH"
-                periodISO={m.periodISO}
-                isCurrent={isCurrent}
-                pending={pendingKey === `CH-${m.periodISO}`}
-                onToggle={handleToggle}
-                t={t}
-              />
-              <FundCell
-                cell={m.jc}
-                member="JC"
-                periodISO={m.periodISO}
-                isCurrent={isCurrent}
-                pending={pendingKey === `JC-${m.periodISO}`}
-                onToggle={handleToggle}
-                t={t}
-              />
+        {shown.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-[var(--faint)]">{t('fund.noRecords')}</p>
+        ) : shown.map((r, i) => (
+          <div key={r.id}
+            className={`flex items-center justify-between gap-3 px-4 py-3 ${i < shown.length - 1 ? 'border-b border-[var(--hairline)]' : ''}`}>
+            <div className="flex min-w-0 items-center gap-3">
+              <MemberAvatar member={r.memberCode} size={32} />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-[var(--ink-head)]">
+                  {monthShort(Number(r.periodISO.slice(5, 7)), locale)} {r.periodISO.slice(0, 4)}
+                </p>
+                {r.notes && <p className="truncate text-xs text-[var(--muted)]">{r.notes}</p>}
+              </div>
             </div>
-          )
-        })}
+            <div className="flex items-center gap-2">
+              <MoneyText cents={r.amountCents} className="text-sm font-bold" />
+              <Link href={`/fund/record/edit/${r.id}`} aria-label={t('fund.editRecord')}
+                className="pressable-opacity grid h-9 w-9 place-items-center rounded-full text-[var(--muted)]"><Pencil size={15} /></Link>
+              <button type="button" onClick={() => handleDelete(r.id)} aria-label={t('fund.delete')}
+                className="pressable-opacity grid h-9 w-9 place-items-center rounded-full text-[var(--danger)]"><Trash2 size={15} /></button>
+            </div>
+          </div>
+        ))}
       </Card>
+
+      <Fab href="/fund/record/add" />
     </div>
   )
 }
 
-function FundCell({
-  cell,
-  member,
-  periodISO,
-  isCurrent,
-  pending,
-  onToggle,
-  t,
+function FilterSelect({
+  label, value, onChange, options,
 }: {
-  cell: MemberCell
-  member: Member
-  periodISO: string
-  isCurrent: boolean
-  pending: boolean
-  onToggle: (member: Member, periodISO: string) => void
-  t: (key: string) => string
+  label: string
+  value: string
+  onChange: (v: string) => void
+  options: { v: string; label: string }[]
 }) {
-  if (cell == null) {
-    return <span className="grid h-11 min-w-11 place-items-center text-sm text-[var(--faint)]">—</span>
-  }
-
-  if (cell.status === 'paid') {
-    return (
-      <span
-        className="inline-flex min-h-11 items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap"
-        style={{ background: 'var(--positive-bg)', color: 'var(--positive-text)' }}
-      >
-        <Check size={12} strokeWidth={3} />
-        <MoneyText cents={cell.amountCents} />
-      </span>
-    )
-  }
-
-  // pending
-  if (isCurrent) {
-    return (
-      <button
-        type="button"
-        onClick={() => onToggle(member, periodISO)}
-        disabled={pending}
-        aria-busy={pending}
-        className="pressable inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-xs font-bold whitespace-nowrap text-white"
-        style={{ background: 'var(--primary)' }}
-      >
-        {pending ? <Spinner size={12} /> : t('fund.markPaid')}
-      </button>
-    )
-  }
   return (
-    <button
-      type="button"
-      onClick={() => onToggle(member, periodISO)}
-      disabled={pending}
-      aria-busy={pending}
-      className="pressable inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap"
-      style={{ background: 'var(--pending-bg)', color: 'var(--pending-text)' }}
-    >
-      {pending ? (
-        <Spinner size={12} />
-      ) : (
-        <>
-          <MoneyText cents={cell.amountCents} />
-          <span>{t('status.pending')}</span>
-        </>
-      )}
-    </button>
+    <label className="flex items-center gap-1 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)]">
+      <span className="text-[var(--muted)]">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className="bg-transparent font-bold text-[var(--ink)] outline-none">
+        {options.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
+      </select>
+    </label>
   )
 }
