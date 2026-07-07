@@ -47,27 +47,6 @@ export async function getFundOverview(year: number): Promise<FundOverview> {
   return { year, expectedEachCents, carryForwardCents, yearContributedCents, yearExpectedCents, months: buildFundMonths(rows, year) }
 }
 
-export type FundConfig = {
-  CH: { expectedMonthlyCents: number; carryForwardCents: number }
-  JC: { expectedMonthlyCents: number; carryForwardCents: number }
-}
-
-export async function getFundConfig(): Promise<FundConfig> {
-  const empty: FundConfig = { CH: { expectedMonthlyCents: 0, carryForwardCents: 0 }, JC: { expectedMonthlyCents: 0, carryForwardCents: 0 } }
-  const m = await getMembership()
-  if (!m) return empty
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('joint_fund_config')
-    .select('member_code, expected_monthly_cents, carry_forward_prev_year_cents')
-    .eq('household_id', m.householdId)
-  if (error) { console.error('getFundConfig:', error.message); return empty }
-  const out: FundConfig = { CH: { expectedMonthlyCents: 0, carryForwardCents: 0 }, JC: { expectedMonthlyCents: 0, carryForwardCents: 0 } }
-  for (const r of (data ?? []) as { member_code: 'CH' | 'JC'; expected_monthly_cents: number; carry_forward_prev_year_cents: number }[]) {
-    out[r.member_code] = { expectedMonthlyCents: r.expected_monthly_cents, carryForwardCents: r.carry_forward_prev_year_cents }
-  }
-  return out
-}
-
 type FundRecordInput = { memberCode: Member; periodISO: string; amountCents: number; notes: string | null }
 
 function validateFundRecord(input: FundRecordInput): string | null {
