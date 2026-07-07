@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMembership } from '@/lib/data/household'
 import { isValidEmail } from '@/lib/data/settings-shared'
+import { parseLayout, type NavLayout } from '@/lib/nav/nav-shared'
 import type { SerializedSubscription } from '@/lib/push/push-shared'
 import { sendPushToUser } from '@/lib/push/web-push'
 import { t } from '@/i18n'
@@ -17,6 +18,17 @@ export async function updateLanguage(lang: 'en' | 'zh'): Promise<{ ok: boolean; 
   const { error } = await supabase.from('profiles').update({ language: lang }).eq('id', user.id)
   if (error) { console.error('updateLanguage:', error.message); return { ok: false, error: 'save_failed' } }
   revalidatePath('/', 'layout') // re-seed LocaleProvider app-wide
+  return { ok: true }
+}
+
+export async function updateTabOrder(layout: NavLayout): Promise<{ ok: boolean; error?: string }> {
+  const clean = parseLayout(layout) // normalize + validate; never trust the client
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'not_authenticated' }
+  const { error } = await supabase.from('profiles').update({ tab_order: clean }).eq('id', user.id)
+  if (error) { console.error('updateTabOrder:', error.message); return { ok: false, error: 'save_failed' } }
+  revalidatePath('/', 'layout') // re-render the live BottomTabBar app-wide
   return { ok: true }
 }
 
