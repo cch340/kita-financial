@@ -1,7 +1,8 @@
 insert into households(id,name) values ('00000000-0000-0000-0000-0000000000aa','Chong Family');
 insert into household_members(household_id,user_id,role,member_code) values ('00000000-0000-0000-0000-0000000000aa',:CH_UID,'owner','CH'),('00000000-0000-0000-0000-0000000000aa',:JC_UID,'member','JC');
-insert into joint_fund_config(household_id,member_code,expected_monthly_cents,carry_forward_prev_year_cents) values ('00000000-0000-0000-0000-0000000000aa','CH',227000,0),('00000000-0000-0000-0000-0000000000aa','JC',247000,133853);
-insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-01-01',227000,'paid');
+insert into joint_fund_config(household_id,member_code,expected_monthly_cents,carry_forward_prev_year_cents) values ('00000000-0000-0000-0000-0000000000aa','CH',227000,0),('00000000-0000-0000-0000-0000000000aa','JC',247000,0);
+-- Jan 2026 records absorb the RM 1338.53 carry forward from 2025 (RM 669.26 each; 0.01 remainder dropped)
+insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status,notes) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-01-01',293926,'paid','Includes RM 669.26 carry forward from 2025');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-02-01',227000,'paid');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-03-01',227000,'paid');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-04-01',227000,'paid');
@@ -13,7 +14,7 @@ insert into joint_fund_contributions(household_id,member_code,period,amount_cent
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-10-01',227000,'pending');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-11-01',227000,'pending');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','CH','2026-12-01',227000,'pending');
-insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','JC','2026-01-01',247000,'paid');
+insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status,notes) values ('00000000-0000-0000-0000-0000000000aa','JC','2026-01-01',313926,'paid','Includes RM 669.26 carry forward from 2025');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','JC','2026-02-01',247000,'pending');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','JC','2026-03-01',247000,'pending');
 insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) values ('00000000-0000-0000-0000-0000000000aa','JC','2026-04-01',247000,'pending');
