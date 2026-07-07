@@ -13,11 +13,20 @@ function labelFor(id: TabId): string {
 export function NavOrderEditor({ initial }: { initial: NavLayout }) {
   const t = useT()
   const [layout, setLayout] = useState<NavLayout>(initial)
+  const [error, setError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
 
   function apply(next: NavLayout) {
+    const prev = layout
     setLayout(next) // optimistic
-    startTransition(() => { updateTabOrder(next) })
+    setError(null)
+    startTransition(async () => {
+      const res = await updateTabOrder(next)
+      if (!res.ok) {
+        setLayout(prev) // rollback
+        setError(`error.${res.error ?? 'save_failed'}`)
+      }
+    })
   }
 
   function move(list: 'bar' | 'more', index: number, dir: -1 | 1) {
@@ -44,6 +53,7 @@ export function NavOrderEditor({ initial }: { initial: NavLayout }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {error && <p className="text-xs font-semibold text-[var(--danger)]">{t(error)}</p>}
       <p className="text-xs font-semibold text-[var(--muted)]">{t('settings.nav.desc')}</p>
 
       <Group title={t('settings.nav.inBar')}>
