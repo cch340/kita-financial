@@ -1,5 +1,5 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { ArrowUp, ArrowDown, PanelBottom, PanelBottomDashed } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { MAX_BAR, TAB_DEFS, type NavLayout, type TabId } from '@/lib/nav/nav-shared'
@@ -15,15 +15,17 @@ export function NavOrderEditor({ initial }: { initial: NavLayout }) {
   const [layout, setLayout] = useState<NavLayout>(initial)
   const [error, setError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
+  const genRef = useRef(0)
 
   function apply(next: NavLayout) {
     const prev = layout
+    const gen = ++genRef.current
     setLayout(next) // optimistic
     setError(null)
     startTransition(async () => {
       const res = await updateTabOrder(next)
-      if (!res.ok) {
-        setLayout(prev) // rollback
+      if (!res.ok && genRef.current === gen) {
+        setLayout(prev) // rollback — only if no newer change superseded this one
         setError(`error.${res.error ?? 'save_failed'}`)
       }
     })
