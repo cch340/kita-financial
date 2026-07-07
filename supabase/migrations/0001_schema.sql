@@ -10,7 +10,8 @@ create table profiles (
   display_name text not null,
   email text not null,
   language text not null default 'en' check (language in ('en','zh')),
-  avatar_color text
+  avatar_color text,
+  tab_order jsonb
 );
 create table household_members (
   household_id uuid not null references households(id) on delete cascade,

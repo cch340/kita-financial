@@ -22,4 +22,8 @@ describe('t()', () => {
   it('falls back to the key when unknown', () => {
     expect(t('en', 'does.not.exist')).toBe('does.not.exist')
   })
+  it('has nav.manage in both locales', () => {
+    expect(t('en', 'nav.manage')).toBe('Manage')
+    expect(t('zh', 'nav.manage')).toBe('管理')
+  })
 })

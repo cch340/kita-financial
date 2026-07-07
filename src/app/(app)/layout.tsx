@@ -3,10 +3,12 @@ import { ViewTransition } from 'react'
 import { BottomTabBar } from '@/components/nav/BottomTabBar'
 import { LocaleProvider } from '@/i18n/LocaleProvider'
 import { getMembership } from '@/lib/data/household'
+import { DEFAULT_LAYOUT } from '@/lib/nav/nav-shared'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const membership = await getMembership()
   const locale = membership?.language ?? 'en'
+  const layout = membership?.tabOrder ?? DEFAULT_LAYOUT
   return (
     <LocaleProvider initialLocale={locale}>
       <div className="min-h-dvh bg-[var(--paper)]">
@@ -15,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             {children}
           </ViewTransition>
         </div>
-        <BottomTabBar />
+        <BottomTabBar layout={layout} />
       </div>
     </LocaleProvider>
   )

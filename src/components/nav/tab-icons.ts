@@ -1,0 +1,13 @@
+import { Home, Receipt, HandCoins, ChartColumn, LayoutGrid, SlidersHorizontal, MoreHorizontal, type LucideIcon } from 'lucide-react'
+import type { TabId } from '@/lib/nav/nav-shared'
+
+export const TAB_ICONS: Record<TabId, LucideIcon> = {
+  home: Home,
+  expenses: Receipt,
+  fund: HandCoins,
+  budget: ChartColumn,
+  assets: LayoutGrid,
+  manage: SlidersHorizontal,
+}
+
+export const MORE_ICON: LucideIcon = MoreHorizontal
