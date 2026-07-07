@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { SlidersHorizontal, Tags } from 'lucide-react'
+import { SlidersHorizontal } from 'lucide-react'
 import { useT, useLocale } from '@/i18n/LocaleProvider'
 import { groupByDay, formatMonthYear } from '@/lib/data/summary'
 import type { ExpenseRow } from '@/lib/data/types'
@@ -80,9 +80,10 @@ export function ExpensesView({
             <SlidersHorizontal size={16} />
             {t('expenses.filter')}{activeCount > 0 ? ` · ${activeCount}` : ''}
           </button>
-          <button type="button" onClick={() => setManageOpen(true)} aria-label={t('manage.title')}
-            className="pressable-opacity grid h-10 w-10 place-items-center rounded-full border border-[var(--hairline)] bg-[var(--surface)] text-[var(--ink)]">
-            <Tags size={16} />
+          <button type="button" onClick={() => setManageOpen(true)}
+            className="pressable-opacity flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]">
+            <SlidersHorizontal size={16} />
+            {t('common.manage')}
           </button>
         </div>
       </div>

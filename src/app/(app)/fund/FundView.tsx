@@ -50,8 +50,9 @@ export function FundView({
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t('fund.title')}</h1>
         <Link href="/fund/recurring" aria-label={t('fund.manageRecurring')}
-          className="pressable-opacity grid h-11 w-11 place-items-center rounded-full text-[var(--muted)]">
-          <SlidersHorizontal size={18} />
+          className="pressable-opacity flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]">
+          <SlidersHorizontal size={16} />
+          {t('common.manage')}
         </Link>
       </header>
 
