@@ -18,6 +18,7 @@ import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { deleteFundRecordAction } from './actions'
+import { FundDetailSheet } from './FundDetailSheet'
 
 const MEMBERS: Member[] = ['CH', 'JC']
 const REVEAL_WIDTH = 152 // px — two 76px action buttons behind each row
@@ -111,25 +112,33 @@ function FundRecordCard({
   const [dragging, setDragging] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const dragState = useRef<{ startX: number; startDragX: number; moved: boolean } | null>(null)
 
   const monthLabel = `${monthShort(Number(row.periodISO.slice(5, 7)), locale)} ${row.periodISO.slice(0, 4)}`
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
-    dragState.current = { startX: e.clientX, startDragX: dragX }
+    dragState.current = { startX: e.clientX, startDragX: dragX, moved: false }
     setDragging(true)
   }
   function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     const ds = dragState.current
     if (!ds) return
     const delta = e.clientX - ds.startX
+    if (Math.abs(delta) > 8) ds.moved = true
     setDragX(Math.min(0, Math.max(-REVEAL_WIDTH, ds.startDragX + delta)))
   }
   function onPointerUp() {
-    if (!dragState.current) return
+    const ds = dragState.current
+    if (!ds) return
     dragState.current = null
     setDragging(false)
+    if (!ds.moved && ds.startDragX === 0) {
+      setDragX(0)
+      setDetailOpen(true)
+      return
+    }
     setDragX((x) => (x < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0))
   }
 
@@ -187,6 +196,7 @@ function FundRecordCard({
           }}
         />
       )}
+      {detailOpen && <FundDetailSheet row={row} locale={locale} onClose={() => setDetailOpen(false)} />}
     </>
   )
 }

@@ -18,6 +18,7 @@ import { TRIAGE_ENABLED } from '@/lib/features'
 import { deleteExpenseAction } from './actions'
 import { FilterSheet, type Filters, type FilterValue } from './FilterSheet'
 import { ManageSheet } from './ManageSheet'
+import { ExpenseDetailSheet } from './ExpenseDetailSheet'
 
 type Props = {
   rows: ExpenseRow[]
@@ -186,7 +187,8 @@ function ExpenseRowCard({
   const [dragging, setDragging] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const dragState = useRef<{ startX: number; startDragX: number; moved: boolean } | null>(null)
 
   // Title: the note (details); fall back to the category when there's no note.
   const title = row.details || row.category_name || t('expenses.title')
@@ -195,20 +197,28 @@ function ExpenseRowCard({
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
-    dragState.current = { startX: e.clientX, startDragX: dragX }
+    dragState.current = { startX: e.clientX, startDragX: dragX, moved: false }
     setDragging(true)
   }
   function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     const ds = dragState.current
     if (!ds) return
     const delta = e.clientX - ds.startX
+    if (Math.abs(delta) > 8) ds.moved = true
     const next = Math.min(0, Math.max(-REVEAL_WIDTH, ds.startDragX + delta))
     setDragX(next)
   }
   function onPointerUp() {
-    if (!dragState.current) return
+    const ds = dragState.current
+    if (!ds) return
     dragState.current = null
     setDragging(false)
+    // A tap (no real drag) on a closed row opens the detail sheet.
+    if (!ds.moved && ds.startDragX === 0) {
+      setDragX(0)
+      setDetailOpen(true)
+      return
+    }
     setDragX((x) => (x < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0))
   }
 
@@ -282,6 +292,7 @@ function ExpenseRowCard({
           }}
         />
       )}
+      {detailOpen && <ExpenseDetailSheet row={row} onClose={() => setDetailOpen(false)} />}
     </>
   )
 }
