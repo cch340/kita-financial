@@ -24,6 +24,8 @@ export function NavOrderEditor({ initial }: { initial: NavLayout }) {
     setError(null)
     startTransition(async () => {
       const res = await updateTabOrder(next)
+      // Only the latest in-flight save may roll back — this deliberately favors
+      // "don't clobber a newer change" over "restore server truth" on failure.
       if (!res.ok && genRef.current === gen) {
         setLayout(prev) // rollback — only if no newer change superseded this one
         setError(`error.${res.error ?? 'save_failed'}`)

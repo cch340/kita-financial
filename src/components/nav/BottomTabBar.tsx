@@ -2,16 +2,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useT } from '@/i18n/LocaleProvider'
-import { TAB_DEFS, resolveActiveTab, type NavLayout, type TabDef } from '@/lib/nav/nav-shared'
+import { resolveActiveTab, defsFor, type NavLayout } from '@/lib/nav/nav-shared'
 import { TAB_ICONS, MORE_ICON } from './tab-icons'
 
 export function BottomTabBar({ layout }: { layout: NavLayout }) {
   const path = usePathname()
   const t = useT()
   const active = resolveActiveTab(path, layout)
-  const barTabs = layout.bar
-    .map((id) => TAB_DEFS.find((d) => d.id === id))
-    .filter((d): d is TabDef => Boolean(d))
+  const barTabs = defsFor(layout.bar)
 
   const linkClass = 'pressable-opacity flex h-full flex-col items-center justify-center gap-1 transition-colors'
   const labelClass = 'text-[10px] font-semibold'

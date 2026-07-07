@@ -2,16 +2,14 @@ import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { getMembership } from '@/lib/data/household'
 import { t } from '@/i18n'
-import { TAB_DEFS, DEFAULT_LAYOUT } from '@/lib/nav/nav-shared'
+import { DEFAULT_LAYOUT, defsFor } from '@/lib/nav/nav-shared'
 import { TAB_ICONS } from '@/components/nav/tab-icons'
 
 export default async function MorePage() {
   const m = await getMembership()
   const locale = m?.language ?? 'en'
   const layout = m?.tabOrder ?? DEFAULT_LAYOUT
-  const items = layout.more
-    .map((id) => TAB_DEFS.find((d) => d.id === id))
-    .filter((d): d is (typeof TAB_DEFS)[number] => Boolean(d))
+  const items = defsFor(layout.more)
   return (
     <div className="flex flex-col gap-5 pb-6">
       <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t(locale, 'more.title')}</h1>

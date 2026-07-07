@@ -87,3 +87,10 @@ export function resolveActiveTab(pathname: string, layout: NavLayout): TabId | '
   }
   return null
 }
+
+// Resolve an ordered list of tab ids to their definitions, dropping any unknown id.
+export function defsFor(ids: TabId[]): TabDef[] {
+  return ids
+    .map((id) => TAB_DEFS.find((d) => d.id === id))
+    .filter((d): d is TabDef => Boolean(d))
+}

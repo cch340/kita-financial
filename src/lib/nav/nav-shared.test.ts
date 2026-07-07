@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
-  parseLayout, resolveActiveTab, DEFAULT_LAYOUT, TAB_IDS, MAX_BAR,
-  type NavLayout,
+  parseLayout, resolveActiveTab, defsFor, DEFAULT_LAYOUT, TAB_IDS, MAX_BAR,
+  type NavLayout, type TabId,
 } from './nav-shared'
 
 describe('parseLayout', () => {
@@ -74,5 +74,16 @@ describe('resolveActiveTab', () => {
 
   it('returns null when nothing matches', () => {
     expect(resolveActiveTab('/login', DEFAULT_LAYOUT)).toBeNull()
+  })
+})
+
+describe('defsFor', () => {
+  it('returns definitions in the given order', () => {
+    const defs = defsFor(['budget', 'home'])
+    expect(defs.map((d) => d.id)).toEqual(['budget', 'home'])
+  })
+  it('drops ids with no matching definition', () => {
+    const defs = defsFor(['home', 'nope' as TabId])
+    expect(defs.map((d) => d.id)).toEqual(['home'])
   })
 })

@@ -13,6 +13,18 @@ Budget ~30–40 minutes. You do this once.
 
 ---
 
+## ⚠️ Before you deploy — apply the nav schema update
+
+This build reads a new `profiles.tab_order` column. **Run this in the Supabase SQL editor _before_ deploying**, or `getMembership()` will fail and every authed screen will error until it's applied:
+
+```sql
+alter table profiles add column if not exists tab_order jsonb;
+```
+
+Existing rows stay `NULL`, which the app treats as the default bar layout — no backfill needed.
+
+---
+
 ## Step 1 — Merge the phases into `main`
 
 All the work lives in six stacked PRs (#1 → #6) that haven't been merged yet.
