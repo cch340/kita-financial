@@ -63,7 +63,7 @@ export function AddExpenseForm({
             <div>
               <p className="mb-2 text-sm font-semibold text-[var(--muted)]">{t('expenses.category')}</p>
               {categories.length === 0 ? (
-                <Link href="/manage" className="text-sm font-semibold text-[var(--primary)]">
+                <Link href="/expenses" className="text-sm font-semibold text-[var(--primary)]">
                   {t('add.noCategories')}
                 </Link>
               ) : (

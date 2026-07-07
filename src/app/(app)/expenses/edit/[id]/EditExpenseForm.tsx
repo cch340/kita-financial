@@ -63,7 +63,7 @@ export function EditExpenseForm({
             <div>
               <p className="mb-2 text-sm font-semibold text-[var(--muted)]">{t('expenses.category')}</p>
               {categories.length === 0 ? (
-                <Link href="/manage" className="text-sm font-semibold text-[var(--primary)]">{t('add.noCategories')}</Link>
+                <Link href="/expenses" className="text-sm font-semibold text-[var(--primary)]">{t('add.noCategories')}</Link>
               ) : (
                 <div className="grid grid-flow-col grid-rows-2 gap-2 overflow-x-auto pb-1" style={{ gridAutoColumns: 'max-content' }}>
                   {categories.map((c) => {

@@ -21,7 +21,7 @@ export function BottomTabBar() {
           const active = href === '/'
             ? path === '/' || path.startsWith('/personal')
             : href === '/more'
-              ? path.startsWith('/more') || path.startsWith('/assets') || path.startsWith('/manage')
+              ? path.startsWith('/more') || path.startsWith('/assets')
               : path.startsWith(href)
           return (
             <li key={href} className="flex-1">
