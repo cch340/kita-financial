@@ -16,6 +16,7 @@ import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { deleteFundRecordAction } from './actions'
 
 const MEMBERS: Member[] = ['CH', 'JC']
@@ -109,6 +110,7 @@ function FundRecordCard({
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
 
   const monthLabel = `${monthShort(Number(row.periodISO.slice(5, 7)), locale)} ${row.periodISO.slice(0, 4)}`
@@ -132,44 +134,60 @@ function FundRecordCard({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[16px]">
-      {/* revealed actions, sit behind the row */}
-      <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
-        <button type="button"
-          onClick={() => { setDragX(0); router.push(`/fund/record/edit/${row.id}`) }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--pending-text)' }}>
-          {t('fund.edit')}
-        </button>
-        <button type="button" disabled={deleting}
-          onClick={async () => {
+    <>
+      <div className="relative overflow-hidden rounded-[16px]">
+        {/* revealed actions, sit behind the row */}
+        <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
+          <button type="button"
+            onClick={() => { setDragX(0); router.push(`/fund/record/edit/${row.id}`) }}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--pending-text)' }}>
+            {t('fund.edit')}
+          </button>
+          <button type="button" disabled={deleting}
+            onClick={() => setConfirmOpen(true)}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--danger)' }}>
+            {deleting ? <Spinner /> : t('fund.delete')}
+          </button>
+        </div>
+
+        {/* foreground row — drag horizontally to reveal actions */}
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
+          style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
+        >
+          <MemberAvatar member={row.memberCode} size={44} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-[var(--ink)]">{monthLabel}</p>
+            {row.notes && <p className="truncate text-xs text-[var(--muted)]">{row.notes}</p>}
+          </div>
+          <MoneyText cents={row.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+        </div>
+      </div>
+      {confirmOpen && (
+        <ConfirmDialog
+          message={t('fund.confirmDelete')}
+          confirmLabel={t('fund.delete')}
+          cancelLabel={t('common.cancel')}
+          busy={deleting}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={async () => {
             setDeleting(true)
             const res = await deleteFundRecordAction(row.id)
-            if (!res.ok) { setDeleting(false); onDeleteError() }
+            if (!res.ok) {
+              setDeleting(false)
+              setConfirmOpen(false)
+              onDeleteError()
+            }
           }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--danger)' }}>
-          {deleting ? <Spinner /> : t('fund.delete')}
-        </button>
-      </div>
-
-      {/* foreground row — drag horizontally to reveal actions */}
-      <div
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
-        style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
-      >
-        <MemberAvatar member={row.memberCode} size={44} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-[var(--ink)]">{monthLabel}</p>
-          {row.notes && <p className="truncate text-xs text-[var(--muted)]">{row.notes}</p>}
-        </div>
-        <MoneyText cents={row.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
-      </div>
-    </div>
+        />
+      )}
+    </>
   )
 }
 

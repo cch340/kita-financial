@@ -13,6 +13,7 @@ import { MemberAvatar } from '@/components/ui/MemberAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Fab } from '@/components/ui/Fab'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TRIAGE_ENABLED } from '@/lib/features'
 import { deleteExpenseAction } from './actions'
 import { FilterSheet, type Filters, type FilterValue } from './FilterSheet'
@@ -171,6 +172,7 @@ function ExpenseRowCard({
   const [dragX, setDragX] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const dragState = useRef<{ startX: number; startDragX: number } | null>(null)
 
   // Title: the note (details); fall back to the category when there's no note.
@@ -198,61 +200,75 @@ function ExpenseRowCard({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[16px]">
-      {/* revealed actions, sit behind the row */}
-      <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
-        <button
-          type="button"
-          onClick={() => {
-            setDragX(0)
-            router.push(`/expenses/edit/${row.id}`)
-          }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--pending-text)' }}
+    <>
+      <div className="relative overflow-hidden rounded-[16px]">
+        {/* revealed actions, sit behind the row */}
+        <div className="absolute inset-y-0 right-0 flex" style={{ width: REVEAL_WIDTH }}>
+          <button
+            type="button"
+            onClick={() => {
+              setDragX(0)
+              router.push(`/expenses/edit/${row.id}`)
+            }}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--pending-text)' }}
+          >
+            {t('expenses.edit')}
+          </button>
+          <button
+            type="button"
+            disabled={deleting}
+            onClick={() => setConfirmOpen(true)}
+            className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
+            style={{ background: 'var(--danger)' }}
+          >
+            {deleting ? <Spinner /> : t('expenses.delete')}
+          </button>
+        </div>
+
+        {/* foreground row — drag horizontally to reveal actions */}
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
+          style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
         >
-          {t('expenses.edit')}
-        </button>
-        <button
-          type="button"
-          disabled={deleting}
-          onClick={async () => {
+          {/* left icon: who paid, or a neutral tag when the payer is unset */}
+          {row.paid_by ? (
+            <MemberAvatar member={row.paid_by} size={44} />
+          ) : (
+            <IconTile name="Tag" tint="var(--subtle)" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-[var(--ink)]">{title}</p>
+            {subParts.length > 0 && (
+              <p className="truncate text-xs text-[var(--muted)]">{subParts.join(' · ')}</p>
+            )}
+          </div>
+          <MoneyText cents={row.amount_cents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+        </div>
+      </div>
+      {confirmOpen && (
+        <ConfirmDialog
+          message={t('expenses.confirmDelete')}
+          confirmLabel={t('expenses.delete')}
+          cancelLabel={t('common.cancel')}
+          busy={deleting}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={async () => {
             setDeleting(true)
             const res = await deleteExpenseAction(row.id)
             if (!res.ok) {
               setDeleting(false)
+              setConfirmOpen(false)
               onDeleteError()
             }
+            // on success the row is removed by revalidatePath; dialog unmounts with it
           }}
-          className="pressable-opacity flex h-full flex-1 items-center justify-center text-sm font-bold text-white"
-          style={{ background: 'var(--danger)' }}
-        >
-          {deleting ? <Spinner /> : t('expenses.delete')}
-        </button>
-      </div>
-
-      {/* foreground row — drag horizontally to reveal actions */}
-      <div
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="relative flex touch-pan-y items-center gap-3 rounded-[16px] bg-[var(--surface)] p-3 shadow-[0_3px_10px_oklch(0.5_0.05_45/.05)]"
-        style={{ transform: `translateX(${dragX}px)`, transition: dragging ? 'none' : 'transform 160ms ease' }}
-      >
-        {/* left icon: who paid, or a neutral tag when the payer is unset */}
-        {row.paid_by ? (
-          <MemberAvatar member={row.paid_by} size={44} />
-        ) : (
-          <IconTile name="Tag" tint="var(--subtle)" />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-[var(--ink)]">{title}</p>
-          {subParts.length > 0 && (
-            <p className="truncate text-xs text-[var(--muted)]">{subParts.join(' · ')}</p>
-          )}
-        </div>
-        <MoneyText cents={row.amount_cents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
-      </div>
-    </div>
+        />
+      )}
+    </>
   )
 }
