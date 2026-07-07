@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   parseLayout, resolveActiveTab, DEFAULT_LAYOUT, TAB_IDS, MAX_BAR,
+  type NavLayout,
 } from './nav-shared'
 
 describe('parseLayout', () => {
@@ -66,7 +67,7 @@ describe('resolveActiveTab', () => {
   })
 
   it('resolves a promoted destination to its own bar slot', () => {
-    const promoted = { bar: ['home', 'expenses', 'fund', 'assets'], more: ['budget', 'manage'] }
+    const promoted: NavLayout = { bar: ['home', 'expenses', 'fund', 'assets'], more: ['budget', 'manage'] }
     expect(resolveActiveTab('/assets', promoted)).toBe('assets')
     expect(resolveActiveTab('/budget', promoted)).toBe('more')
   })
