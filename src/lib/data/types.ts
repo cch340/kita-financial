@@ -1,3 +1,5 @@
+import type { NavLayout } from '@/lib/nav/nav-shared'
+
 export type Member = 'CH' | 'JC'
 export type ExpenseRow = {
   id: string
@@ -13,4 +15,10 @@ export type ExpenseRow = {
   location_name: string | null
 }
 export type DayGroup = { date: string; label: string; totalCents: number; rows: ExpenseRow[] }
-export type Membership = { householdId: string; memberCode: Member; language: 'en' | 'zh'; displayName: string }
+export type Membership = {
+  householdId: string
+  memberCode: Member
+  language: 'en' | 'zh'
+  displayName: string
+  tabOrder: NavLayout
+}
