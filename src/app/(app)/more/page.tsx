@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutGrid, SlidersHorizontal, ChevronRight } from 'lucide-react'
+import { LayoutGrid, ChevronRight } from 'lucide-react'
 import { getMembership } from '@/lib/data/household'
 import { t } from '@/i18n'
 
@@ -8,7 +8,6 @@ export default async function MorePage() {
   const locale = m?.language ?? 'en'
   const items = [
     { href: '/assets', label: t(locale, 'more.assets'), Icon: LayoutGrid },
-    { href: '/manage', label: t(locale, 'more.manage'), Icon: SlidersHorizontal },
   ]
   return (
     <div className="flex flex-col gap-5 pb-6">
