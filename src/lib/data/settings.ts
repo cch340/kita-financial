@@ -42,5 +42,6 @@ export async function getSettingsData(): Promise<SettingsData | null> {
       yearly: remMap.get('yearly_big_payment') ?? true,   // default ON
     },
     pushSubscribed: (subCount ?? 0) > 0,
+    tabOrder: m.tabOrder,
   }
 }

@@ -12,6 +12,7 @@ import {
   updateLanguage, updateReminderSetting, inviteMember, signOutAction,
   subscribeToPush, unsubscribeFromPush, sendTestPush,
 } from './actions'
+import { NavOrderEditor } from './NavOrderEditor'
 
 export function SettingsView({ data }: { data: SettingsData }) {
   const t = useT()
@@ -164,6 +165,11 @@ export function SettingsView({ data }: { data: SettingsData }) {
               )
             })}
           </div>
+        </Section>
+
+        {/* Navigation */}
+        <Section title={t('settings.nav')}>
+          <NavOrderEditor initial={data.tabOrder} />
         </Section>
 
         {/* Notifications */}

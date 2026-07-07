@@ -1,3 +1,5 @@
+import type { NavLayout } from '@/lib/nav/nav-shared'
+
 export type MemberCode = 'CH' | 'JC'
 export type MemberRow = { code: MemberCode; displayName: string; role: 'owner' | 'member' }
 export type SettingsData = {
@@ -5,6 +7,7 @@ export type SettingsData = {
   language: 'en' | 'zh'
   reminders: { monthly: boolean; yearly: boolean }
   pushSubscribed: boolean
+  tabOrder: NavLayout
 }
 
 // Pragmatic email check — one @, a dot in the domain, no spaces.
