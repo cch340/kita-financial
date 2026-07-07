@@ -42,3 +42,43 @@ export function collapseLeadingPaid(months: FundMonth[]) {
   if (count === 0) return { summary: null as null, rest: months }
   return { summary: { throughMonth: count, count, totalCents }, rest: months.slice(count) }
 }
+
+// === Fund records (ledger) — pure filtering + totals ===
+export type FundRecord = {
+  id: string
+  memberCode: Member
+  periodISO: string // 'YYYY-MM-01'
+  amountCents: number
+  notes: string | null
+}
+export type FundFilters = { member: Member | 'all'; month: number | 'all'; year: number }
+
+export function periodISOForMonth(year: number, month: number): string {
+  return `${year}-${pad(month)}-01`
+}
+export function yearOf(periodISO: string): number {
+  return Number(periodISO.slice(0, 4))
+}
+export function monthOf(periodISO: string): number {
+  return Number(periodISO.slice(5, 7))
+}
+
+/** Filter by member/month/year, returning newest-first. */
+export function filterRecords(records: FundRecord[], f: FundFilters): FundRecord[] {
+  return records
+    .filter((r) => yearOf(r.periodISO) === f.year)
+    .filter((r) => (f.member === 'all' ? true : r.memberCode === f.member))
+    .filter((r) => (f.month === 'all' ? true : monthOf(r.periodISO) === f.month))
+    .slice()
+    .sort((a, b) => (a.periodISO < b.periodISO ? 1 : a.periodISO > b.periodISO ? -1 : 0))
+}
+
+/** Sum of records matching the active filters. */
+export function filteredTotal(records: FundRecord[], f: FundFilters): number {
+  return filterRecords(records, f).reduce((a, r) => a + r.amountCents, 0)
+}
+
+/** Sum of every record in the given year, independent of member/month filters. */
+export function totalContributedThisYear(records: FundRecord[], year: number): number {
+  return records.filter((r) => yearOf(r.periodISO) === year).reduce((a, r) => a + r.amountCents, 0)
+}
