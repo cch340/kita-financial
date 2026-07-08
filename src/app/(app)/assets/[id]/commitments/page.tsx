@@ -5,8 +5,8 @@ import { CommitmentsManager } from './CommitmentsManager'
 
 export default async function CommitmentsManagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const asset = await getAsset(id)
-  if (!asset) notFound()
+  const result = await getAsset(id)
+  if (!result || result.asset.type !== 'property') notFound()
   const commitments = await getCommitmentsRaw(id)
   return <CommitmentsManager assetId={id} commitments={commitments} />
 }
