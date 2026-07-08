@@ -44,10 +44,10 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
         <a
           href={`/report/export?type=asset&id=${asset.id}`}
           download
-          aria-label={t(locale, 'asset.exportCsv')}
-          className="pressable-opacity grid h-11 w-11 shrink-0 place-items-center text-[var(--muted)]"
+          className="pressable-opacity flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]"
         >
-          <Download size={18} />
+          <Download size={16} className="text-[var(--muted)]" />
+          {t(locale, 'asset.exportCsv')}
         </a>
       </header>
 
