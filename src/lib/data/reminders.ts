@@ -54,7 +54,7 @@ export async function runReminderScan(todayISO: string): Promise<{ sent: number;
   for (const d of due) {
     const lang = langByUser.get(d.userId) ?? 'en'
     const payload = d.kind === 'monthly'
-      ? { title: t(lang, 'push.monthly.title'), body: t(lang, 'push.monthly.body'), url: '/budget' }
+      ? { title: t(lang, 'push.monthly.title'), body: t(lang, 'push.monthly.body'), url: '/assets' }
       : { title: t(lang, 'push.yearly.title'), body: t(lang, 'push.yearly.body'), url: '/assets' }
     sent += await sendPushToUser(d.userId, payload)
   }

@@ -2,15 +2,16 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowDown, ArrowUp, Pencil } from 'lucide-react'
+import { ArrowDown, ArrowUp, Pencil, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { HeroCard, Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { runningBalanceCents } from '@/lib/data/assets-shared'
 import type { Asset, AssetTxn } from '@/lib/data/assets-shared'
+import type { Commitment } from '@/lib/data/commitments-shared'
 import { toggleTransferred } from '@/app/(app)/assets/actions'
 
-export function PropertyBody({ asset, txns }: { asset: Asset; txns: AssetTxn[] }) {
+export function PropertyBody({ asset, txns, commitments }: { asset: Asset; txns: AssetTxn[]; commitments: Commitment[] }) {
   const t = useT()
   const router = useRouter()
   const [pendingId, setPendingId] = useState<string | null>(null)
@@ -38,6 +39,8 @@ export function PropertyBody({ asset, txns }: { asset: Asset; txns: AssetTxn[] }
           <MoneyText cents={balance} className="text-[32px] font-extrabold" />
         </div>
       </HeroCard>
+
+      <CommitmentsSection assetId={asset.id} commitments={commitments} />
 
       {txns.length === 0 ? (
         <p className="py-10 text-center text-sm font-semibold text-[var(--faint)]">{t('asset.empty')}</p>
@@ -121,5 +124,66 @@ function Switch({
         />
       </span>
     </button>
+  )
+}
+
+function CommitmentsSection({ assetId, commitments }: { assetId: string; commitments: Commitment[] }) {
+  const t = useT()
+  const [open, setOpen] = useState(false)
+  const total = commitments.reduce((a, c) => a + c.amountCents, 0)
+  return (
+    <Card className="flex flex-col">
+      <div className="-my-1 flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="pressable-opacity flex min-w-0 flex-1 items-center text-left"
+        >
+          <span className="truncate text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.title')}</span>
+        </button>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <Link
+            href={`/assets/${assetId}/commitments`}
+            aria-label={t('common.manage')}
+            className="pressable-opacity grid h-8 w-8 place-items-center text-[var(--muted)]"
+          >
+            <SlidersHorizontal size={18} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-label={t('asset.commitments.title')}
+            className="pressable-opacity grid h-8 w-8 place-items-center text-[var(--muted)]"
+          >
+            {open ? <ChevronUp size={18} strokeWidth={2.5} /> : <ChevronDown size={18} strokeWidth={2.5} />}
+          </button>
+        </div>
+      </div>
+
+      {open &&
+        (commitments.length === 0 ? (
+          <p className="mt-3 border-t border-[var(--hairline)] pt-3 text-center text-sm font-semibold text-[var(--faint)]">
+            {t('asset.commitments.empty')}
+          </p>
+        ) : (
+          <div className="mt-2 flex flex-col">
+            {commitments.map((c, i) => (
+              <div key={i} className="flex items-center justify-between gap-2 border-t border-[var(--hairline)] py-2.5">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-[var(--ink-head)]">{c.name}</p>
+                  {c.remark && <p className="truncate text-xs text-[var(--muted)]">{c.remark}</p>}
+                </div>
+                <MoneyText cents={c.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+              </div>
+            ))}
+            <div className="flex items-center justify-between gap-2 border-t border-[var(--hairline)] pt-2.5">
+              <span className="text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.total')}</span>
+              <MoneyText cents={total} className="text-sm font-extrabold text-[var(--ink-head)]" />
+            </div>
+          </div>
+        ))}
+    </Card>
   )
 }

@@ -3,7 +3,7 @@ import { SlidersHorizontal, ChartColumn } from 'lucide-react'
 import { getMembership } from '@/lib/data/household'
 import { getHomeSummary } from '@/lib/data/home'
 import { getPersonalBalances } from '@/lib/data/personal'
-import { greetingKey, budgetPaceKey } from '@/lib/data/home-shared'
+import { greetingKey } from '@/lib/data/home-shared'
 import { t } from '@/i18n'
 import { Card, HeroCard } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -27,17 +27,11 @@ export default async function HomePage() {
     summary.jointFund.expectedThisMonthCents > 0
       ? summary.jointFund.contributedCents / summary.jointFund.expectedThisMonthCents
       : 0
-  const budgetProgress = summary.budget.totalCents > 0 ? summary.budget.spentCents / summary.budget.totalCents : 0
-  const budgetLeftCents = summary.budget.totalCents - summary.budget.spentCents
-
   // MYT wall-clock (UTC+8, no DST). Server runs UTC on Vercel, so shift the instant
   // by +8h and read UTC fields to get Malaysia local hour / day-of-month.
   const myt = new Date(now.getTime() + 8 * 60 * 60 * 1000)
   const mytHour = myt.getUTCHours()
-  const mytDay = myt.getUTCDate()
-  const daysInMonth = new Date(Date.UTC(myt.getUTCFullYear(), myt.getUTCMonth() + 1, 0)).getUTCDate()
   const greeting = t(locale, greetingKey(mytHour))
-  const paceKey = budgetPaceKey(summary.budget.spentCents, summary.budget.totalCents, mytDay, daysInMonth)
 
   return (
     <div className="flex flex-col gap-[15px] pb-6">
@@ -85,31 +79,6 @@ export default async function HomePage() {
           </div>
         </div>
       </HeroCard>
-
-      <Card>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-bold text-[var(--ink-head)]">{t(locale, 'home.budget')}</span>
-          <span
-            className="text-xs font-semibold"
-            style={{ color: paceKey === 'home.overPace' ? 'var(--pending-text)' : 'var(--positive-text)' }}
-          >
-            {t(locale, paceKey)}
-          </span>
-        </div>
-        <div className="mt-2 flex items-baseline gap-1.5">
-          <MoneyText cents={budgetLeftCents} className="text-2xl font-extrabold text-[var(--ink-head)]" />
-          <span className="text-sm font-semibold text-[var(--muted)]">{t(locale, 'home.left')}</span>
-        </div>
-        <div className="mt-3">
-          <ProgressBar value={budgetProgress} />
-        </div>
-        <div className="mt-2 flex items-center justify-between text-xs font-semibold text-[var(--muted)]">
-          <span className="flex items-center gap-1">
-            <MoneyText cents={summary.budget.spentCents} /> {t(locale, 'home.spent')}
-          </span>
-          <MoneyText cents={summary.budget.totalCents} />
-        </div>
-      </Card>
 
       <Link href="/personal">
         <Card className="pressable flex items-center gap-3">

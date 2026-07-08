@@ -9,17 +9,3 @@ export function greetingKey(
   if (hour24 >= 12 && hour24 < 18) return 'home.greeting.afternoon'
   return 'home.greeting.evening'
 }
-
-/** Compares month-to-date spend against a pro-rated (by day-of-month) share of the
- *  total budget. On or under the allowance → on track; strictly over → over pace.
- *  A zero/empty budget is treated as on track. */
-export function budgetPaceKey(
-  spentCents: number,
-  totalCents: number,
-  dayOfMonth: number,
-  daysInMonth: number,
-): 'home.onTrack' | 'home.overPace' {
-  if (totalCents <= 0 || daysInMonth <= 0) return 'home.onTrack'
-  const allowanceCents = (totalCents * dayOfMonth) / daysInMonth
-  return spentCents > allowanceCents ? 'home.overPace' : 'home.onTrack'
-}

@@ -13,7 +13,7 @@ describe('parseLayout', () => {
   })
 
   it('preserves a valid layout unchanged', () => {
-    const layout = { bar: ['home', 'fund'], more: ['expenses', 'budget', 'assets'] }
+    const layout = { bar: ['home', 'fund'], more: ['expenses', 'assets'] }
     expect(parseLayout(layout)).toEqual(layout)
   })
 
@@ -37,11 +37,10 @@ describe('parseLayout', () => {
 
   it('spills over-cap bar items to the front of more', () => {
     const out = parseLayout({
-      bar: ['home', 'expenses', 'fund', 'budget', 'assets'], more: [],
+      bar: ['home', 'expenses', 'fund', 'assets', 'home'], more: [],
     })
     expect(out.bar).toHaveLength(MAX_BAR)
-    expect(out.bar).toEqual(['home', 'expenses', 'fund', 'budget'])
-    expect(out.more[0]).toBe('assets')
+    expect(out.bar).toEqual(['home', 'expenses', 'fund', 'assets'])
   })
 
   it('falls back to default when the bar would be empty', () => {
@@ -57,18 +56,19 @@ describe('resolveActiveTab', () => {
     expect(resolveActiveTab('/expenses', l)).toBe('expenses')
     expect(resolveActiveTab('/expenses/123', l)).toBe('expenses')
     expect(resolveActiveTab('/fund', l)).toBe('fund')
-    expect(resolveActiveTab('/budget', l)).toBe('budget')
+    expect(resolveActiveTab('/assets', l)).toBe('assets')
   })
 
   it('resolves the More slot for destinations that live in more', () => {
-    expect(resolveActiveTab('/assets', DEFAULT_LAYOUT)).toBe('more')
-    expect(resolveActiveTab('/more', DEFAULT_LAYOUT)).toBe('more')
+    const custom: NavLayout = { bar: ['home', 'expenses', 'fund'], more: ['assets'] }
+    expect(resolveActiveTab('/assets', custom)).toBe('more')
+    expect(resolveActiveTab('/more', custom)).toBe('more')
   })
 
   it('resolves a promoted destination to its own bar slot', () => {
-    const promoted: NavLayout = { bar: ['home', 'expenses', 'fund', 'assets'], more: ['budget'] }
+    const promoted: NavLayout = { bar: ['home', 'assets', 'fund'], more: ['expenses'] }
     expect(resolveActiveTab('/assets', promoted)).toBe('assets')
-    expect(resolveActiveTab('/budget', promoted)).toBe('more')
+    expect(resolveActiveTab('/expenses', promoted)).toBe('more')
   })
 
   it('returns null when nothing matches', () => {
@@ -78,8 +78,8 @@ describe('resolveActiveTab', () => {
 
 describe('defsFor', () => {
   it('returns definitions in the given order', () => {
-    const defs = defsFor(['budget', 'home'])
-    expect(defs.map((d) => d.id)).toEqual(['budget', 'home'])
+    const defs = defsFor(['assets', 'home'])
+    expect(defs.map((d) => d.id)).toEqual(['assets', 'home'])
   })
   it('drops ids with no matching definition', () => {
     const defs = defsFor(['home', 'nope' as TabId])

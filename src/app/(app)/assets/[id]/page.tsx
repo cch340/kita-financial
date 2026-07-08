@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { Pencil, Download } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { getAsset } from '@/lib/data/assets'
+import { getCommitments } from '@/lib/data/commitments'
+import type { Commitment } from '@/lib/data/commitments-shared'
 import { getMembership } from '@/lib/data/household'
 import { t, type Locale } from '@/i18n'
 import type { AssetTxn } from '@/lib/data/assets-shared'
@@ -17,6 +19,7 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
   const [result, membership] = await Promise.all([getAsset(id), getMembership()])
   if (!result) notFound()
   const { asset, txns } = result
+  const commitments: Commitment[] = asset.type === 'property' ? await getCommitments(asset.id) : []
   const locale: Locale = membership?.language ?? 'en'
 
   const defaultDirection: 'in' | 'out' = asset.type === 'property' ? 'in' : 'out'
@@ -47,7 +50,7 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
         </Link>
       </header>
 
-      {asset.type === 'property' && <PropertyBody asset={asset} txns={txns} />}
+      {asset.type === 'property' && <PropertyBody asset={asset} txns={txns} commitments={commitments} />}
       {asset.type === 'vehicle' && <VehicleBody txns={txns} locale={locale} assetId={asset.id} />}
       {asset.type === 'investment' && <InvestmentBody txns={txns} locale={locale} assetId={asset.id} />}
       {asset.type === 'other' && <GenericBody txns={txns} locale={locale} assetId={asset.id} />}

@@ -8,6 +8,13 @@ auth users exist.
 """
 import openpyxl, datetime, re, uuid
 
+_EMOJI_RE = re.compile('[\U0001F300-\U0001FAFF☀-➿]')
+
+
+def strip_emoji(text):
+    return _EMOJI_RE.sub('', text).strip()
+
+
 HH = '00000000-0000-0000-0000-0000000000aa'  # fixed household id
 # Fixed namespace for deterministic vendor/location UUIDs (stable across re-runs).
 SEED_NS = uuid.UUID('00000000-0000-0000-0000-0000000000aa')
@@ -82,26 +89,7 @@ for col_date, col_amt, col_status, member in [(1, 2, 3, 'CH'), (7, 8, 9, 'JC')]:
         out.append(f"insert into joint_fund_contributions(household_id,member_code,period,amount_cents,status) "
                    f"values ('{HH}','{member}',{d(dt)},{c(amt)},'{status}');")
 
-# Budget categories — 'Money breakdown' rows 2..8 (Category, JC, CH, Total, Remark)
 mb = wb['Money breakdown']
-order = 0
-for r in range(2, 9):
-    name = mb.cell(r, 1).value
-    if not name:
-        continue
-    order += 1
-    out.append(f"insert into budget_categories(household_id,name_en,jc_cents,ch_cents,total_cents,remark,sort_order) "
-               f"values ('{HH}',{s(name)},{c(mb.cell(r, 2).value)},{c(mb.cell(r, 3).value)},"
-               f"{c(mb.cell(r, 4).value)},{s(mb.cell(r, 5).value)},{order});")
-
-# Monthly commitments — 'Money breakdown' second table rows 2..9 (cols 7,8,9)
-for r in range(2, 10):
-    name = mb.cell(r, 7).value
-    amt = mb.cell(r, 8).value
-    if not name or amt is None:
-        continue
-    out.append(f"insert into monthly_commitments(household_id,name_en,amount_cents,remark) "
-               f"values ('{HH}',{s(name)},{c(amt)},{s(mb.cell(r, 9).value)});")
 
 # Expenses — 'Expenses' sheet (Date,Vendor,Location,Details,Amount)
 # expenses.date is NOT NULL; the sheet leaves some rows undated (they belong to
@@ -197,8 +185,21 @@ for r in range(3, 19):
     transferred = to.cell(r, 4).value is True
     direction = 'in' if 'Commitment' in str(det) else 'out'
     txn_type = 'monthly_commitment' if direction == 'in' else 'bill'
+    desc = 'Installment + Maintenance' if direction == 'in' else strip_emoji(str(det))
     out.append(f"insert into asset_transactions(asset_id,household_id,date,description,amount_cents,direction,txn_type,settled) "
-               f"values ('{A_TREEO}','{HH}',{d(to.cell(r, 1).value)},{s(det)},{c(amt)},'{direction}','{txn_type}',{str(transferred).lower()});")
+               f"values ('{A_TREEO}','{HH}',{d(to.cell(r, 1).value)},{s(desc)},{c(amt)},'{direction}','{txn_type}',{str(transferred).lower()});")
+
+# Monthly commitments — 'Money breakdown' second table rows 2..9 (cols 7,8,9)
+mc_order = 0
+for r in range(2, 10):
+    name = mb.cell(r, 7).value
+    amt = mb.cell(r, 8).value
+    if not name or amt is None:
+        continue
+    mc_order += 1
+    clean_name = strip_emoji(str(name))
+    out.append(f"insert into monthly_commitments(household_id,asset_id,name,amount_cents,remark,sort_order) "
+               f"values ('{HH}','{A_TREEO}',{s(clean_name)},{c(amt)},{s(mb.cell(r, 9).value)},{mc_order});")
 
 # AIA schedules — 'AIA Investment' rows 3..12 (seq col1, CH date/amt col2/3, JC date/amt col5/6)
 aia = wb['AIA Investment']
