@@ -133,28 +133,33 @@ function CommitmentsSection({ assetId, commitments }: { assetId: string; commitm
   const total = commitments.reduce((a, c) => a + c.amountCents, 0)
   return (
     <Card className="overflow-hidden p-0">
-      <div className="flex items-center justify-between gap-2 px-4 py-3">
+      <div className="flex items-center justify-between gap-2 px-4 py-2">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className="pressable-opacity flex min-w-0 flex-1 items-center justify-between gap-2"
+          className="pressable-opacity flex min-w-0 flex-1 items-center text-left"
         >
           <span className="truncate text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.title')}</span>
-          {open ? (
-            <ChevronUp size={16} strokeWidth={2.5} className="shrink-0 text-[var(--muted)]" />
-          ) : (
-            <ChevronDown size={16} strokeWidth={2.5} className="shrink-0 text-[var(--muted)]" />
-          )}
         </button>
-        <Link
-          href={`/assets/${assetId}/commitments`}
-          aria-label={t('common.manage')}
-          className="pressable-opacity flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]"
-        >
-          <SlidersHorizontal size={16} />
-          {t('common.manage')}
-        </Link>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <Link
+            href={`/assets/${assetId}/commitments`}
+            aria-label={t('common.manage')}
+            className="pressable-opacity grid h-8 w-8 place-items-center text-[var(--muted)]"
+          >
+            <SlidersHorizontal size={18} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-label={t('asset.commitments.title')}
+            className="pressable-opacity grid h-8 w-8 place-items-center text-[var(--muted)]"
+          >
+            {open ? <ChevronUp size={18} strokeWidth={2.5} /> : <ChevronDown size={18} strokeWidth={2.5} />}
+          </button>
+        </div>
       </div>
 
       {open &&
