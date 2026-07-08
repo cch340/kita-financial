@@ -132,8 +132,8 @@ function CommitmentsSection({ assetId, commitments }: { assetId: string; commitm
   const [open, setOpen] = useState(false)
   const total = commitments.reduce((a, c) => a + c.amountCents, 0)
   return (
-    <Card className="overflow-hidden p-0">
-      <div className="flex items-center justify-between gap-2 px-4 py-2">
+    <Card className="flex flex-col">
+      <div className="-my-1 flex items-center justify-between gap-2">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
@@ -164,13 +164,13 @@ function CommitmentsSection({ assetId, commitments }: { assetId: string; commitm
 
       {open &&
         (commitments.length === 0 ? (
-          <p className="border-t border-[var(--hairline)] px-4 py-6 text-center text-sm font-semibold text-[var(--faint)]">
+          <p className="mt-3 border-t border-[var(--hairline)] pt-3 text-center text-sm font-semibold text-[var(--faint)]">
             {t('asset.commitments.empty')}
           </p>
         ) : (
-          <>
+          <div className="mt-2 flex flex-col">
             {commitments.map((c, i) => (
-              <div key={i} className="flex items-center justify-between border-t border-[var(--hairline)] px-4 py-3">
+              <div key={i} className="flex items-center justify-between gap-2 border-t border-[var(--hairline)] py-2.5">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-[var(--ink-head)]">{c.name}</p>
                   {c.remark && <p className="truncate text-xs text-[var(--muted)]">{c.remark}</p>}
@@ -178,11 +178,11 @@ function CommitmentsSection({ assetId, commitments }: { assetId: string; commitm
                 <MoneyText cents={c.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
               </div>
             ))}
-            <div className="flex items-center justify-between border-t border-[var(--hairline)] bg-[var(--subtle)] px-4 py-3">
+            <div className="flex items-center justify-between gap-2 border-t border-[var(--hairline)] pt-2.5">
               <span className="text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.total')}</span>
               <MoneyText cents={total} className="text-sm font-extrabold text-[var(--ink-head)]" />
             </div>
-          </>
+          </div>
         ))}
     </Card>
   )
