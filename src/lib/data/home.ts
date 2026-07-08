@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { getMembership } from './household'
-import { getMonthTotalCents } from './expenses'
 import { monthRange, formatMonthYear } from './summary'
 import { t, type Locale } from '@/i18n'
 import type { Member } from './types'
@@ -23,7 +22,6 @@ export type HomeSummary = {
     yearContributedCents: number
     yearExpectedCents: number
   }
-  budget: { totalCents: number; spentCents: number }
   upcoming: UpcomingItem[]
 }
 
@@ -38,7 +36,6 @@ function emptySummary(monthLabel: string): HomeSummary {
       yearContributedCents: 0,
       yearExpectedCents: 0,
     },
-    budget: { totalCents: 0, spentCents: 0 },
     upcoming: [],
   }
 }
@@ -66,15 +63,7 @@ export async function getHomeSummary(): Promise<HomeSummary> {
   const { startISO } = monthRange(year, month)
   const householdId = membership.householdId
 
-  const [
-    thisMonthContribRes,
-    configRes,
-    paidContribRes,
-    budgetRes,
-    commitmentsRes,
-    investmentAssetsRes,
-    spentCents,
-  ] = await Promise.all([
+  const [thisMonthContribRes, configRes, paidContribRes, commitmentsRes, investmentAssetsRes] = await Promise.all([
     supabase
       .from('joint_fund_contributions')
       .select('member_code, amount_cents, status')
@@ -91,30 +80,26 @@ export async function getHomeSummary(): Promise<HomeSummary> {
       .eq('status', 'paid')
       .gte('period', monthRange(year, 1).startISO)
       .lt('period', monthRange(year + 1, 1).startISO),
-    supabase.from('budget_categories').select('total_cents').eq('household_id', householdId),
     supabase
       .from('monthly_commitments')
-      .select('name_en, name_zh, amount_cents')
+      .select('name, amount_cents')
       .eq('household_id', householdId),
     supabase
       .from('assets')
       .select('id, name')
       .eq('household_id', householdId)
       .eq('type', 'investment'),
-    getMonthTotalCents(year, month),
   ])
 
   type ContribRow = { member_code: Member; amount_cents: number; status: 'paid' | 'pending' }
   type ConfigRow = { member_code: Member; expected_monthly_cents: number; carry_forward_prev_year_cents: number }
   type PaidRow = { amount_cents: number }
-  type BudgetRow = { total_cents: number }
-  type CommitmentRow = { name_en: string; name_zh: string | null; amount_cents: number }
+  type CommitmentRow = { name: string; amount_cents: number }
   type AssetRow = { id: string; name: string }
 
   const thisMonthContribs = rowsOf<ContribRow>(thisMonthContribRes, 'joint_fund_contributions (this month)')
   const configRows = rowsOf<ConfigRow>(configRes, 'joint_fund_config')
   const paidContribs = rowsOf<PaidRow>(paidContribRes, 'joint_fund_contributions (paid, this year)')
-  const budgetRows = rowsOf<BudgetRow>(budgetRes, 'budget_categories')
   const commitmentRows = rowsOf<CommitmentRow>(commitmentsRes, 'monthly_commitments')
   const investmentAssets = rowsOf<AssetRow>(investmentAssetsRes, 'assets (investment)')
 
@@ -130,8 +115,6 @@ export async function getHomeSummary(): Promise<HomeSummary> {
   const yearExpectedCents =
     configRows.reduce((a, r) => a + r.expected_monthly_cents, 0) * 12 +
     configRows.reduce((a, r) => a + r.carry_forward_prev_year_cents, 0)
-
-  const totalCents = budgetRows.reduce((a, r) => a + r.total_cents, 0)
 
   // Next unsettled AIA scheduled payment across the household's investment assets.
   let aiaItem: UpcomingItem | null = null
@@ -172,7 +155,7 @@ export async function getHomeSummary(): Promise<HomeSummary> {
 
   const commitmentItems: UpcomingItem[] = commitmentRows.map((r) => ({
     icon: 'Zap',
-    title: locale === 'zh' && r.name_zh && r.name_zh.trim() ? r.name_zh : r.name_en,
+    title: r.name,
     due: t(locale, 'home.due'),
     amountCents: r.amount_cents,
     status: 'upcoming',
@@ -190,7 +173,6 @@ export async function getHomeSummary(): Promise<HomeSummary> {
       yearContributedCents,
       yearExpectedCents,
     },
-    budget: { totalCents, spentCents },
     upcoming,
   }
 }
