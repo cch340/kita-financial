@@ -25,7 +25,7 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
   const defaultDirection: 'in' | 'out' = asset.type === 'property' ? 'in' : 'out'
 
   return (
-    <div className="flex flex-col gap-5 pb-6">
+    <div className="flex flex-col gap-5 pb-28">
       <header className="flex items-center gap-3">
         <Link
           href="/assets"
@@ -41,13 +41,14 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
             {asset.status === 'closed' ? ` · ${t(locale, 'assets.closed')}` : ''}
           </p>
         </div>
-        <Link
-          href={`/assets/${asset.id}/edit`}
-          aria-label={t(locale, 'assets.editAsset')}
+        <a
+          href={`/report/export?type=asset&id=${asset.id}`}
+          download
+          aria-label={t(locale, 'asset.exportCsv')}
           className="pressable-opacity grid h-11 w-11 shrink-0 place-items-center text-[var(--muted)]"
         >
-          <Pencil size={18} />
-        </Link>
+          <Download size={18} />
+        </a>
       </header>
 
       {asset.type === 'property' && <PropertyBody asset={asset} txns={txns} commitments={commitments} />}
@@ -56,15 +57,6 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
       {asset.type === 'other' && <GenericBody txns={txns} locale={locale} assetId={asset.id} />}
 
       <AddTxn assetId={asset.id} defaultDirection={defaultDirection} />
-
-      <a
-        href={`/report/export?type=asset&id=${asset.id}`}
-        download
-        className="pressable flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] py-3 text-sm font-bold text-[var(--ink)]"
-      >
-        <Download size={16} className="text-[var(--muted)]" />
-        {t(locale, 'asset.exportCsv')}
-      </a>
     </div>
   )
 }
