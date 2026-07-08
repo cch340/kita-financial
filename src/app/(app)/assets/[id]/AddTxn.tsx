@@ -67,7 +67,7 @@ export function AddTxn({
           onClick={() => setOpen(false)}
         >
           <div
-            className="mx-auto w-full max-w-[430px] rounded-t-2xl bg-[var(--paper)] p-5 pb-8"
+            className="mx-auto max-h-[90dvh] w-full max-w-[430px] overflow-y-auto rounded-t-2xl bg-[var(--paper)] p-5 pb-8"
             onClick={(e) => e.stopPropagation()}
           >
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
