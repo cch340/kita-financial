@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowDown, ArrowUp, Pencil } from 'lucide-react'
+import { ArrowDown, ArrowUp, Pencil, ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { HeroCard, Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -129,42 +129,60 @@ function Switch({
 
 function CommitmentsSection({ assetId, commitments }: { assetId: string; commitments: Commitment[] }) {
   const t = useT()
+  const [open, setOpen] = useState(false)
   const total = commitments.reduce((a, c) => a + c.amountCents, 0)
   return (
     <Card className="overflow-hidden p-0">
-      <div className="flex items-center justify-between border-b border-[var(--hairline)] px-4 py-3">
-        <span className="text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.title')}</span>
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="pressable-opacity flex min-w-0 flex-1 items-center gap-2"
+        >
+          <ChevronDown
+            size={16}
+            strokeWidth={2.5}
+            className="shrink-0 text-[var(--muted)] transition-transform"
+            style={{ transform: open ? 'none' : 'rotate(-90deg)' }}
+          />
+          <span className="truncate text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.title')}</span>
+          {!open && commitments.length > 0 && (
+            <MoneyText cents={total} className="shrink-0 text-sm font-bold text-[var(--muted)]" />
+          )}
+        </button>
         <Link
           href={`/assets/${assetId}/commitments`}
-          className="pressable rounded-full bg-[var(--primary-btn)] px-3 py-1 text-xs font-bold text-white"
+          aria-label={t('common.manage')}
+          className="pressable-opacity flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border border-[var(--hairline)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--ink)]"
         >
-          {t('asset.commitments.manage')}
+          <SlidersHorizontal size={16} />
+          {t('common.manage')}
         </Link>
       </div>
-      {commitments.length === 0 ? (
-        <p className="px-4 py-6 text-center text-sm font-semibold text-[var(--faint)]">{t('asset.commitments.empty')}</p>
-      ) : (
-        <>
-          {commitments.map((c, i) => (
-            <div
-              key={i}
-              className={`flex items-center justify-between px-4 py-3 ${
-                i < commitments.length - 1 ? 'border-b border-[var(--hairline)]' : ''
-              }`}
-            >
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-[var(--ink-head)]">{c.name}</p>
-                {c.remark && <p className="truncate text-xs text-[var(--muted)]">{c.remark}</p>}
+
+      {open &&
+        (commitments.length === 0 ? (
+          <p className="border-t border-[var(--hairline)] px-4 py-6 text-center text-sm font-semibold text-[var(--faint)]">
+            {t('asset.commitments.empty')}
+          </p>
+        ) : (
+          <>
+            {commitments.map((c, i) => (
+              <div key={i} className="flex items-center justify-between border-t border-[var(--hairline)] px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-[var(--ink-head)]">{c.name}</p>
+                  {c.remark && <p className="truncate text-xs text-[var(--muted)]">{c.remark}</p>}
+                </div>
+                <MoneyText cents={c.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
               </div>
-              <MoneyText cents={c.amountCents} className="shrink-0 text-sm font-bold text-[var(--ink-head)]" />
+            ))}
+            <div className="flex items-center justify-between border-t border-[var(--hairline)] bg-[var(--subtle)] px-4 py-3">
+              <span className="text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.total')}</span>
+              <MoneyText cents={total} className="text-sm font-extrabold text-[var(--ink-head)]" />
             </div>
-          ))}
-          <div className="flex items-center justify-between border-t border-[var(--hairline)] bg-[var(--subtle)] px-4 py-3">
-            <span className="text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.total')}</span>
-            <MoneyText cents={total} className="text-sm font-extrabold text-[var(--ink-head)]" />
-          </div>
-        </>
-      )}
+          </>
+        ))}
     </Card>
   )
 }
