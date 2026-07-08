@@ -97,3 +97,16 @@ export async function deleteAssetTransaction(input: { id: string; assetId: strin
   revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }
+
+export async function deleteAsset(input: { id: string }): Promise<{ ok: boolean }> {
+  const m = await getMembership()
+  if (!m) return { ok: false }
+  const supabase = await createClient()
+  // asset_transactions.asset_id and monthly_commitments.asset_id are ON DELETE CASCADE,
+  // so removing the asset removes its transactions and commitments automatically.
+  const { error } = await supabase.from('assets')
+    .delete().eq('id', input.id).eq('household_id', m.householdId)
+  if (error) { console.error('deleteAsset:', error.message); return { ok: false } }
+  revalidatePath('/assets'); revalidatePath('/')
+  return { ok: true }
+}
