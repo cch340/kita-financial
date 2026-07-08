@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowDown, ArrowUp, Pencil, ChevronDown, SlidersHorizontal } from 'lucide-react'
+import { ArrowDown, ArrowUp, Pencil, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 import { HeroCard, Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -138,17 +138,13 @@ function CommitmentsSection({ assetId, commitments }: { assetId: string; commitm
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className="pressable-opacity flex min-w-0 flex-1 items-center gap-2"
+          className="pressable-opacity flex min-w-0 flex-1 items-center justify-between gap-2"
         >
-          <ChevronDown
-            size={16}
-            strokeWidth={2.5}
-            className="shrink-0 text-[var(--muted)] transition-transform"
-            style={{ transform: open ? 'none' : 'rotate(-90deg)' }}
-          />
           <span className="truncate text-sm font-bold text-[var(--ink-head)]">{t('asset.commitments.title')}</span>
-          {!open && commitments.length > 0 && (
-            <MoneyText cents={total} className="shrink-0 text-sm font-bold text-[var(--muted)]" />
+          {open ? (
+            <ChevronUp size={16} strokeWidth={2.5} className="shrink-0 text-[var(--muted)]" />
+          ) : (
+            <ChevronDown size={16} strokeWidth={2.5} className="shrink-0 text-[var(--muted)]" />
           )}
         </button>
         <Link
