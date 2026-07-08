@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { getMembership } from './household'
 import { getMonthTotalCents } from './expenses'
 import { monthRange, formatMonthYear } from './summary'
-import { localizedName } from './budget-shared'
 import { t, type Locale } from '@/i18n'
 import type { Member } from './types'
 
@@ -173,7 +172,7 @@ export async function getHomeSummary(): Promise<HomeSummary> {
 
   const commitmentItems: UpcomingItem[] = commitmentRows.map((r) => ({
     icon: 'Zap',
-    title: localizedName(r.name_en, r.name_zh, locale),
+    title: locale === 'zh' && r.name_zh && r.name_zh.trim() ? r.name_zh : r.name_en,
     due: t(locale, 'home.due'),
     amountCents: r.amount_cents,
     status: 'upcoming',

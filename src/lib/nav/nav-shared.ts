@@ -1,7 +1,7 @@
 // Pure, framework-free nav model. No Supabase, no next/headers, no React.
 // Icons are referenced by name; the name->component map lives beside the renderers.
 
-export type TabId = 'home' | 'expenses' | 'fund' | 'budget' | 'assets'
+export type TabId = 'home' | 'expenses' | 'fund' | 'assets'
 
 export type NavLayout = { bar: TabId[]; more: TabId[] }
 
@@ -20,15 +20,14 @@ export const TAB_DEFS: TabDef[] = [
   { id: 'home', href: '/', i18nKey: 'nav.home', iconName: 'home', matchPrefixes: ['/personal'] },
   { id: 'expenses', href: '/expenses', i18nKey: 'nav.expenses', iconName: 'expenses', matchPrefixes: [] },
   { id: 'fund', href: '/fund', i18nKey: 'nav.fund', iconName: 'fund', matchPrefixes: [] },
-  { id: 'budget', href: '/budget', i18nKey: 'nav.budget', iconName: 'budget', matchPrefixes: [] },
   { id: 'assets', href: '/assets', i18nKey: 'nav.assets', iconName: 'assets', matchPrefixes: [] },
 ]
 
 export const TAB_IDS: TabId[] = TAB_DEFS.map((d) => d.id)
 
 export const DEFAULT_LAYOUT: NavLayout = {
-  bar: ['home', 'expenses', 'fund', 'budget'],
-  more: ['assets'],
+  bar: ['home', 'expenses', 'fund', 'assets'],
+  more: [],
 }
 
 function cloneDefault(): NavLayout {
