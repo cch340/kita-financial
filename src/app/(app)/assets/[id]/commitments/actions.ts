@@ -42,7 +42,7 @@ export async function updateCommitment(input: {
   const supabase = await createClient()
   const { error } = await supabase.from('monthly_commitments').update({
     name: input.name.trim(), amount_cents: input.amountCents, remark: input.remark?.trim() || null,
-  }).eq('id', input.id).eq('household_id', m.householdId)
+  }).eq('id', input.id).eq('household_id', m.householdId).eq('asset_id', input.assetId)
   if (error) { console.error('updateCommitment:', error.message); return { ok: false, error: 'save_failed' } }
   revalidate(input.assetId)
   return { ok: true }
@@ -50,10 +50,10 @@ export async function updateCommitment(input: {
 
 export async function deleteCommitment(input: { id: string; assetId: string }): Promise<Res> {
   const m = await getMembership()
-  if (!m) return { ok: false }
+  if (!m) return { ok: false, error: 'not_authenticated' }
   const supabase = await createClient()
   const { error } = await supabase.from('monthly_commitments').delete()
-    .eq('id', input.id).eq('household_id', m.householdId)
+    .eq('id', input.id).eq('household_id', m.householdId).eq('asset_id', input.assetId)
   if (error) { console.error('deleteCommitment:', error.message); return { ok: false, error: 'save_failed' } }
   revalidate(input.assetId)
   return { ok: true }
@@ -61,11 +61,11 @@ export async function deleteCommitment(input: { id: string; assetId: string }): 
 
 export async function reorderCommitments(input: { assetId: string; orderedIds: string[] }): Promise<Res> {
   const m = await getMembership()
-  if (!m) return { ok: false }
+  if (!m) return { ok: false, error: 'not_authenticated' }
   const supabase = await createClient()
   for (let i = 0; i < input.orderedIds.length; i++) {
     const { error } = await supabase.from('monthly_commitments')
-      .update({ sort_order: i + 1 }).eq('id', input.orderedIds[i]).eq('household_id', m.householdId)
+      .update({ sort_order: i + 1 }).eq('id', input.orderedIds[i]).eq('household_id', m.householdId).eq('asset_id', input.assetId)
     if (error) { console.error('reorderCommitments:', error.message); return { ok: false, error: 'save_failed' } }
   }
   revalidate(input.assetId)
