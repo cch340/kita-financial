@@ -18,6 +18,7 @@ export function PropertyBody({ asset, txns, commitments }: { asset: Asset; txns:
   const [errorId, setErrorId] = useState<string | null>(null)
 
   const balance = runningBalanceCents(asset.openingBalanceCents, txns)
+  const hasOpening = (asset.openingBalanceCents ?? 0) !== 0
 
   async function handleToggle(txnId: string) {
     setErrorId(null)
@@ -42,7 +43,7 @@ export function PropertyBody({ asset, txns, commitments }: { asset: Asset; txns:
 
       <CommitmentsSection assetId={asset.id} commitments={commitments} />
 
-      {txns.length === 0 ? (
+      {txns.length === 0 && !hasOpening ? (
         <p className="py-10 text-center text-sm font-semibold text-[var(--faint)]">{t('asset.empty')}</p>
       ) : (
         <div className="flex flex-col gap-2">
@@ -90,6 +91,12 @@ export function PropertyBody({ asset, txns, commitments }: { asset: Asset; txns:
               </Card>
             )
           })}
+          {hasOpening && (
+            <Card className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-[var(--muted)]">{t('asset.openingBalance')}</span>
+              <MoneyText cents={asset.openingBalanceCents ?? 0} className="text-sm font-bold text-[var(--muted)]" />
+            </Card>
+          )}
         </div>
       )}
     </div>
