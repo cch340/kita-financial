@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getAssetsList } from '@/lib/data/assets'
 import { getMembership } from '@/lib/data/household'
 import { t } from '@/i18n'
@@ -20,6 +21,10 @@ export default async function AssetsPage() {
     <div className="flex flex-col gap-5 pb-28">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-[var(--ink-head)]">{t(locale, 'assets.title')}</h1>
+        <Link href="/assets/categories"
+          className="pressable-opacity text-sm font-bold text-[var(--primary)]">
+          {t(locale, 'assets.manageCategories')}
+        </Link>
       </header>
 
       {activeGroups.length === 0 && closedAssets.length === 0 ? (
