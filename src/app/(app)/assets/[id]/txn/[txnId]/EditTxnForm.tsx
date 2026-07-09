@@ -45,7 +45,7 @@ export function EditTxnForm({
     if (res.ok && res.id) {
       setCategoryId(res.id); setAddingCat(false); setNewCat(''); router.refresh()
     } else {
-      setError('save_failed')
+      setError(res.error === 'duplicate' ? 'duplicate' : 'save_failed')
     }
   }
 

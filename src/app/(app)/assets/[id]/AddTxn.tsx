@@ -33,6 +33,7 @@ export function AddTxn({
   const [notes, setNotes] = useState('')
   const [addingCat, setAddingCat] = useState(false)
   const [newCat, setNewCat] = useState('')
+  const [catError, setCatError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(false)
 
@@ -47,9 +48,10 @@ export function AddTxn({
       setCategoryId(res.id)
       setAddingCat(false)
       setNewCat('')
+      setCatError(null)
       router.refresh()
     } else {
-      setError(true)
+      setCatError(res.error === 'duplicate' ? t('error.duplicate') : t('error.save_failed'))
     }
   }
 
@@ -129,20 +131,23 @@ export function AddTxn({
                       <option value="">{t('asset.category.other')}</option>
                       {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
-                    <button type="button" onClick={() => setAddingCat(true)} aria-label={t('asset.category.new')}
+                    <button type="button" onClick={() => { setAddingCat(true); setCatError(null) }} aria-label={t('asset.category.new')}
                       className="pressable grid min-h-[44px] w-12 shrink-0 place-items-center rounded-xl border border-[var(--hairline)] text-xl text-[var(--primary)]">＋</button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
-                    <input value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder={t('asset.category.new')} autoFocus
-                      className="flex-1 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
-                    <button type="button" disabled={!newCat.trim()} onClick={handleAddCategory}
-                      className="pressable min-h-[44px] shrink-0 rounded-xl bg-[var(--primary-btn)] px-3 text-sm font-bold text-white disabled:opacity-40">
-                      {t('assets.categories.addConfirm')}
-                    </button>
-                    <button type="button" onClick={() => { setAddingCat(false); setNewCat('') }} aria-label={t('common.close')}
-                      className="pressable-opacity grid h-11 w-8 shrink-0 place-items-center text-xl text-[var(--muted)]">×</button>
-                  </div>
+                  <>
+                    <div className="flex gap-2">
+                      <input value={newCat} onChange={(e) => { setNewCat(e.target.value); setCatError(null) }} placeholder={t('asset.category.new')} autoFocus
+                        className="flex-1 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
+                      <button type="button" disabled={!newCat.trim()} onClick={handleAddCategory}
+                        className="pressable min-h-[44px] shrink-0 rounded-xl bg-[var(--primary-btn)] px-3 text-sm font-bold text-white disabled:opacity-40">
+                        {t('assets.categories.addConfirm')}
+                      </button>
+                      <button type="button" onClick={() => { setAddingCat(false); setNewCat(''); setCatError(null) }} aria-label={t('common.close')}
+                        className="pressable-opacity grid h-11 w-8 shrink-0 place-items-center text-xl text-[var(--muted)]">×</button>
+                    </div>
+                    {catError && <p role="alert" className="mt-1 text-xs font-semibold text-[var(--danger)]">{catError}</p>}
+                  </>
                 )}
               </label>
 
