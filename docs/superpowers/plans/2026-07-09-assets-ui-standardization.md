@@ -322,14 +322,17 @@ git commit -m "feat(assets): shared category types + groupByCategory; collapse k
 
 ---
 
-## Task 3: Assets data layer (`assets.ts`)
+## Task 3: Assets data layer (`assets.ts`) + CSV export route
 
 **Files:**
 - Modify: `src/lib/data/assets.ts`
+- Modify: `src/app/(app)/report/export/route.ts`
 
 **Interfaces:**
 - Consumes: `AssetTxn`, `AssetCategory`, `assetKeyFigure` (Task 2).
 - Produces: `getAsset(id): Promise<{ asset: Asset; txns: AssetTxn[]; categories: AssetCategory[] } | null>`; `getAssetsList()` unchanged signature.
+
+> **Why the export route is here:** `src/app/(app)/report/export/route.ts` builds the per-asset CSV from `getAsset().txns` and currently reads `t.txnType` and `t.settled` — both removed in Task 2. It must be updated in lockstep or `tsc`/`build` fails. The CSV now resolves the category name from `getAsset().categories` and drops the "Settled" column.
 
 - [ ] **Step 1: Rewrite `assets.ts`**
 
@@ -414,16 +417,54 @@ export async function getAsset(id: string): Promise<{ asset: Asset; txns: AssetT
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [ ] **Step 2: Update the CSV export route**
+
+In `src/app/(app)/report/export/route.ts`, replace the `if (type === 'asset') { … }` block's `toCsv(...)` call (the header array + `result.txns.map(...)`) so it resolves the category name and drops the removed `settled` column. Replace:
+
+```tsx
+    const csv = toCsv(
+      ['Date', 'Description', 'Txn Type', 'Direction', 'Amount', 'Settled', 'Notes'],
+      result.txns.map((t) => [
+        t.date,
+        t.description,
+        t.txnType,
+        t.direction,
+        centsToDecimal(t.amountCents),
+        t.settled ? 'yes' : 'no',
+        t.notes,
+      ]),
+    )
+```
+
+with:
+
+```tsx
+    const catName = new Map(result.categories.map((c) => [c.id, c.name]))
+    const csv = toCsv(
+      ['Date', 'Description', 'Category', 'Direction', 'Amount', 'Notes'],
+      result.txns.map((t) => [
+        t.date,
+        t.description,
+        t.categoryId ? (catName.get(t.categoryId) ?? '') : '',
+        t.direction,
+        centsToDecimal(t.amountCents),
+        t.notes,
+      ]),
+    )
+```
+
+(No import changes needed — `getAsset` already returns `categories`.)
+
+- [ ] **Step 3: Typecheck**
 
 Run: `npx tsc --noEmit`
-Expected: errors ONLY in files not yet updated (`AddTxn.tsx`, `EditTxnForm.tsx`, `PropertyBody.tsx`, `VehicleBody.tsx`, `InvestmentBody.tsx`, `actions.ts`, `page.tsx`) referencing removed fields. `assets.ts` itself compiles clean. (Those consumers are fixed in later tasks.)
+Expected: errors ONLY in files not yet updated (`AddTxn.tsx`, `EditTxnForm.tsx`, `PropertyBody.tsx`, `VehicleBody.tsx`, `InvestmentBody.tsx`, `actions.ts`, `[id]/page.tsx`) referencing removed fields. `assets.ts` and `report/export/route.ts` compile clean. (The remaining consumers are fixed in later tasks.)
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add src/lib/data/assets.ts
-git commit -m "feat(assets): getAsset returns categories; map category_id on transactions"
+git add src/lib/data/assets.ts "src/app/(app)/report/export/route.ts"
+git commit -m "feat(assets): getAsset returns categories; map category_id; update CSV export"
 ```
 
 ---
