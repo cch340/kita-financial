@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function addAssetTransaction(input: {
   assetId: string; date: string; description: string | null; amountCents: number
-  direction: 'in' | 'out'; categoryId: string | null
+  direction: 'in' | 'out'; categoryId: string | null; notes: string | null
 }): Promise<{ ok: boolean; error?: string }> {
   const m = await getMembership()
   if (!m) return { ok: false, error: 'not_authenticated' }
@@ -22,7 +22,7 @@ export async function addAssetTransaction(input: {
   const { error } = await supabase.from('asset_transactions').insert({
     asset_id: input.assetId, household_id: m.householdId, date: input.date,
     description: input.description, amount_cents: input.amountCents, direction: input.direction,
-    category_id: input.categoryId,
+    category_id: input.categoryId, notes: input.notes,
   })
   if (error) { console.error('addAssetTransaction:', error.message); return { ok: false, error: 'save_failed' } }
   revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets')

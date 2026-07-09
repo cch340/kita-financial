@@ -30,6 +30,7 @@ export function AddTxn({
   const [amount, setAmount] = useState('')
   const [direction, setDirection] = useState<'in' | 'out'>(defaultDirection)
   const [categoryId, setCategoryId] = useState('')
+  const [notes, setNotes] = useState('')
   const [addingCat, setAddingCat] = useState(false)
   const [newCat, setNewCat] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -59,11 +60,11 @@ export function AddTxn({
     setError(false)
     const res = await addAssetTransaction({
       assetId, date, description: description.trim() || null, amountCents: cents,
-      direction, categoryId: categoryId || null,
+      direction, categoryId: categoryId || null, notes: notes.trim() || null,
     })
     setSubmitting(false)
     if (!res.ok) { setError(true); return }
-    setDate(todayISO); setDescription(''); setAmount(''); setCategoryId(''); setDirection(defaultDirection)
+    setDate(todayISO); setDescription(''); setAmount(''); setCategoryId(''); setDirection(defaultDirection); setNotes('')
     setOpen(false)
     router.refresh()
   }
@@ -143,6 +144,12 @@ export function AddTxn({
                       className="pressable-opacity grid h-11 w-8 shrink-0 place-items-center text-xl text-[var(--muted)]">×</button>
                   </div>
                 )}
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-[var(--muted)]">{t('asset.form.note')}</span>
+                <input value={notes} onChange={(e) => setNotes(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--hairline)] bg-[var(--surface)] px-4 py-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--faint)]" />
               </label>
 
               {error && <p role="alert" className="text-sm font-semibold text-[var(--danger)]">{t('error.save_failed')}</p>}

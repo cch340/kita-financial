@@ -9,6 +9,7 @@ type Res = { ok: boolean; error?: string }
 function revalidate() {
   revalidatePath('/assets/categories')
   revalidatePath('/assets')
+  revalidatePath('/assets/[id]', 'page')
 }
 
 async function nextSortOrder(supabase: Awaited<ReturnType<typeof createClient>>, householdId: string, assetType: AssetType): Promise<number> {
