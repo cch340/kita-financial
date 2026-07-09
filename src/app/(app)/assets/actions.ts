@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function addAssetTransaction(input: {
   assetId: string; date: string; description: string | null; amountCents: number
-  direction: 'in' | 'out'; txnType: string | null; settled: boolean
+  direction: 'in' | 'out'; categoryId: string | null
 }): Promise<{ ok: boolean; error?: string }> {
   const m = await getMembership()
   if (!m) return { ok: false, error: 'not_authenticated' }
@@ -22,24 +22,10 @@ export async function addAssetTransaction(input: {
   const { error } = await supabase.from('asset_transactions').insert({
     asset_id: input.assetId, household_id: m.householdId, date: input.date,
     description: input.description, amount_cents: input.amountCents, direction: input.direction,
-    txn_type: input.txnType, settled: input.settled,
+    category_id: input.categoryId,
   })
   if (error) { console.error('addAssetTransaction:', error.message); return { ok: false, error: 'save_failed' } }
   revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets')
-  return { ok: true }
-}
-
-export async function toggleTransferred(txnId: string): Promise<{ ok: boolean }> {
-  const m = await getMembership()
-  if (!m) return { ok: false }
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('asset_transactions')
-    .select('id, settled, asset_id').eq('household_id', m.householdId).eq('id', txnId).single()
-  if (error || !data) { if (error) console.error('toggleTransferred read:', error.message); return { ok: false } }
-  const { error: upErr } = await supabase.from('asset_transactions')
-    .update({ settled: !data.settled }).eq('id', txnId).eq('household_id', m.householdId)
-  if (upErr) { console.error('toggleTransferred update:', upErr.message); return { ok: false } }
-  revalidatePath(`/assets/${data.asset_id}`); revalidatePath('/assets'); revalidatePath('/')
   return { ok: true }
 }
 
@@ -53,8 +39,7 @@ export async function updateAssetTransaction(input: {
   const supabase = await createClient()
   const { error } = await supabase.from('asset_transactions').update({
     date: input.date, description: input.description, amount_cents: input.amountCents,
-    direction: input.direction, txn_type: input.txnType, settled: input.settled,
-    seq: input.seq, notes: input.notes,
+    direction: input.direction, category_id: input.categoryId, notes: input.notes,
   }).eq('id', input.id).eq('household_id', m.householdId)
   if (error) { console.error('updateAssetTransaction:', error.message); return { ok: false, error: 'save_failed' } }
   revalidatePath(`/assets/${input.assetId}`); revalidatePath('/assets'); revalidatePath('/')
