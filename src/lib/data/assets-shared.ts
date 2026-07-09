@@ -4,37 +4,56 @@
 export type AssetType = 'property' | 'vehicle' | 'investment' | 'other'
 export type AssetTxn = {
   id: string; date: string; description: string | null; amountCents: number
-  direction: 'in' | 'out'; txnType: string | null; settled: boolean; seq: number | null; notes: string | null
+  direction: 'in' | 'out'; categoryId: string | null; notes: string | null
 }
 export type Asset = {
   id: string; type: AssetType; name: string; ownerMemberCode: 'CH' | 'JC' | null
   status: 'active' | 'closed'; openingBalanceCents: number | null; metadata: Record<string, unknown>
 }
-export type KeyFigure = { label: 'balance' | 'next_payment' | 'paid'; amountCents: number }
+export type AssetCategory = { id: string; assetType: AssetType; name: string; sortOrder: number }
+export type CategoryGroup = { categoryId: string | null; name: string; rows: AssetTxn[]; subtotalCents: number }
+export type KeyFigure = { label: 'balance'; amountCents: number }
 
 export function runningBalanceCents(openingCents: number | null, txns: AssetTxn[]): number {
   return (openingCents ?? 0) + txns.reduce((a, t) => a + (t.direction === 'in' ? t.amountCents : -t.amountCents), 0)
 }
-export function totalSettledOutCents(txns: AssetTxn[]): number {
-  return txns.filter((t) => t.settled && t.direction === 'out').reduce((a, t) => a + t.amountCents, 0)
-}
-export function nextPaymentCents(txns: AssetTxn[]): number {
-  const unsettled = txns.filter((t) => !t.settled).slice().sort((a, b) => (a.date < b.date ? -1 : 1))
-  return unsettled.length ? unsettled[0].amountCents : 0
-}
+
+// Every asset type shows the same figure: a running balance.
 export function assetKeyFigure(asset: Asset, txns: AssetTxn[]): KeyFigure {
-  if (asset.type === 'investment') return { label: 'paid', amountCents: totalSettledOutCents(txns) }
-  if (asset.type === 'vehicle') return { label: 'next_payment', amountCents: nextPaymentCents(txns) }
   return { label: 'balance', amountCents: runningBalanceCents(asset.openingBalanceCents, txns) }
 }
+
+// Group transactions by category, ordered by each category's sortOrder. Rows whose
+// categoryId is null or references an unknown category collapse into a single trailing
+// "Other" group. subtotalCents is the sum of transaction magnitudes in the group.
+export function groupByCategory(txns: AssetTxn[], categories: AssetCategory[], otherLabel: string): CategoryGroup[] {
+  const known = new Set(categories.map((c) => c.id))
+  const byId = new Map<string, AssetTxn[]>()
+  const other: AssetTxn[] = []
+  for (const t of txns) {
+    if (t.categoryId && known.has(t.categoryId)) {
+      const list = byId.get(t.categoryId) ?? []
+      list.push(t); byId.set(t.categoryId, list)
+    } else {
+      other.push(t)
+    }
+  }
+  const sum = (rows: AssetTxn[]) => rows.reduce((a, r) => a + r.amountCents, 0)
+  const groups: CategoryGroup[] = []
+  for (const c of [...categories].sort((a, b) => a.sortOrder - b.sortOrder)) {
+    const rows = byId.get(c.id)
+    if (rows && rows.length) groups.push({ categoryId: c.id, name: c.name, rows, subtotalCents: sum(rows) })
+  }
+  if (other.length) groups.push({ categoryId: null, name: otherLabel, rows: other, subtotalCents: sum(other) })
+  return groups
+}
+
 export type TxnInput = {
   date: string
   description: string | null
   amountCents: number
   direction: 'in' | 'out'
-  txnType: string | null
-  settled: boolean
-  seq: number | null
+  categoryId: string | null
   notes: string | null
 }
 
@@ -52,15 +71,4 @@ export function splitByStatus<T extends { status: 'active' | 'closed' }>(assets:
     active: assets.filter((a) => a.status === 'active'),
     closed: assets.filter((a) => a.status === 'closed'),
   }
-}
-
-export function groupByTxnType(txns: AssetTxn[]): { txnType: string; rows: AssetTxn[] }[] {
-  const order: string[] = []
-  const map = new Map<string, AssetTxn[]>()
-  for (const t of txns) {
-    const k = t.txnType ?? 'other'
-    if (!map.has(k)) { map.set(k, []); order.push(k) }
-    map.get(k)!.push(t)
-  }
-  return order.map((k) => ({ txnType: k, rows: map.get(k)! }))
 }

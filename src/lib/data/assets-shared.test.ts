@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { runningBalanceCents, totalSettledOutCents, nextPaymentCents, assetKeyFigure, groupByTxnType, validateTxnInput, splitByStatus, type TxnInput } from './assets-shared'
+import { runningBalanceCents, assetKeyFigure, groupByCategory, validateTxnInput, splitByStatus, type TxnInput, type AssetCategory } from './assets-shared'
 import type { AssetTxn, Asset } from './assets-shared'
 
 const tx = (p: Partial<AssetTxn>): AssetTxn => ({
-  id: p.id ?? 'x', date: p.date ?? '2026-01-01', description: null,
+  id: p.id ?? 'x', date: p.date ?? '2026-01-01', description: p.description ?? null,
   amountCents: p.amountCents ?? 0, direction: p.direction ?? 'out',
-  txnType: p.txnType ?? null, settled: p.settled ?? false, seq: p.seq ?? null, notes: null,
+  categoryId: p.categoryId ?? null, notes: p.notes ?? null,
 })
+const cat = (id: string, sortOrder: number, name = id): AssetCategory => ({ id, assetType: 'vehicle', name, sortOrder })
 
 describe('runningBalanceCents', () => {
   it('opening + in - out', () => {
@@ -14,59 +15,53 @@ describe('runningBalanceCents', () => {
     expect(runningBalanceCents(null, [])).toBe(0)
   })
 })
-describe('totalSettledOutCents', () => {
-  it('sums settled out only', () => {
-    expect(totalSettledOutCents([tx({ direction: 'out', amountCents: 3000, settled: true }), tx({ direction: 'out', amountCents: 999, settled: false }), tx({ direction: 'in', amountCents: 100, settled: true })])).toBe(3000)
-  })
-})
-describe('nextPaymentCents', () => {
-  it('earliest unsettled by date, 0 when none', () => {
-    expect(nextPaymentCents([tx({ date: '2026-03-01', amountCents: 500, settled: false }), tx({ date: '2026-02-01', amountCents: 700, settled: false }), tx({ date: '2026-01-01', amountCents: 900, settled: true })])).toBe(700)
-    expect(nextPaymentCents([tx({ settled: true, amountCents: 100 })])).toBe(0)
-  })
-})
+
 describe('assetKeyFigure', () => {
   const base: Asset = { id: 'a', type: 'property', name: 'T', ownerMemberCode: null, status: 'active', openingBalanceCents: 100000, metadata: {} }
-  it('property -> balance, investment -> paid, vehicle -> next_payment', () => {
+  it('always returns balance for every type', () => {
     expect(assetKeyFigure(base, [tx({ direction: 'in', amountCents: 5000 })])).toEqual({ label: 'balance', amountCents: 105000 })
-    expect(assetKeyFigure({ ...base, type: 'investment', openingBalanceCents: null }, [tx({ direction: 'out', amountCents: 3600, settled: true })])).toEqual({ label: 'paid', amountCents: 3600 })
-    expect(assetKeyFigure({ ...base, type: 'vehicle', openingBalanceCents: null }, [tx({ date: '2026-05-01', amountCents: 620, settled: false })])).toEqual({ label: 'next_payment', amountCents: 620 })
+    expect(assetKeyFigure({ ...base, type: 'vehicle', openingBalanceCents: null }, [tx({ direction: 'out', amountCents: 2000 })])).toEqual({ label: 'balance', amountCents: -2000 })
   })
 })
-describe('groupByTxnType', () => {
-  it('groups preserving first-seen order', () => {
-    const g = groupByTxnType([tx({ txnType: 'loan' }), tx({ txnType: 'maintenance' }), tx({ txnType: 'loan' })])
-    expect(g.map((x) => x.txnType)).toEqual(['loan', 'maintenance'])
-    expect(g[0].rows).toHaveLength(2)
+
+describe('groupByCategory', () => {
+  const cats = [cat('c1', 2, 'Loan'), cat('c2', 1, 'Maintenance')]
+  it('orders groups by category sortOrder and sums magnitudes', () => {
+    const g = groupByCategory(
+      [tx({ categoryId: 'c1', amountCents: 100 }), tx({ categoryId: 'c2', amountCents: 40 }), tx({ categoryId: 'c1', amountCents: 200 })],
+      cats, 'Other',
+    )
+    expect(g.map((x) => x.name)).toEqual(['Maintenance', 'Loan'])
+    expect(g[1].rows).toHaveLength(2)
+    expect(g[1].subtotalCents).toBe(300)
+  })
+  it('puts null and unknown category rows into a trailing Other group', () => {
+    const g = groupByCategory(
+      [tx({ categoryId: 'c1', amountCents: 100 }), tx({ categoryId: null, amountCents: 50 }), tx({ categoryId: 'gone', amountCents: 25 })],
+      cats, 'Other',
+    )
+    expect(g.map((x) => x.name)).toEqual(['Loan', 'Other'])
+    expect(g[1].categoryId).toBeNull()
+    expect(g[1].subtotalCents).toBe(75)
+  })
+  it('omits categories with no rows and returns [] for no txns', () => {
+    expect(groupByCategory([], cats, 'Other')).toEqual([])
+    const g = groupByCategory([tx({ categoryId: 'c1', amountCents: 100 })], cats, 'Other')
+    expect(g).toHaveLength(1)
   })
 })
 
 describe('validateTxnInput', () => {
-  const base: TxnInput = {
-    date: '2026-07-05', description: 'Bill', amountCents: 5000,
-    direction: 'out', txnType: null, settled: false, seq: null, notes: null,
-  }
-  it('accepts a valid txn', () => {
-    expect(validateTxnInput(base)).toEqual({ ok: true })
-  })
-  it('rejects a bad date', () => {
-    expect(validateTxnInput({ ...base, date: 'nope' })).toEqual({ ok: false, error: 'invalid_date' })
-  })
-  it('rejects a non-positive amount', () => {
-    expect(validateTxnInput({ ...base, amountCents: 0 })).toEqual({ ok: false, error: 'invalid_amount' })
-  })
-  it('rejects a bad direction', () => {
-    expect(validateTxnInput({ ...base, direction: 'sideways' as unknown as 'in' })).toEqual({ ok: false, error: 'invalid_direction' })
-  })
+  const base: TxnInput = { date: '2026-07-05', description: 'Bill', amountCents: 5000, direction: 'out', categoryId: null, notes: null }
+  it('accepts a valid txn', () => { expect(validateTxnInput(base)).toEqual({ ok: true }) })
+  it('rejects a bad date', () => { expect(validateTxnInput({ ...base, date: 'nope' })).toEqual({ ok: false, error: 'invalid_date' }) })
+  it('rejects a non-positive amount', () => { expect(validateTxnInput({ ...base, amountCents: 0 })).toEqual({ ok: false, error: 'invalid_amount' }) })
+  it('rejects a bad direction', () => { expect(validateTxnInput({ ...base, direction: 'sideways' as unknown as 'in' })).toEqual({ ok: false, error: 'invalid_direction' }) })
 })
 
 describe('splitByStatus', () => {
   it('partitions active and closed preserving order', () => {
-    const items = [
-      { id: '1', status: 'active' as const },
-      { id: '2', status: 'closed' as const },
-      { id: '3', status: 'active' as const },
-    ]
+    const items = [{ id: '1', status: 'active' as const }, { id: '2', status: 'closed' as const }, { id: '3', status: 'active' as const }]
     const { active, closed } = splitByStatus(items)
     expect(active.map((a) => a.id)).toEqual(['1', '3'])
     expect(closed.map((a) => a.id)).toEqual(['2'])
