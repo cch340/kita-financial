@@ -76,15 +76,15 @@ export async function GET(request: NextRequest) {
     if (!assetId) return NextResponse.json({ ok: false, error: 'invalid_asset' }, { status: 400 })
     const result = await getAsset(assetId)
     if (!result) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 })
+    const catName = new Map(result.categories.map((c) => [c.id, c.name]))
     const csv = toCsv(
-      ['Date', 'Description', 'Txn Type', 'Direction', 'Amount', 'Settled', 'Notes'],
+      ['Date', 'Description', 'Category', 'Direction', 'Amount', 'Notes'],
       result.txns.map((t) => [
         t.date,
         t.description,
-        t.txnType,
+        t.categoryId ? (catName.get(t.categoryId) ?? '') : '',
         t.direction,
         centsToDecimal(t.amountCents),
-        t.settled ? 'yes' : 'no',
         t.notes,
       ]),
     )

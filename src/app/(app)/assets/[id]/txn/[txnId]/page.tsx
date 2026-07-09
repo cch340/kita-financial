@@ -8,5 +8,5 @@ export default async function EditTxnPage({ params }: { params: Promise<{ id: st
   if (!result) notFound()
   const txn = result.txns.find((t) => t.id === txnId)
   if (!txn) notFound()
-  return <EditTxnForm assetId={id} txn={txn} assetType={result.asset.type} />
+  return <EditTxnForm assetId={id} txn={txn} assetType={result.asset.type} categories={result.categories} />
 }

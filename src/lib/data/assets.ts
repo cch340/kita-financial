@@ -1,13 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { getMembership } from './household'
-import { assetKeyFigure, type Asset, type AssetTxn, type AssetType, type KeyFigure } from './assets-shared'
+import { assetKeyFigure, type Asset, type AssetTxn, type AssetType, type AssetCategory, type KeyFigure } from './assets-shared'
 
 const TYPE_ORDER: AssetType[] = ['property', 'vehicle', 'investment', 'other']
 const ASSET_COLS = 'id, type, name, owner_member_code, status, opening_balance_cents, metadata'
-const TXN_COLS = 'id, date, description, amount_cents, direction, txn_type, settled, seq, notes'
+const TXN_COLS = 'id, date, description, amount_cents, direction, category_id, notes'
 // Template literal (not `+` concatenation) keeps this in sync with TXN_COLS while
 // preserving the literal type Supabase needs to infer the select's row shape.
 const TXN_COLS_WITH_ASSET = `asset_id, ${TXN_COLS}` as const
+const CAT_COLS = 'id, asset_type, name, sort_order'
 
 function mapAsset(r: Record<string, unknown>): Asset {
   return {
@@ -21,8 +22,13 @@ function mapTxn(r: Record<string, unknown>): AssetTxn {
   return {
     id: r.id as string, date: r.date as string, description: (r.description as string | null) ?? null,
     amountCents: r.amount_cents as number, direction: r.direction as 'in' | 'out',
-    txnType: (r.txn_type as string | null) ?? null, settled: r.settled as boolean,
-    seq: (r.seq as number | null) ?? null, notes: (r.notes as string | null) ?? null,
+    categoryId: (r.category_id as string | null) ?? null, notes: (r.notes as string | null) ?? null,
+  }
+}
+function mapCategory(r: Record<string, unknown>): AssetCategory {
+  return {
+    id: r.id as string, assetType: r.asset_type as AssetType,
+    name: r.name as string, sortOrder: r.sort_order as number,
   }
 }
 
@@ -47,16 +53,24 @@ export async function getAssetsList(): Promise<{ type: AssetType; assets: (Asset
   return TYPE_ORDER.map((type) => ({ type, assets: withKey.filter((a) => a.type === type) })).filter((g) => g.assets.length > 0)
 }
 
-export async function getAsset(id: string): Promise<{ asset: Asset; txns: AssetTxn[] } | null> {
+export async function getAsset(id: string): Promise<{ asset: Asset; txns: AssetTxn[]; categories: AssetCategory[] } | null> {
   const m = await getMembership()
   if (!m) return null
   const supabase = await createClient()
   const { data: aRow, error: aErr } = await supabase
     .from('assets').select(ASSET_COLS).eq('household_id', m.householdId).eq('id', id).single()
   if (aErr || !aRow) { if (aErr) console.error('getAsset:', aErr.message); return null }
-  const { data: tRows, error: tErr } = await supabase
-    .from('asset_transactions').select(TXN_COLS).eq('household_id', m.householdId).eq('asset_id', id)
-    .order('date', { ascending: false })
+  const [{ data: tRows, error: tErr }, { data: cRows, error: cErr }] = await Promise.all([
+    supabase.from('asset_transactions').select(TXN_COLS).eq('household_id', m.householdId).eq('asset_id', id)
+      .order('date', { ascending: false }),
+    supabase.from('asset_categories').select(CAT_COLS).eq('household_id', m.householdId).eq('asset_type', aRow.type)
+      .order('sort_order', { ascending: true }),
+  ])
   if (tErr) console.error('getAsset txns:', tErr.message)
-  return { asset: mapAsset(aRow), txns: (tRows ?? []).map(mapTxn) }
+  if (cErr) console.error('getAsset categories:', cErr.message)
+  return {
+    asset: mapAsset(aRow),
+    txns: (tRows ?? []).map(mapTxn),
+    categories: (cRows ?? []).map(mapCategory),
+  }
 }
