@@ -89,8 +89,9 @@ Server action signature changes:
 
 Model the existing **Commitments manager** (`CommitmentsManager.tsx`): inline add, per-row rename, reorder via up/down buttons, delete.
 
-- **Location:** a dedicated screen keyed by asset type (per-type scope), e.g. `/assets/categories` with a type switcher (Property / Vehicle / Investment / Other), reachable from a "Manage categories" link (in the asset detail near the groups and/or Settings). Placing it under a specific `/assets/[id]/…` route is avoided because categories are shared across all assets of a type, not owned by one asset.
-- **Operations:** create, rename, reorder (`sort_order`), delete.
+- **Entry point:** a **"Manage" button in the top-right of the assets list header** (`src/app/(app)/assets/page.tsx`), matching the pattern used by other modules. It navigates to a dedicated manager screen at `/assets/categories`.
+- **Scope selection:** categories are per asset **type**. In the create/edit row, the user picks the owning type from an **asset-type dropdown** (Property / Vehicle / Investment / Other). The screen lists all categories grouped by type. Placing the manager under a specific `/assets/[id]/…` route is avoided because categories are shared across all assets of a type, not owned by one asset.
+- **Operations:** create (with type dropdown), rename, reorder (`sort_order`, within a type), delete.
 - **Delete flow:** show a **`ConfirmDialog`** (existing component) whose message states that *existing transactions using this category will be moved to "Other"*. On confirm, delete the category row; `on delete set null` reassigns its transactions automatically.
 - **New data layer:** `src/lib/data/categories.ts` (server: list/create/rename/reorder/delete, household + type scoped via `getMembership()`) and `src/lib/data/categories-shared.ts` (pure types + any ordering helpers, e.g. reuse `moveItem`). New `actions.ts` with `'use server'` mutations that `revalidatePath` the affected asset screens.
 
@@ -125,8 +126,9 @@ Add bilingual (EN / 中文) keys: category management screen (title, add, rename
 - **Commitments card redesign** — the user will rework it separately. This spec only *enables the existing card on all asset types* (guard removal); the visual/behavioral redesign is deferred.
 - Dropping the now-unused `settled` / `seq` / `txn_type` columns — left in place; can be cleaned up in a later migration.
 
-## 12. Open considerations (resolve at review)
+## 12. Resolved decisions
 
-- **Category name language:** single `name` (chosen) vs bilingual `name_en`/`name_zh`. Single is simpler and matches user-generated content; the downside is a category typed in English shows in English for a 中文 user. Confirm this is acceptable.
-- **Enabling commitments on all types now** vs leaving it property-only until the redesign. Spec assumes enable-now (trivial guard removal); easy to defer if preferred.
-- **Manage-categories entry point** — Settings link, an affordance on the asset detail, or both.
+- **Category name language:** single `name` field (user-typed, untranslated). Confirmed.
+- **Commitments on all types:** enable the existing card on all types now (guard removal); redesign deferred. Confirmed.
+- **Manage-categories entry point:** a "Manage" button in the top-right of the **assets list** header → `/assets/categories`. Confirmed.
+- **Category scope:** per asset **type**, chosen via an asset-type dropdown in create/edit. Confirmed.
