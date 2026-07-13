@@ -1,0 +1,10 @@
+[
+  {
+    "id": "ac0c5d43-d73c-4a2b-99b9-674bd861c31f",
+    "user_id": "190c5a7a-a572-4391-8602-bd0d8e0202d7",
+    "endpoint": "https://web.push.apple.com/QFcyQ8rtAjwExJz-J7yTSsJgBUvcxHRcQ2KmtGzTG6o7yJbN13YtieyAfRGeYchAcHLzAz-Xd2QWI6JXgXqOp9GElgDJwBbYAN9jNLJp03Y09Y925DOPfnYgi2k2CUG65PMTIYeq1rAKPfRnADLE_cRwCS_oUFO9E-N9r7ZkpDc",
+    "p256dh": "BB7bL3qHc8Y3ZbLkAJZZYVgzULjtgP1HNn-kL9B9r8UrR8yARJgbqrBVMS81mdqJzmnUiOdUjK0Il8JiiigLKS0",
+    "auth": "00QSEzHHcmXkKpUqSttRSQ",
+    "created_at": "2026-07-05T15:09:40.338971+00:00"
+  }
+]

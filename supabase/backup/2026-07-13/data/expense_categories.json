@@ -1,0 +1,44 @@
+[
+  {
+    "id": "bc4114a4-3fdf-4608-8b8e-6e45f055ed53",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Groceries",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:12:56.050732+00:00"
+  },
+  {
+    "id": "37ec56f2-35b2-409b-84b0-f63fa618e167",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Milk Powder",
+    "sort_order": 1,
+    "created_at": "2026-07-06T13:13:20.258666+00:00"
+  },
+  {
+    "id": "66973b3d-ac39-4a20-a55f-001cf47837bf",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Diapers",
+    "sort_order": 2,
+    "created_at": "2026-07-06T13:13:46.397024+00:00"
+  },
+  {
+    "id": "ced91ab2-fbb4-4b06-8514-dd150e30e2e4",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Clothes",
+    "sort_order": 3,
+    "created_at": "2026-07-06T13:13:57.192609+00:00"
+  },
+  {
+    "id": "a52e2cca-d888-4f6d-a083-09df11d23732",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Food & Drink",
+    "sort_order": 4,
+    "created_at": "2026-07-06T13:14:26.843641+00:00"
+  },
+  {
+    "id": "e4db19ec-e47c-4be0-91cf-37d35bfc66c4",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Toys",
+    "sort_order": 5,
+    "created_at": "2026-07-06T13:14:49.125532+00:00"
+  }
+]

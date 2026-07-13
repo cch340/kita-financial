@@ -1,0 +1,722 @@
+[
+  {
+    "id": "5f55207f-5aab-485d-8bfb-ac5639add7bc",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Parent",
+    "amount_cents": 60000,
+    "remark": null
+  },
+  {
+    "id": "29e4232b-9eba-4f66-93d4-d15599a678dd",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Sinaran",
+    "amount_cents": 235000,
+    "remark": null
+  },
+  {
+    "id": "1f11c876-9258-41c1-a0e7-3e37f646876e",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Joint Fund",
+    "amount_cents": 227000,
+    "remark": null
+  },
+  {
+    "id": "5db3a856-0fbe-43d2-823a-d56f5e2d5ff5",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Petrol",
+    "amount_cents": 15000,
+    "remark": null
+  },
+  {
+    "id": "f8ca6ae5-56ab-44fb-977e-a8532c763dc4",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "AIA",
+    "amount_cents": 1000,
+    "remark": null
+  },
+  {
+    "id": "b3f6c026-6955-4729-903b-dac8a6ea52c4",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Youtube Premium",
+    "amount_cents": 2100,
+    "remark": null
+  },
+  {
+    "id": "8b539482-e4fd-4f35-80f6-8c26779bf532",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "income",
+    "description": "Sinaran Rental",
+    "amount_cents": 176000,
+    "remark": null
+  },
+  {
+    "id": "029817b3-df97-4af6-a410-a59c41d01c74",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Apple One",
+    "amount_cents": 2250,
+    "remark": null
+  },
+  {
+    "id": "e753a778-13b4-4875-9988-3b141262151e",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "income",
+    "description": "Nett Salary",
+    "amount_cents": 533915,
+    "remark": "Gross 6117.00"
+  },
+  {
+    "id": "cebe36ff-d86e-400e-b2b9-7f2df5e5c204",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "PTPTN",
+    "amount_cents": 20000,
+    "remark": null
+  },
+  {
+    "id": "4fa79f5f-af72-40c7-8edf-5db2ab5dd2b5",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Insurance (Allianz)",
+    "amount_cents": 27000,
+    "remark": null
+  },
+  {
+    "id": "2169376a-2a2a-4ec4-a55b-13ca50912171",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Hotlink",
+    "amount_cents": 4500,
+    "remark": null
+  },
+  {
+    "id": "8682a82d-c0df-40ed-8550-eaf2ceb8b717",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "JC",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "car insurance",
+    "amount_cents": 121728,
+    "remark": null
+  },
+  {
+    "id": "61c116ab-2365-4bd5-afa2-17462a0b770e",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "JC",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "AIA",
+    "amount_cents": 0,
+    "remark": null
+  },
+  {
+    "id": "1b1152c7-f1ee-4102-87b1-c8c0be0e758d",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "JC",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Joint Fund",
+    "amount_cents": 227000,
+    "remark": null
+  },
+  {
+    "id": "77d74b10-38d4-4248-8ff6-82abd7b7a2cd",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "JC",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Parent",
+    "amount_cents": 60000,
+    "remark": null
+  },
+  {
+    "id": "0381d263-433b-489e-97e9-46abc86303a8",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "JC",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Hotlink",
+    "amount_cents": 4500,
+    "remark": null
+  },
+  {
+    "id": "95633729-a68b-46fc-b067-c5601da19a3e",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "JC",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "Insurance (Allianz)",
+    "amount_cents": 27000,
+    "remark": null
+  },
+  {
+    "id": "0ca7f858-5cc7-44c6-8775-7a00609b39b8",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "JC",
+    "period": "2026-01-01",
+    "entry_type": "expense",
+    "description": "PTPTN",
+    "amount_cents": 20000,
+    "remark": null
+  },
+  {
+    "id": "a5cd8248-6b32-4d28-a22a-547c846cf170",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Parent",
+    "amount_cents": 60000,
+    "remark": null
+  },
+  {
+    "id": "1bc60993-c86a-4ccc-ad7d-2b7cacbf3630",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Sinaran",
+    "amount_cents": 235000,
+    "remark": null
+  },
+  {
+    "id": "09ea81fb-3858-4baa-bb21-901173a11c08",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Joint Fund",
+    "amount_cents": 227000,
+    "remark": null
+  },
+  {
+    "id": "a2c2a81e-06a4-4f25-b569-960bce3d3252",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Petrol",
+    "amount_cents": 15000,
+    "remark": null
+  },
+  {
+    "id": "35dd60a5-b47e-4dd7-ab6c-529f46669709",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "AIA",
+    "amount_cents": 1000,
+    "remark": null
+  },
+  {
+    "id": "2ec84951-8e4c-4886-b7b4-eca1db9a0448",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "income",
+    "description": "Nett Salary",
+    "amount_cents": 571706,
+    "remark": "Gross 6600.00"
+  },
+  {
+    "id": "423eb493-4e9d-4cb9-a7e7-24dbeba7344e",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Youtube Premium",
+    "amount_cents": 2100,
+    "remark": null
+  },
+  {
+    "id": "8bb30ffe-c48a-4295-8c0f-64615ace9ecb",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "income",
+    "description": "Sinaran Rental",
+    "amount_cents": 176000,
+    "remark": null
+  },
+  {
+    "id": "1b3b52bf-6e30-4cd1-b8ef-72fc59121de2",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Apple One",
+    "amount_cents": 2250,
+    "remark": null
+  },
+  {
+    "id": "03ab1426-fd94-4719-897b-73f4fb921b31",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "PTPTN",
+    "amount_cents": 20000,
+    "remark": null
+  },
+  {
+    "id": "6636af33-8097-43a3-9f50-788f1cc7e062",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Insurance (Allianz)",
+    "amount_cents": 27000,
+    "remark": null
+  },
+  {
+    "id": "230d600e-5eb3-4ba4-9760-4c8c46018ab0",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-02-01",
+    "entry_type": "expense",
+    "description": "Hotlink",
+    "amount_cents": 4500,
+    "remark": null
+  },
+  {
+    "id": "afee89ae-6975-430d-8f4a-b1125bb07075",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Apple One",
+    "amount_cents": 2250,
+    "remark": null
+  },
+  {
+    "id": "8dbd3966-4648-4922-8b9c-5a89c8b65502",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "income",
+    "description": "Nett Salary",
+    "amount_cents": 572500,
+    "remark": "Gross 6600.00"
+  },
+  {
+    "id": "01f0e5f8-c009-40bf-9b62-27f47d5f5af3",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Youtube Premium",
+    "amount_cents": 2100,
+    "remark": null
+  },
+  {
+    "id": "84fdff38-39c0-4db5-9420-22871df7daec",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "income",
+    "description": "Sinaran Rental",
+    "amount_cents": 176000,
+    "remark": null
+  },
+  {
+    "id": "2b2939ed-8f2d-44dc-be7a-7d6ec9dbb51f",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "PTPTN",
+    "amount_cents": 20000,
+    "remark": null
+  },
+  {
+    "id": "56c69eff-cf86-48b0-a622-d695e3214d2c",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Insurance (Allianz)",
+    "amount_cents": 27000,
+    "remark": null
+  },
+  {
+    "id": "fdab47f4-e23c-4614-8e98-a2978095130c",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Hotlink",
+    "amount_cents": 4500,
+    "remark": null
+  },
+  {
+    "id": "44f53686-c70a-4355-8ca9-64556caa23af",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Parent",
+    "amount_cents": 60000,
+    "remark": null
+  },
+  {
+    "id": "e46253ab-efa8-4787-94cb-458c6e3adfc8",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Sinaran",
+    "amount_cents": 235000,
+    "remark": null
+  },
+  {
+    "id": "c369b247-b1c4-4940-b4be-416d544536bd",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Joint Fund",
+    "amount_cents": 227000,
+    "remark": null
+  },
+  {
+    "id": "c28890a5-d1d9-4828-98c1-c8d95fc0e89c",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Petrol",
+    "amount_cents": 15000,
+    "remark": null
+  },
+  {
+    "id": "3074c9a9-f538-4c14-a54d-41ab4c64d25a",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "AIA",
+    "amount_cents": 1000,
+    "remark": null
+  },
+  {
+    "id": "8076106a-cfbd-4f21-80d4-9ddf4bfd9fdd",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-03-01",
+    "entry_type": "expense",
+    "description": "Sinaran maintenance",
+    "amount_cents": 25972,
+    "remark": null
+  },
+  {
+    "id": "dd14a5dd-1d75-4956-905e-cee4d3c0f52d",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Parent",
+    "amount_cents": 60000,
+    "remark": null
+  },
+  {
+    "id": "1f712b9d-dd20-480e-bdc3-9629c4ffcc44",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Sinaran",
+    "amount_cents": 235000,
+    "remark": null
+  },
+  {
+    "id": "0fa0f83e-a519-4901-afcf-01d355273d36",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Joint Fund",
+    "amount_cents": 227000,
+    "remark": null
+  },
+  {
+    "id": "eda1cc3f-2bbf-431b-933f-8268d75de7b6",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Petrol",
+    "amount_cents": 15000,
+    "remark": null
+  },
+  {
+    "id": "7bf59eca-35da-4cfb-ad8f-2abb26d5c830",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "AIA",
+    "amount_cents": 1000,
+    "remark": null
+  },
+  {
+    "id": "2778f9be-a2f8-424a-a987-f288a68f885d",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Sinaran maintenance",
+    "amount_cents": 25972,
+    "remark": null
+  },
+  {
+    "id": "a03efa17-c101-40ee-9c0d-b6bd1a2077c8",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Google AI Pro",
+    "amount_cents": 9799,
+    "remark": null
+  },
+  {
+    "id": "738d341f-2d01-4ed0-b634-c9972a259864",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Hotlink",
+    "amount_cents": 4500,
+    "remark": null
+  },
+  {
+    "id": "b648c4c5-c5de-4556-a9da-85c91e7e95c7",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Insurance (Allianz)",
+    "amount_cents": 27000,
+    "remark": null
+  },
+  {
+    "id": "0cc4b2dc-5ba3-482c-b095-5fa49a53721c",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "PTPTN",
+    "amount_cents": 20000,
+    "remark": null
+  },
+  {
+    "id": "699c2e88-89c2-41a4-80a1-42962966cbde",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Apple One",
+    "amount_cents": 2250,
+    "remark": null
+  },
+  {
+    "id": "4c638c8f-2ff0-4222-9a2e-45a740b27bbf",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "income",
+    "description": "Sinaran Rental",
+    "amount_cents": 176000,
+    "remark": null
+  },
+  {
+    "id": "6dad5c32-74fd-4dc4-8c37-59f989643e2b",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "expense",
+    "description": "Youtube Premium",
+    "amount_cents": 2100,
+    "remark": null
+  },
+  {
+    "id": "708f794e-e912-4d3f-a4be-235d8e718ea8",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-04-01",
+    "entry_type": "income",
+    "description": "Nett Salary",
+    "amount_cents": 585655,
+    "remark": "Gross 6600.00"
+  },
+  {
+    "id": "4a94055c-9ac3-4506-9e17-d54c5fcad69e",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Parent",
+    "amount_cents": 60000,
+    "remark": null
+  },
+  {
+    "id": "f636741f-4a0d-4161-9871-1b2770d15f60",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Sinaran",
+    "amount_cents": 235000,
+    "remark": null
+  },
+  {
+    "id": "9a9a0588-5772-4875-9212-60611851312f",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Joint Fund",
+    "amount_cents": 227000,
+    "remark": null
+  },
+  {
+    "id": "e0165173-b034-46c5-845a-74b75a22e3c5",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Petrol",
+    "amount_cents": 15000,
+    "remark": null
+  },
+  {
+    "id": "9c9be96c-ad93-451a-8c93-b548de1081ef",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "AIA",
+    "amount_cents": 1000,
+    "remark": null
+  },
+  {
+    "id": "39b2ebb3-f944-41cf-9a9f-6c259303772c",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Sinaran maintenance",
+    "amount_cents": 25972,
+    "remark": null
+  },
+  {
+    "id": "90c6a34f-9116-4beb-a647-b65e557a9956",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Google AI Pro",
+    "amount_cents": 9799,
+    "remark": null
+  },
+  {
+    "id": "4bc249ba-d50e-4243-8af9-669b0b13133c",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "income",
+    "description": "Nett Salary",
+    "amount_cents": 585655,
+    "remark": "Gross 6600.00"
+  },
+  {
+    "id": "716abe1d-3a64-4b7f-a78c-93573cbd8aa5",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Youtube Premium",
+    "amount_cents": 2100,
+    "remark": null
+  },
+  {
+    "id": "07db3843-f873-47fb-be7d-16c2b5f46904",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "income",
+    "description": "Sinaran Rental",
+    "amount_cents": 176000,
+    "remark": null
+  },
+  {
+    "id": "c96a3da6-a4fb-43d7-82cf-0a55658a6f78",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Apple One",
+    "amount_cents": 2250,
+    "remark": null
+  },
+  {
+    "id": "7e476a5a-ef84-41bc-b356-ad6401e40309",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "PTPTN",
+    "amount_cents": 20000,
+    "remark": null
+  },
+  {
+    "id": "2f208828-1be3-4324-abe8-66f612cf9e3e",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Insurance (Allianz)",
+    "amount_cents": 27000,
+    "remark": null
+  },
+  {
+    "id": "85771b8d-a0e9-4a92-a111-d68410fb2cbc",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "owner_member_code": "CH",
+    "period": "2026-05-01",
+    "entry_type": "expense",
+    "description": "Hotlink",
+    "amount_cents": 4500,
+    "remark": null
+  }
+]

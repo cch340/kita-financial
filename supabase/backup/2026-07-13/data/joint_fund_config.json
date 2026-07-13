@@ -1,0 +1,14 @@
+[
+  {
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "expected_monthly_cents": 227000,
+    "carry_forward_prev_year_cents": 0
+  },
+  {
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "expected_monthly_cents": 247000,
+    "carry_forward_prev_year_cents": 0
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "b87cd0fb-d721-4177-ab4e-9b01e413956f",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 149300,
+    "remark": "year 2026",
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "House installment"
+  },
+  {
+    "id": "fe534074-9664-45ec-a225-fd7a0bfd71b5",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 21320,
+    "remark": null,
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "House maintenance"
+  },
+  {
+    "id": "e396ea17-f3bd-4c1b-a541-27c19ab6fe32",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 5000,
+    "remark": null,
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "LG water purifier"
+  },
+  {
+    "id": "90566206-e0ce-45a1-bbcb-571fd4f17d40",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 4000,
+    "remark": null,
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "LG air purifier"
+  },
+  {
+    "id": "aab06aef-5aac-4741-9b16-dc6e3dc1ffb4",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 6944,
+    "remark": null,
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "Outdoor water filter"
+  },
+  {
+    "id": "a574ddd9-71b0-467c-9875-7c428bbf9282",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 10494,
+    "remark": "500 mpbs for 6 months",
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "Time Fibre Internet"
+  },
+  {
+    "id": "de259c20-18d0-4532-adee-538e5868b793",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 12000,
+    "remark": "Estimate",
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "Electric Bill"
+  },
+  {
+    "id": "177a2fd6-16a2-4030-9e10-c6d689fbeb77",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "amount_cents": 1500,
+    "remark": "Estimate",
+    "sort_order": 0,
+    "asset_id": "00000000-0000-0000-0000-0000000000b1",
+    "name": "Water Bill"
+  }
+]
