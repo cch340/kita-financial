@@ -1,0 +1,128 @@
+[
+  {
+    "id": "084650af-a596-4450-9e5e-4cd6b5c73b60",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "period": "2026-01-01",
+    "amount_cents": 293926,
+    "status": "paid",
+    "notes": "Includes RM 669.26 carry forward from 2025"
+  },
+  {
+    "id": "82e58271-bae1-4ddf-a1f1-b6862cbed0e3",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "period": "2026-01-01",
+    "amount_cents": 313926,
+    "status": "paid",
+    "notes": "Includes RM 669.26 carry forward from 2025"
+  },
+  {
+    "id": "c8a39424-a2ab-48e7-b858-c4534a9e6738",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "period": "2026-02-01",
+    "amount_cents": 227000,
+    "status": "paid",
+    "notes": null
+  },
+  {
+    "id": "0731e710-d891-4dbd-bf6b-041613c22564",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "period": "2026-02-01",
+    "amount_cents": 247000,
+    "status": "paid",
+    "notes": null
+  },
+  {
+    "id": "8a0ef998-3955-4e6b-b5fc-dd1a16cb42f7",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "period": "2026-03-01",
+    "amount_cents": 227000,
+    "status": "paid",
+    "notes": null
+  },
+  {
+    "id": "4b892d65-9f7d-49ad-9a71-2ae454830887",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "period": "2026-03-01",
+    "amount_cents": 247000,
+    "status": "pending",
+    "notes": null
+  },
+  {
+    "id": "0b1e953e-fe18-46a5-a9e7-e21a04c255ee",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "period": "2026-04-01",
+    "amount_cents": 227000,
+    "status": "paid",
+    "notes": null
+  },
+  {
+    "id": "52d6a6cc-2cd1-49ec-8730-a268ad70ab07",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "period": "2026-04-01",
+    "amount_cents": 247000,
+    "status": "pending",
+    "notes": null
+  },
+  {
+    "id": "96f094e2-5653-4c94-8b3e-cd7d40856913",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "period": "2026-05-01",
+    "amount_cents": 227000,
+    "status": "paid",
+    "notes": null
+  },
+  {
+    "id": "b8611c3a-e1c1-4026-833e-4d20422b07a6",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "period": "2026-05-01",
+    "amount_cents": 247000,
+    "status": "pending",
+    "notes": null
+  },
+  {
+    "id": "683bbed8-ea18-40b9-bc63-f7bb7300e9f9",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "period": "2026-06-01",
+    "amount_cents": 227000,
+    "status": "paid",
+    "notes": null
+  },
+  {
+    "id": "386cd8e4-73bb-4f6c-a70b-b75e370b974f",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "period": "2026-06-01",
+    "amount_cents": 247000,
+    "status": "pending",
+    "notes": null
+  },
+  {
+    "id": "5fea5cf8-1547-48cc-9670-360302b2ed7f",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "CH",
+    "period": "2026-07-01",
+    "amount_cents": 227000,
+    "status": "pending",
+    "notes": null
+  },
+  {
+    "id": "e71f6cf8-2b6b-4d61-9d56-072578d2a623",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "member_code": "JC",
+    "period": "2026-07-01",
+    "amount_cents": 247000,
+    "status": "pending",
+    "notes": null
+  }
+]

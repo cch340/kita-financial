@@ -1,0 +1,218 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "profiles",
+    "policyname": "prof_comembers",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM (household_members a\n     JOIN household_members b ON ((a.household_id = b.household_id)))\n  WHERE ((a.user_id = auth.uid()) AND (b.user_id = profiles.id))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "profiles",
+    "policyname": "prof_self",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "(id = auth.uid())",
+    "with_check": "(id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "households",
+    "policyname": "hh_read",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "SELECT",
+    "qual": "is_member(id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "household_members",
+    "policyname": "hm_read",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "SELECT",
+    "qual": "is_member(household_id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "joint_fund_config",
+    "policyname": "jfc_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "joint_fund_contributions",
+    "policyname": "jfcn_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ledger_entries",
+    "policyname": "led_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expenses",
+    "policyname": "exp_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "monthly_commitments",
+    "policyname": "mc_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "push_subscriptions",
+    "policyname": "push_self",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "(user_id = auth.uid())",
+    "with_check": "(user_id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "reminder_settings",
+    "policyname": "rem_self",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "(user_id = auth.uid())",
+    "with_check": "(user_id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "asset_transactions",
+    "policyname": "atx_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "assets",
+    "policyname": "ast_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expense_categories",
+    "policyname": "ec_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "vendors",
+    "policyname": "ven_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "locations",
+    "policyname": "loc_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "recurring_funds",
+    "policyname": "rf_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "asset_categories",
+    "policyname": "ac_all",
+    "permissive": "PERMISSIVE",
+    "roles": [
+      "public"
+    ],
+    "cmd": "ALL",
+    "qual": "is_member(household_id)",
+    "with_check": "is_member(household_id)"
+  }
+]

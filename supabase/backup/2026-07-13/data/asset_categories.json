@@ -1,0 +1,58 @@
+[
+  {
+    "id": "0d8240ec-0cca-4487-8aa3-cbaea7cd1294",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "asset_type": "investment",
+    "name": "Scheduled Payment",
+    "sort_order": 0,
+    "created_at": "2026-07-09T07:45:20.910104+00:00"
+  },
+  {
+    "id": "0a2f0664-b85e-464a-a5ec-0aca3d5540bf",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "asset_type": "vehicle",
+    "name": "Road Tax Insurance",
+    "sort_order": 0,
+    "created_at": "2026-07-09T07:45:20.910104+00:00"
+  },
+  {
+    "id": "732b521c-6b04-4f8d-b9cd-45abf175c5ef",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "asset_type": "property",
+    "name": "Bill",
+    "sort_order": 0,
+    "created_at": "2026-07-09T07:45:20.910104+00:00"
+  },
+  {
+    "id": "ad4aec92-85d4-4aff-9392-d324ef46cf26",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "asset_type": "property",
+    "name": "Monthly Commitment",
+    "sort_order": 0,
+    "created_at": "2026-07-09T07:45:20.910104+00:00"
+  },
+  {
+    "id": "32ba391e-392b-4329-bf85-e54dd75ad328",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "asset_type": "vehicle",
+    "name": "Loan",
+    "sort_order": 0,
+    "created_at": "2026-07-09T07:45:20.910104+00:00"
+  },
+  {
+    "id": "53040fdb-a924-4b91-9260-652210e2d446",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "asset_type": "vehicle",
+    "name": "Loan Payback",
+    "sort_order": 0,
+    "created_at": "2026-07-09T07:45:20.910104+00:00"
+  },
+  {
+    "id": "1abfe289-96c1-44ee-ac30-8d3c20876827",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "asset_type": "vehicle",
+    "name": "Maintenance",
+    "sort_order": 0,
+    "created_at": "2026-07-09T07:45:20.910104+00:00"
+  }
+]

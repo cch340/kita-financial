@@ -1,0 +1,58 @@
+[
+  {
+    "id": "728e5a04-6818-4c99-b7ac-8b5cbd13b949",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Bayana",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  },
+  {
+    "id": "9568c829-a59c-4dba-83d6-d2e1057cfd36",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Billion",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  },
+  {
+    "id": "7fc164b8-f1fc-498b-9ae2-d1b7c4abacf8",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Gurney Plaza",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  },
+  {
+    "id": "5b0f968f-bcbc-4042-9763-c99c3972ce5c",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Ipoh Parade",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  },
+  {
+    "id": "76457721-2df0-4339-b509-d438961b7cfc",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Queensbay",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  },
+  {
+    "id": "4721d297-b10b-4feb-922f-e50e7579b78d",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Seberang Jaya",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  },
+  {
+    "id": "93bb5b0c-ed65-49c6-a7d7-dec480ea46d2",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Sunshine Square",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  },
+  {
+    "id": "3f9497d0-1d2b-4ecb-8e2b-33f53af91d66",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "name": "Sunway Carnival",
+    "sort_order": 0,
+    "created_at": "2026-07-06T13:03:27.380626+00:00"
+  }
+]

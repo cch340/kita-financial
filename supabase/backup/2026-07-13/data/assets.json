@@ -1,0 +1,65 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-0000000000b2",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "type": "vehicle",
+    "name": "Myvi PQC 9059",
+    "owner_member_code": null,
+    "status": "active",
+    "opening_balance_cents": null,
+    "metadata": {},
+    "sort_order": 0,
+    "created_at": "2026-07-04T09:21:13.86138+00:00"
+  },
+  {
+    "id": "00000000-0000-0000-0000-0000000000b3",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "type": "vehicle",
+    "name": "Alza PNM 9059",
+    "owner_member_code": null,
+    "status": "active",
+    "opening_balance_cents": null,
+    "metadata": {},
+    "sort_order": 0,
+    "created_at": "2026-07-04T09:21:13.86138+00:00"
+  },
+  {
+    "id": "00000000-0000-0000-0000-0000000000b4",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "type": "investment",
+    "name": "AIA — CH",
+    "owner_member_code": "CH",
+    "status": "active",
+    "opening_balance_cents": null,
+    "metadata": {},
+    "sort_order": 0,
+    "created_at": "2026-07-04T09:21:13.86138+00:00"
+  },
+  {
+    "id": "00000000-0000-0000-0000-0000000000b5",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "type": "investment",
+    "name": "AIA — JC",
+    "owner_member_code": "JC",
+    "status": "active",
+    "opening_balance_cents": null,
+    "metadata": {},
+    "sort_order": 0,
+    "created_at": "2026-07-04T09:21:13.86138+00:00"
+  },
+  {
+    "id": "00000000-0000-0000-0000-0000000000b1",
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "type": "property",
+    "name": "TreeO",
+    "owner_member_code": null,
+    "status": "active",
+    "opening_balance_cents": 4601381,
+    "metadata": {
+      "address": "",
+      "monthlyCommitmentCents": 197058
+    },
+    "sort_order": 0,
+    "created_at": "2026-07-04T09:21:13.86138+00:00"
+  }
+]

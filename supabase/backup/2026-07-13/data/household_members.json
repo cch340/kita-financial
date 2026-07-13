@@ -1,0 +1,14 @@
+[
+  {
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "user_id": "190c5a7a-a572-4391-8602-bd0d8e0202d7",
+    "role": "owner",
+    "member_code": "CH"
+  },
+  {
+    "household_id": "00000000-0000-0000-0000-0000000000aa",
+    "user_id": "989080c6-f53c-46bf-a4c5-cc053dffc04c",
+    "role": "member",
+    "member_code": "JC"
+  }
+]
